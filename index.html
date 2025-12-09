@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EasyCool Operations v9.0</title>
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1f2937">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
+        [contenteditable="true"]:hover { outline: 2px dashed #a5b4fc; }
+        [contenteditable="true"]:focus { outline: 2px solid #6366f1; background-color: #eef2ff; border-radius: 4px; padding: 4px; }
+        .input-mobile { font-size: 16px; }
+        .calculator-section { background: linear-gradient(145deg, #f9fafb, #f3f4f6); }
+        .modal { transition: opacity 0.25s ease; z-index: 50; }
+        .modal-content { transition: transform 0.25s ease; max-height: 85vh; }
+        
+        /* Tipografías Específicas del Diseño Original */
+        .header-logo-font { font-family: 'Poppins', sans-serif; }
+        .header-contact-font { font-family: 'Inter', sans-serif; }
+        
+        @media print {
+            body { background: white; padding: 0; }
+            .no-print { display: none !important; }
+            .printable-section { width: 100% !important; max-width: 100% !important; box-shadow: none !important; margin: 0; padding: 0; }
+            #tech-specs-section { page-break-inside: avoid; }
+            [contenteditable="true"]:hover { outline: none; }
+            #bottom-nav { display: none !important; }
+            a { text-decoration: none; color: inherit; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 sm:p-8">
+
+    <!-- ========================================== -->
+    <!-- VISTA 0: HUB DE BIENVENIDA (SELECCIÓN) -->
+    <!-- ========================================== -->
+    <div id="view-hub" class="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-900 text-white no-print">
+        <div class="mb-8 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 bg-white rounded-xl flex items-center justify-center p-3 shadow-lg shadow-cyan-500/50">
+                <svg width="100%" height="100%" viewBox="0 0 50 50" fill="none">
+                    <rect y="10" width="40" height="7" rx="3.5" fill="#4285F4" opacity="0.9"/>
+                    <rect x="5" y="20" width="35" height="7" rx="3.5" fill="#7baaf7" opacity="0.9"/>
+                    <rect x="10" y="30" width="30" height="7" rx="3.5" fill="#acd0fc"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold font-poppins tracking-wide">EASYCOOL</h1>
+            <p class="text-cyan-400 text-sm tracking-wider uppercase">Operaciones & Terreno</p>
+        </div>
+
+        <div class="grid gap-4 w-full max-w-sm">
+            <button onclick="startApp('install')" class="bg-gradient-to-r from-blue-600 to-blue-500 p-6 rounded-2xl shadow-xl flex items-center gap-4 hover:scale-105 transition-transform group">
+                <div class="bg-white/20 p-3 rounded-full"><i class="fas fa-snowflake text-2xl"></i></div>
+                <div class="text-left">
+                    <h3 class="font-bold text-lg">Cotizar Instalación</h3>
+                    <p class="text-xs text-blue-100">Equipos nuevos, Proyectos</p>
+                </div>
+                <i class="fas fa-chevron-right ml-auto opacity-50 group-hover:opacity-100"></i>
+            </button>
+
+            <button onclick="startApp('repair')" class="bg-gradient-to-r from-slate-700 to-slate-600 p-6 rounded-2xl shadow-xl flex items-center gap-4 hover:scale-105 transition-transform group">
+                <div class="bg-white/20 p-3 rounded-full"><i class="fas fa-tools text-2xl"></i></div>
+                <div class="text-left">
+                    <h3 class="font-bold text-lg">Modo Reparación</h3>
+                    <p class="text-xs text-slate-300">Fallas, Mantenciones, Visitas</p>
+                </div>
+                <i class="fas fa-chevron-right ml-auto opacity-50 group-hover:opacity-100"></i>
+            </button>
+        </div>
+        <p class="mt-8 text-xs text-gray-500">v9.0 GitHub Ready</p>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 1: CALCULADORA / EDITOR -->
+    <!-- ========================================== -->
+    <div id="view-calculator" class="view-section max-w-4xl mx-auto bg-white p-4 sm:p-6 rounded-xl shadow-lg no-print calculator-section min-h-screen sm:min-h-0 hidden">
+        
+        <!-- HEADER APP -->
+        <div class="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 py-3 border-b border-gray-100 shadow-sm -mx-4 px-4 rounded-t-xl">
+             <div class="flex items-center gap-3 flex-1">
+                 <button onclick="location.reload()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-arrow-left"></i></button>
+                 <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-blue-50 rounded-lg"> 
+                     <i id="app-icon" class="fas fa-snowflake text-blue-500 text-xl"></i>
+                 </div>
+                 <div class="flex flex-col justify-center h-10">
+                     <span class="text-lg font-bold text-gray-800 leading-none header-logo-font tracking-wide mt-1">EASYCOOL</span>
+                     <span id="app-mode-title" class="text-[10px] text-gray-500 font-normal leading-tight header-logo-font">Cotizador</span>
+                 </div>
+             </div>
+             <button id="open-price-editor-btn" class="bg-gray-50 text-gray-500 p-2 rounded-full hover:bg-gray-100 border border-gray-200 shadow-sm w-10 h-10">
+                <i class="fas fa-cog text-lg"></i>
+             </button>
+        </div>
+        
+        <!-- FORMULARIO PRINCIPAL -->
+        <div class="grid gap-4">
+            
+            <!-- Cliente (Común) -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <div class="space-y-3">
+                    <input type="text" id="calc-client-name" placeholder="Nombre Cliente" class="input-mobile border-b border-gray-300 p-2 w-full focus:border-indigo-600 outline-none font-bold text-lg">
+                    <div class="flex gap-3">
+                        <input type="text" id="calc-client-rut" placeholder="RUT" class="input-mobile border border-gray-200 p-2 rounded w-1/3 text-sm">
+                        <input type="text" id="calc-client-address" placeholder="Dirección" class="input-mobile border border-gray-200 p-2 rounded w-2/3 text-sm">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN ESPECÍFICA: INSTALACIÓN (Calculadora BTU) -->
+            <div id="section-install-tools" class="hidden">
+                <details class="bg-white p-3 rounded-xl border border-gray-200 group mb-4">
+                    <summary class="flex justify-between items-center font-bold text-gray-700 cursor-pointer list-none text-sm">
+                        <span class="flex items-center gap-2"><i class="fas fa-calculator text-orange-500"></i> Calculadora BTU</span>
+                        <i class="fas fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div class="mt-3 flex gap-2">
+                        <input type="number" id="ancho-mts" placeholder="Ancho" class="border p-2 rounded w-1/2 text-center text-sm">
+                        <input type="number" id="largo-mts" placeholder="Largo" class="border p-2 rounded w-1/2 text-center text-sm">
+                        <button id="calculate-btu-btn" class="bg-orange-100 text-orange-600 px-3 py-2 rounded-lg font-bold text-xs">Calc</button>
+                    </div>
+                    <p id="btu-result" class="text-center text-xs font-bold text-indigo-600 h-4 mt-2"></p>
+                </details>
+            </div>
+
+            <!-- SECCIÓN ESPECÍFICA: REPARACIÓN (Diagnóstico) -->
+            <div id="section-repair-tools" class="hidden">
+                <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm mb-4">
+                     <h3 class="text-xs font-bold text-amber-800 mb-2 flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle"></i> Diagnóstico / Falla Reportada
+                    </h3>
+                    <textarea id="calc-diagnostico" rows="2" class="w-full bg-white border border-amber-300 rounded p-2 text-sm focus:ring-1 focus:ring-amber-500 outline-none" placeholder="Ej: Equipo no enfría, código de error E4, condensador sucio..."></textarea>
+                </div>
+            </div>
+
+            <!-- ÍTEMS / SERVICIOS (Dinámico) -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <h3 class="text-sm font-bold text-gray-700 mb-2" id="items-title">Equipos / Servicios</h3>
+                <div id="equipos-container" class="space-y-3 mb-3"></div>
+                <button id="add-equipo-btn" class="w-full py-3 rounded-lg border-2 border-dashed border-indigo-200 text-indigo-500 font-bold text-sm hover:bg-indigo-50 transition-colors">+ Agregar Ítem</button>
+            </div>
+
+            <!-- MATERIALES / INSUMOS (Adaptable) -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                    <i class="fas fa-tools text-gray-500"></i> <span id="materials-title">Materiales</span>
+                </h3>
+                
+                <!-- Inputs Dinámicos Generados por JS -->
+                <div id="materials-grid" class="grid grid-cols-2 gap-3 text-sm">
+                    <!-- Se llena vía Script -->
+                </div>
+            </div>
+
+            <!-- COSTOS Y MARGEN (Privado) -->
+            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="text-xs font-bold text-indigo-900">Mano de Obra (Base)</label>
+                    <div class="flex items-center bg-white border border-indigo-200 rounded px-2">
+                        <span class="text-gray-500 text-xs">$</span>
+                        <input type="number" id="costo-mano-obra" class="input-mobile w-24 text-right p-2 font-bold outline-none text-indigo-900" value="0">
+                    </div>
+                </div>
+                <div class="flex justify-between items-center mb-3">
+                    <label class="text-xs font-bold text-gray-500">Extras / Viático</label>
+                    <div class="flex items-center bg-white border border-gray-300 rounded px-2">
+                        <span class="text-gray-500 text-xs">$</span>
+                        <input type="number" id="costo-adicionales" class="input-mobile w-24 text-right p-2 outline-none" value="0">
+                    </div>
+                </div>
+                <div class="flex justify-between items-center bg-white p-2 rounded border border-gray-300">
+                    <label class="text-xs font-bold text-gray-700">Margen Insumos %</label>
+                    <input type="number" id="margen-ganancia" class="input-mobile w-16 text-center font-bold text-green-600 outline-none border-b border-green-200" value="30">
+                </div>
+            </div>
+
+            <!-- PANEL DE GANANCIAS -->
+            <div class="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 text-white mb-2">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-700 pb-1">Resumen Financiero</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase">Costo Materiales</p>
+                        <p id="live-costo-materiales" class="text-sm font-mono font-bold text-gray-200">$ 0</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase">Total Cliente</p>
+                        <p id="live-venta-neta" class="text-sm font-mono font-bold text-blue-300">$ 0</p>
+                    </div>
+                    <div class="col-span-2 bg-gray-700 p-2 rounded-lg border border-gray-600 mt-1">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-[10px] text-green-400 uppercase font-bold">Ganancia Aprox</p>
+                                <p class="text-[9px] text-gray-400">(Inc. Mano Obra)</p>
+                            </div>
+                            <p id="live-ganancia" class="text-2xl font-mono font-bold text-green-400">$ 0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="h-24"></div>
+        <div class="fixed bottom-0 left-0 right-0 p-4 z-40 bg-gradient-to-t from-white via-white to-transparent">
+            <button id="generate-quote-btn" class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl shadow-2xl text-lg flex items-center justify-center gap-2 hover:bg-black transition-colors">
+                Generar Documento PDF <i class="fas fa-file-pdf"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: DOCUMENTO FINAL (PDF) -->
+    <!-- ========================================== -->
+    <div id="quote-section" class="max-w-4xl mx-auto bg-white p-10 shadow-2xl printable-section hidden">
+        
+        <!-- HEADER PDF -->
+        <header class="flex justify-between items-start pb-6 border-b border-gray-100 mb-8">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 flex-shrink-0">
+                    <svg width="100%" height="100%" viewBox="0 0 50 50" fill="none">
+                        <rect y="10" width="40" height="7" rx="3.5" fill="#4285F4" opacity="0.9"/>
+                        <rect x="5" y="20" width="35" height="7" rx="3.5" fill="#7baaf7" opacity="0.9"/>
+                        <rect x="10" y="30" width="30" height="7" rx="3.5" fill="#acd0fc"/>
+                    </svg>
+                </div>
+                <div class="flex flex-col justify-center">
+                    <span class="text-xl font-bold text-gray-800 leading-none header-logo-font tracking-wide">EASYCOOL</span>
+                    <span class="text-xs text-gray-500 font-normal leading-tight header-logo-font">Climatización</span>
+                </div>
+            </div>
+            <div class="text-right header-contact-font" contenteditable="true">
+                <h1 class="text-lg font-bold text-gray-800 mb-1">EasyCool Climatización</h1>
+                <p class="text-xs text-gray-500 leading-snug">RUT: 77.448.234-2</p>
+                <p class="text-xs text-gray-500 leading-snug">Providencia, Santiago</p>
+                <p class="text-xs text-gray-500 leading-snug">ventas@easycoolclimatizacion.com</p>
+                <p class="text-xs text-gray-500 leading-snug">+569 5777 6174 / +569 4489 4101</p>
+            </div>
+        </header>
+        
+        <!-- INFO CLIENTE PDF -->
+        <div class="bg-gray-50 p-6 rounded-lg mb-8 border border-gray-100 flex justify-between items-start header-contact-font">
+            <div class="w-2/3">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">CLIENTE</p>
+                <p contenteditable="true" class="text-lg font-bold text-gray-900" id="client-name"></p>
+                <p contenteditable="true" class="text-sm text-gray-600 mt-1" id="client-rut"></p>
+                <p contenteditable="true" class="text-sm text-gray-600" id="client-address"></p>
+            </div>
+            <div class="w-1/3 text-right">
+                <p id="pdf-doc-title" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">COTIZACIÓN</p>
+                <p class="text-sm font-bold text-gray-900" id="quote-number"></p>
+                <p class="text-sm text-gray-600" id="current-date"></p>
+            </div>
+        </div>
+
+        <main>
+             <!-- CAJA DIAGNÓSTICO (Solo en Reparación) -->
+             <div id="pdf-diagnostic-box" class="mb-6 p-4 border-l-4 border-amber-500 bg-amber-50 rounded-r-lg hidden">
+                <h4 class="text-xs font-bold text-amber-700 uppercase mb-2">Diagnóstico Técnico</h4>
+                <p id="pdf-diagnostic-text" class="text-sm text-gray-800 whitespace-pre-line italic"></p>
+             </div>
+
+             <!-- TABLA ÍTEMS -->
+             <div class="mb-8">
+                <table class="w-full text-left border-collapse" id="items-table">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="py-3 text-xs font-bold text-gray-500 uppercase tracking-wider pl-2">Descripción</th>
+                            <th class="py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider w-32 pr-2">Total Neto</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-gray-700"></tbody>
+                </table>
+            </div>
+
+            <!-- TOTALES -->
+            <div class="flex justify-end pt-4">
+                <div class="w-1/2 md:w-1/3 space-y-2 text-right">
+                    <div class="flex justify-between text-sm py-1"><span class="text-gray-500">Subtotal Neto:</span><span id="subtotal" class="font-medium text-gray-800" contenteditable="true"></span></div>
+                    <div class="flex justify-between text-sm py-1"><span class="text-gray-500">IVA (19%):</span><span id="iva" class="font-medium text-gray-800" contenteditable="true"></span></div>
+                    <div class="flex justify-between items-center text-xl font-bold text-indigo-900 mt-3 pt-3 border-t-2 border-indigo-100">
+                        <span>TOTAL:</span>
+                        <span id="total" contenteditable="true"></span>
+                    </div>
+                </div>
+            </div>
+
+             <!-- ESPECIFICACIONES TÉCNICAS (Solo en Instalación) -->
+             <div id="tech-specs-section" class="mt-10 bg-blue-50 p-5 rounded-lg border border-blue-100 hidden">
+                <h4 class="text-xs font-bold text-blue-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <i class="fas fa-info-circle"></i> Especificaciones Técnicas
+                </h4>
+                <div id="tech-specs-content" class="text-xs text-blue-900 space-y-1" contenteditable="true"></div>
+            </div>
+
+             <!-- CONDICIONES -->
+             <div class="mt-8 pt-6 border-t border-gray-200">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Condiciones del Servicio</h4>
+                <ul id="pdf-conditions" contenteditable="true" class="text-xs text-gray-500 list-disc list-inside space-y-1 header-contact-font">
+                    <!-- Se llena con JS -->
+                </ul>
+            </div>
+        </main>
+        
+        <!-- FOOTER -->
+        <footer class="text-center mt-12 pt-8 border-t border-gray-100">
+            <div class="mb-4">
+                <p class="text-xs font-bold text-indigo-600 mb-1">¡Síguenos en Instagram para ver nuestros trabajos!</p>
+                <a href="https://instagram.com/easycool_climatizacion" target="_blank" class="text-sm font-bold text-gray-800 flex justify-center items-center gap-2 hover:text-pink-600 transition-colors cursor-pointer" style="text-decoration: none;">
+                    <i class="fab fa-instagram text-pink-600 text-lg"></i> @easycool_climatizacion
+                </a>
+            </div>
+            <p class="text-[10px] text-gray-300 font-bold uppercase tracking-widest mt-4">EasyCool Climatización - Santiago, Chile</p>
+        </footer>
+    </div>
+
+    <!-- ACCIONES PDF BARRA INFERIOR -->
+    <div id="print-action-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 hidden flex gap-3 no-print shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <button id="print-btn" class="flex-1 bg-gray-900 text-white font-bold py-3 rounded-xl shadow flex items-center justify-center gap-2 text-sm">
+            <i class="fas fa-file-pdf text-lg"></i> Imprimir / Guardar
+        </button>
+        <button id="back-to-edit-btn" class="px-6 text-gray-400 text-xs font-bold uppercase tracking-wider">
+            Editar
+        </button>
+    </div>
+
+    <!-- MODAL CONFIGURACIÓN PRECIOS -->
+    <div id="price-editor-modal" class="modal fixed inset-0 z-50 flex items-end justify-center bg-black bg-opacity-60 hidden opacity-0 no-print">
+        <div class="modal-content bg-white w-full rounded-t-2xl p-6 h-[80vh] overflow-y-auto">
+            <div class="flex justify-between border-b pb-3 mb-4"><h3 class="font-bold">Base de Datos de Costos</h3><button id="close-modal-btn" class="text-2xl">&times;</button></div>
+            <div id="modal-prices-grid" class="grid grid-cols-2 gap-3 mb-6"></div>
+            <button id="save-prices-btn" class="w-full bg-gray-900 text-white py-3 rounded-lg font-bold">Guardar Cambios</button>
+        </div>
+    </div>
+
+<script>
+// ==========================================
+// 1. BASES DE DATOS (CONFIGURABLES)
+// ==========================================
+
+// --- MODO INSTALACIÓN (Equipos AC) ---
+const DB_INSTALL = {
+    items: {
+        'hisense-9': { nombre: 'Hisense Hi-Vida 9.000 BTU', costo: 215990, specs: ['Inverter', 'WiFi', 'Filtro HI-NANO'] },
+        'hisense-12': { nombre: 'Hisense Hi-Vida 12.000 BTU', costo: 243990, specs: ['Inverter', 'WiFi', 'Filtro HI-NANO'] },
+        'hisense-18': { nombre: 'Hisense Hi-Vida 18.000 BTU', costo: 353990, specs: ['Inverter', 'WiFi', 'Filtro HI-NANO'] },
+        'hisense-22': { nombre: 'Hisense Hi-Vida 22.000 BTU', costo: 387990, specs: ['Inverter', 'WiFi', 'Filtro HI-NANO'] },
+        'hisense-pro-12': { nombre: 'Hisense Pro X 12.000 (Black)', costo: 255900, specs: ['Premium Black', 'WiFi', 'Ojo Inteligente'] },
+        'daikin-12': { nombre: 'Daikin Sensira 12.000 BTU', costo: 420000, specs: ['Japonés', 'Silencioso', 'Alta Eficiencia'] },
+        'otro': { nombre: 'Otro Equipo (Manual)', costo: 0, specs: [] }
+    },
+    materials: [
+        { id: 'soporte', label: 'Soportes', costo: 7500 },
+        { id: 'canaleta', label: 'Canaleta', costo: 5950 },
+        { id: 'tuberia', label: 'Tubería (m)', costo: 15000 },
+        { id: 'bomba', label: 'Bomba Cond.', costo: 45000 },
+        { id: 'cordon', label: 'Cordón (m)', costo: 920 }
+    ],
+    defaultMO: 120000, // Mano de obra base instalación
+    warranty: "1 año por instalación (fugas, drenaje). Equipos según fabricante."
+};
+
+// --- MODO REPARACIÓN (Servicios y Repuestos) ---
+const DB_REPAIR = {
+    items: {
+        'visita': { nombre: 'Visita Técnica y Diagnóstico', costo: 45000 },
+        'mantencion-m': { nombre: 'Mantención (Split Muro)', costo: 45000 },
+        'mantencion-p': { nombre: 'Mantención (Piso Cielo)', costo: 75000 },
+        'carga-gas': { nombre: 'Carga Refrigerante (Fuga)', costo: 65000 },
+        'capacitor': { nombre: 'Cambio Capacitor', costo: 60000 },
+        'placa': { nombre: 'Cambio Tarjeta Universal', costo: 120000 },
+        'fuga-agua': { nombre: 'Reparación Fuga Agua', costo: 55000 },
+        'otro': { nombre: 'Otro Servicio', costo: 0 }
+    },
+    materials: [
+        { id: 'gas410', label: 'Gas R410A', costo: 55000 },
+        { id: 'gas404', label: 'Gas R404A', costo: 65000 },
+        { id: 'capacitor', label: 'Capacitor', costo: 15000 },
+        { id: 'soldadura', label: 'Soldadura', costo: 4500 },
+        { id: 'nitrogeno', label: 'Nitrógeno', costo: 15000 },
+        { id: 'quimico', label: 'Químico (L)', costo: 8500 }
+    ],
+    defaultMO: 45000, // Mano de obra base reparación
+    warranty: "3 meses sobre la reparación realizada."
+};
+
+// Estado Global
+let APP_MODE = 'install'; // 'install' | 'repair'
+let CURRENT_DB = DB_INSTALL;
+
+// ==========================================
+// 2. LÓGICA DE LA APLICACIÓN
+// ==========================================
+
+// Iniciar App en el modo seleccionado
+function startApp(mode) {
+    APP_MODE = mode;
+    CURRENT_DB = (mode === 'install') ? DB_INSTALL : DB_REPAIR;
+    
+    // UI Update
+    document.getElementById('view-hub').classList.add('hidden');
+    document.getElementById('view-calculator').classList.remove('hidden');
+    
+    // Configurar Iconos y Títulos
+    const icon = document.getElementById('app-icon');
+    const title = document.getElementById('app-mode-title');
+    
+    if (mode === 'install') {
+        icon.className = 'fas fa-snowflake text-blue-500 text-xl';
+        title.textContent = 'Cotizador Instalación';
+        document.getElementById('section-install-tools').classList.remove('hidden');
+        document.getElementById('section-repair-tools').classList.add('hidden');
+        document.getElementById('items-title').textContent = 'Equipos de Aire Acondicionado';
+        document.getElementById('materials-title').textContent = 'Materiales de Instalación';
+    } else {
+        icon.className = 'fas fa-tools text-amber-500 text-xl';
+        title.textContent = 'Modo Reparación';
+        document.getElementById('section-install-tools').classList.add('hidden');
+        document.getElementById('section-repair-tools').classList.remove('hidden');
+        document.getElementById('items-title').textContent = 'Servicios a Realizar';
+        document.getElementById('materials-title').textContent = 'Repuestos e Insumos';
+    }
+
+    // Cargar Mano de Obra por defecto
+    document.getElementById('costo-mano-obra').value = CURRENT_DB.defaultMO;
+
+    // Generar Grilla de Materiales
+    renderMaterialsGrid();
+    
+    // Resetear lista equipos
+    document.getElementById('equipos-container').innerHTML = '';
+    addRow(); 
+}
+
+// Renderizar Grilla de Materiales (Inputs)
+function renderMaterialsGrid() {
+    const grid = document.getElementById('materials-grid');
+    grid.innerHTML = '';
+    CURRENT_DB.materials.forEach(mat => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+            <label class="block text-xs text-gray-500 mb-1">${mat.label}</label>
+            <input type="number" id="qty-${mat.id}" data-cost="${mat.costo}" class="material-qty input-mobile border border-gray-300 rounded p-2 w-full text-center font-semibold" value="0">
+        `;
+        grid.appendChild(div);
+    });
+    
+    // Agregar listeners a los nuevos inputs
+    document.querySelectorAll('.material-qty').forEach(i => i.addEventListener('input', calculateFinances));
+}
+
+// Agregar Fila de Equipo/Servicio
+function addRow() {
+    const container = document.getElementById('equipos-container');
+    const div = document.createElement('div');
+    div.className = 'equipo-item flex gap-2 items-center bg-gray-50 p-2 rounded-lg border border-gray-100';
+    
+    const options = Object.keys(CURRENT_DB.items).map(k => 
+        `<option value="${k}">${CURRENT_DB.items[k].nombre}</option>`
+    ).join('');
+
+    div.innerHTML = `
+        <select class="eq-sel border border-gray-300 rounded p-2 text-sm flex-1 bg-white outline-none">${options}</select>
+        <input type="number" class="eq-qty border border-gray-300 rounded p-2 text-sm w-12 text-center bg-white outline-none" value="1">
+        <input type="number" class="eq-cost hidden" placeholder="$$">
+        <button class="rm-btn text-red-400 px-2 font-bold hover:text-red-600">&times;</button>
+    `;
+    container.appendChild(div);
+
+    const sel = div.querySelector('.eq-sel');
+    const costInput = div.querySelector('.eq-cost');
+
+    const updateRow = () => {
+        const itemData = CURRENT_DB.items[sel.value];
+        if (sel.value === 'otro') {
+            costInput.classList.remove('hidden');
+            costInput.className = "eq-cost border border-gray-300 rounded p-2 text-sm w-24 text-right bg-white outline-none";
+        } else {
+            costInput.classList.add('hidden');
+            costInput.value = itemData.costo;
+        }
+        calculateFinances();
+    };
+
+    sel.addEventListener('change', updateRow);
+    div.querySelector('.rm-btn').addEventListener('click', () => { 
+        if(container.children.length > 1) div.remove(); 
+        calculateFinances(); 
+    });
+    div.querySelector('.eq-qty').addEventListener('input', calculateFinances);
+    if(costInput) costInput.addEventListener('input', calculateFinances);
+
+    updateRow(); // Init
+}
+
+// Calculadora Financiera Central
+function calculateFinances() {
+    let totalItemsCosto = 0; // Costo base de los items principales (equipos o servicios)
+    
+    // 1. Sumar Equipos/Servicios
+    document.querySelectorAll('.equipo-item').forEach(row => {
+        const k = row.querySelector('.eq-sel').value;
+        const q = parseFloat(row.querySelector('.eq-qty').value) || 0;
+        let c = 0;
+        
+        if (k === 'otro') {
+            c = parseFloat(row.querySelector('.eq-cost').value) || 0;
+        } else {
+            c = CURRENT_DB.items[k].costo;
+        }
+        totalItemsCosto += (q * c);
+    });
+
+    // 2. Sumar Materiales
+    let totalMaterialesCosto = 0;
+    document.querySelectorAll('.material-qty').forEach(input => {
+        const qty = parseFloat(input.value) || 0;
+        const cost = parseFloat(input.dataset.cost) || 0;
+        totalMaterialesCosto += (qty * cost);
+    });
+
+    // 3. Márgenes y Totales
+    const margen = (parseFloat(document.getElementById('margen-ganancia').value) || 0) / 100;
+    
+    // En instalación: Materiales se venden con margen. Equipos suelen tener margen menor o incluido, aquí simplificamos aplicando margen a todo lo "físico".
+    // En reparación: Repuestos se venden con margen. Servicios son mano de obra pura.
+    
+    // Lógica simplificada unificada:
+    // Venta Neta = (Costo Items + Costo Materiales) * (1 + Margen) + Mano de Obra + Extras
+    
+    // Ajuste fino: En reparación, los "Servicios" (ej: Visita) ya son precio venta público, no costo.
+    // En instalación, los "Equipos" suelen ser precio costo para luego marginar.
+    
+    let ventaNeta = 0;
+    
+    if (APP_MODE === 'install') {
+        // Instalación: Todo es costo base y se margina
+        ventaNeta = (totalItemsCosto + totalMaterialesCosto) * (1 + margen);
+    } else {
+        // Reparación: Servicios son Precio Final. Materiales son Costo y se marginan.
+        const ventaMateriales = totalMaterialesCosto * (1 + margen);
+        ventaNeta = totalItemsCosto + ventaMateriales;
+    }
+
+    const mo = parseFloat(document.getElementById('costo-mano-obra').value) || 0;
+    const extras = parseFloat(document.getElementById('costo-adicionales').value) || 0;
+    
+    // Si estamos en instalación, la MO se suma aparte.
+    // Si estamos en reparación, la MO suele estar en el servicio, PERO aquí dejamos un campo MO extra por si acaso.
+    
+    const netoFinal = ventaNeta + (APP_MODE === 'install' ? mo : 0) + extras; 
+    // Nota: En reparación asumimos que si cobras "Cambio de Capacitor" (60k), eso ya incluye MO.
+    // El campo "Mano de Obra" en reparación sería para cobros extra.
+    
+    const iva = netoFinal * 0.19;
+    const total = netoFinal + iva;
+    
+    // Ganancia
+    const ganancia = netoFinal - (totalItemsCosto + totalMaterialesCosto);
+
+    // Render en Pantalla
+    document.getElementById('live-costo-materiales').textContent = "$ " + Math.round(totalItemsCosto + totalMaterialesCosto).toLocaleString('es-CL');
+    document.getElementById('live-venta-neta').textContent = "$ " + Math.round(netoFinal).toLocaleString('es-CL');
+    document.getElementById('live-ganancia').textContent = "$ " + Math.round(ganancia).toLocaleString('es-CL');
+
+    return { netoFinal, iva, total, totalMaterialesCosto };
+}
+
+// Generar PDF
+document.getElementById('generate-quote-btn').addEventListener('click', () => {
+    // Validar Nombre
+    const name = document.getElementById('calc-client-name').value;
+    if(!name) return document.getElementById('calc-client-name').focus();
+
+    // Pasar datos al PDF
+    document.getElementById('client-name').textContent = name;
+    document.getElementById('client-rut').textContent = document.getElementById('calc-client-rut').value;
+    document.getElementById('client-address').textContent = document.getElementById('calc-client-address').value;
+    
+    const dateStr = new Date().toLocaleDateString('es-CL');
+    const quoteID = `EC-${new Date().getFullYear()}-${Math.floor(Math.random()*9000)+1000}`;
+    document.getElementById('quote-number').textContent = quoteID;
+    document.getElementById('current-date').textContent = dateStr;
+
+    // Título Documento
+    document.getElementById('pdf-doc-title').textContent = (APP_MODE === 'install') ? "COTIZACIÓN" : "INFORME TÉCNICO";
+
+    // Diagnóstico (Solo Reparación)
+    if (APP_MODE === 'repair') {
+        const diag = document.getElementById('calc-diagnostico').value;
+        if(diag) {
+            document.getElementById('pdf-diagnostic-text').textContent = diag;
+            document.getElementById('pdf-diagnostic-box').classList.remove('hidden');
+        } else {
+            document.getElementById('pdf-diagnostic-box').classList.add('hidden');
+        }
+        document.getElementById('tech-specs-section').classList.add('hidden');
+    } else {
+        document.getElementById('pdf-diagnostic-box').classList.add('hidden');
+        document.getElementById('tech-specs-section').classList.remove('hidden');
+    }
+
+    // Llenar Tabla Ítems
+    const tbody = document.querySelector('#items-table tbody');
+    tbody.innerHTML = '';
+    
+    // 1. Equipos / Servicios
+    let specsSet = new Set();
+    document.querySelectorAll('.equipo-item').forEach(row => {
+        const k = row.querySelector('.eq-sel').value;
+        const q = row.querySelector('.eq-qty').value;
+        
+        let nombre = "", precioUni = 0;
+        
+        if (k === 'otro') {
+            nombre = "Ítem Adicional";
+            precioUni = parseFloat(row.querySelector('.eq-cost').value) || 0;
+        } else {
+            const itemData = CURRENT_DB.items[k];
+            nombre = itemData.nombre;
+            // Precio en PDF:
+            // Install: Precio Costo * Margen (Aprox) -> Para simplificar visualmente en PDF mostramos un global
+            // Repair: Precio Lista
+            precioUni = itemData.costo; 
+            if(itemData.specs) itemData.specs.forEach(s => specsSet.add(`<b>${nombre}:</b> ${s}`));
+        }
+
+        // En modo Install, el precio unitario visual puede ser confuso por el margen global.
+        // Vamos a calcular el total visual basado en la lógica de finanzas.
+    });
+
+    // ESTRATEGIA VISUAL TABLA PDF:
+    // Para no complicar con márgenes por línea, vamos a mostrar líneas resumen.
+    
+    const fin = calculateFinances();
+    const margen = (parseFloat(document.getElementById('margen-ganancia').value) || 0) / 100;
+    
+    // Fila 1: Equipos / Servicios Principales
+    let mainDesc = "";
+    document.querySelectorAll('.equipo-item').forEach(row => {
+        const k = row.querySelector('.eq-sel').value;
+        const q = row.querySelector('.eq-qty').value;
+        const n = (k==='otro') ? "Adicional" : CURRENT_DB.items[k].nombre;
+        mainDesc += `${q}x ${n}<br>`;
+    });
+
+    if (APP_MODE === 'install') {
+        // En instalación agrupamos "Suministro de Equipos y Materiales"
+        tbody.innerHTML += `
+        <tr>
+            <td class="py-3 pl-2 border-b align-top">
+                <p class="font-bold text-gray-800">Suministro de Equipos y Materiales</p>
+                <p class="text-xs text-gray-500 mt-1 pl-2 border-l-2 border-blue-100">
+                    ${mainDesc} + Kit de Instalación (Soportes, Tuberías, Aislación)
+                </p>
+            </td>
+            <td class="py-3 pr-2 text-right align-top font-semibold text-gray-700">
+                 $ ${Math.round(fin.netoFinal - parseFloat(document.getElementById('costo-mano-obra').value) - parseFloat(document.getElementById('costo-adicionales').value)).toLocaleString('es-CL')}
+            </td>
+        </tr>
+        <tr>
+            <td class="py-3 pl-2 border-b"><p class="font-bold text-gray-800">Servicio de Instalación</p></td>
+            <td class="py-3 pr-2 text-right font-semibold text-gray-700">$ ${Math.round(parseFloat(document.getElementById('costo-mano-obra').value)).toLocaleString('es-CL')}</td>
+        </tr>
+        `;
+        
+        // Specs
+        const specsDiv = document.getElementById('tech-specs-content');
+        specsDiv.innerHTML = Array.from(specsSet).map(s => `<p>${s}</p>`).join('');
+
+    } else {
+        // En reparación desglosamos más
+        tbody.innerHTML += `
+        <tr>
+            <td class="py-3 pl-2 border-b align-top">
+                <p class="font-bold text-gray-800">Servicios / Reparaciones</p>
+                <p class="text-xs text-gray-500 mt-1">${mainDesc}</p>
+            </td>
+            <td class="py-3 pr-2 text-right align-top font-semibold text-gray-700">
+                 $ ${Math.round(fin.netoFinal - fin.totalMaterialesCosto*(1+margen)).toLocaleString('es-CL')} 
+            </td>
+        </tr>`;
+        
+        if (fin.totalMaterialesCosto > 0) {
+            tbody.innerHTML += `
+            <tr>
+                <td class="py-3 pl-2 border-b align-top">
+                    <p class="font-bold text-gray-800">Insumos y Repuestos</p>
+                    <p class="text-xs text-gray-500">Gases, repuestos electrónicos o consumibles.</p>
+                </td>
+                <td class="py-3 pr-2 text-right align-top font-semibold text-gray-700">
+                     $ ${Math.round(fin.totalMaterialesCosto * (1+margen)).toLocaleString('es-CL')}
+                </td>
+            </tr>`;
+        }
+    }
+
+    // Totales Finales
+    document.getElementById('subtotal').textContent = "$ " + Math.round(fin.netoFinal).toLocaleString('es-CL');
+    document.getElementById('iva').textContent = "$ " + Math.round(fin.iva).toLocaleString('es-CL');
+    document.getElementById('total').textContent = "$ " + Math.round(fin.total).toLocaleString('es-CL');
+
+    // Condiciones
+    const condList = document.getElementById('pdf-conditions');
+    condList.innerHTML = `
+        <li><strong>Forma de Pago:</strong> 50% al aprobar, 50% al finalizar.</li>
+        <li><strong>Garantía:</strong> ${CURRENT_DB.warranty}</li>
+        <li><strong>Validez:</strong> 10 días hábiles.</li>
+    `;
+
+    // Cambiar Vista
+    document.getElementById('view-calculator').classList.add('hidden');
+    document.getElementById('quote-section').classList.remove('hidden');
+    document.getElementById('print-action-bar').classList.remove('hidden');
+    window.scrollTo(0,0);
+});
+
+// Botones Volver / Imprimir
+document.getElementById('back-to-edit-btn').addEventListener('click', () => {
+    document.getElementById('view-calculator').classList.remove('hidden');
+    document.getElementById('quote-section').classList.add('hidden');
+    document.getElementById('print-action-bar').classList.add('hidden');
+});
+document.getElementById('print-btn').addEventListener('click', () => window.print());
+
+// Modal Precios
+const modal = document.getElementById('price-editor-modal');
+document.getElementById('open-price-editor-btn').addEventListener('click', () => {
+    modal.classList.remove('hidden', 'opacity-0');
+    modal.querySelector('.modal-content').classList.remove('translate-y-full');
+    
+    // Generar inputs precios
+    const grid = document.getElementById('modal-prices-grid');
+    grid.innerHTML = '';
+    
+    // Materiales actuales
+    CURRENT_DB.materials.forEach(mat => {
+        grid.innerHTML += `
+            <div>
+                <label class="text-xs text-gray-500">${mat.label}</label>
+                <input type="number" id="modal-cost-${mat.id}" value="${mat.costo}" class="border w-full text-right p-1 rounded">
+            </div>
+        `;
+    });
+});
+document.getElementById('close-modal-btn').addEventListener('click', () => {
+    modal.classList.add('hidden', 'opacity-0');
+    modal.querySelector('.modal-content').classList.add('translate-y-full');
+});
+document.getElementById('save-prices-btn').addEventListener('click', () => {
+    // Guardar precios en memoria
+    CURRENT_DB.materials.forEach(mat => {
+        const val = parseFloat(document.getElementById(`modal-cost-${mat.id}`).value) || 0;
+        mat.costo = val;
+    });
+    // Re-render
+    renderMaterialsGrid();
+    calculateFinances();
+    modal.classList.add('hidden', 'opacity-0');
+});
+
+// Event Listeners Globales
+document.getElementById('add-equipo-btn').addEventListener('click', addRow);
+document.getElementById('calculate-btu-btn').addEventListener('click', () => {
+    const w = parseFloat(document.getElementById('ancho-mts').value)||0;
+    const l = parseFloat(document.getElementById('largo-mts').value)||0;
+    const btu = Math.ceil((w*l*600)/1000)*1000 + 3000; // Formula simple
+    document.getElementById('btu-result').textContent = `Sugerido: ${btu} BTU`;
+});
+document.querySelectorAll('input').forEach(i => i.addEventListener('input', calculateFinances));
+
+</script>
+</body>
+</html>
