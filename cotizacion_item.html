@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotización - EasyCool Climatización</title>
+    <!-- Icono genérico para la PWA (base64) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❄️</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            -webkit-print-color-adjust: exact;
+        }
+        
+        /* --- ESTILOS DE IMPRESIÓN (CARTA CHILE) --- */
+        @media print {
+            @page { 
+                size: letter; 
+                margin: 1cm; 
+            }
+
+            body { 
+                background-color: white;
+                font-size: 11px;
+            }
+
+            .no-print { display: none !important; }
+            
+            #cotizacion-container {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+
+            /* Inputs transparentes al imprimir */
+            input, textarea { 
+                border: none !important; 
+                background-color: transparent !important;
+                padding: 0 !important;
+                resize: none;
+                font-family: 'Inter', sans-serif;
+            }
+            input::placeholder, textarea::placeholder { color: transparent; }
+            
+            /* Colores forzados para impresión */
+            .bg-blue-600 { background-color: #2563eb !important; color: white !important; }
+            .bg-gray-50 { background-color: #f9fafb !important; }
+            .bg-yellow-50 { background-color: #fefce8 !important; border: 1px solid #fef08a !important; }
+            .border-gray-200 { border-color: #e5e7eb !important; }
+            
+            /* Forzar enlaces visibles */
+            a { text-decoration: none !important; color: #2563eb !important; }
+        }
+
+        /* Estilos de Inputs en pantalla */
+        input, textarea {
+            border: 1px solid #D1D5DB;
+            padding: 6px 8px;
+            border-radius: 4px;
+            width: 100%;
+            background-color: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem; /* text-sm */
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #3B82F6;
+            ring: 2px solid #93C5FD;
+        }
+        
+        /* Clase para totales (Solo lectura, aspecto limpio) */
+        .input-readonly-clean {
+            background-color: transparent !important;
+            border-color: transparent !important;
+            padding-right: 0 !important;
+            text-align: right;
+            font-weight: 600;
+            cursor: default;
+        }
+        
+        /* Inputs header "silenciosos" */
+        .input-silent {
+            background: transparent;
+            border: 1px solid transparent;
+            text-align: center;
+        }
+        .input-silent:hover { border-color: #e5e7eb; }
+        .input-silent:focus { background: white; border-color: #3B82F6; }
+    </style>
+</head>
+<body class="p-4 sm:p-8 min-h-screen flex flex-col items-center">
+
+    <!-- CONTENEDOR PRINCIPAL (Hoja Carta) -->
+    <div class="w-full max-w-[21.59cm] bg-white p-8 sm:p-10 rounded-xl shadow-2xl min-h-[27.94cm] flex flex-col justify-between relative" id="cotizacion-container">
+        
+        <!-- CONTENIDO SUPERIOR -->
+        <div>
+            <!-- ENCABEZADO (Idéntico al Informe Técnico) -->
+            <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-6">
+                <div class="w-2/3">
+                    <svg viewBox="0 0 250 50" class="h-12 w-auto mb-2"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
+                    <div class="text-[10px] text-gray-500 leading-tight">
+                        <p class="font-bold text-gray-700">EasyCool Climatización</p>
+                        <p>RUT: 77.448.234-2</p>
+                        <p>Providencia, Santiago</p>
+                        <p>📞 +569 5777 6174 | ✉️ ventas@easycoolclimatizacion.com</p>
+                    </div>
+                </div>
+                <div class="w-1/3 text-right">
+                    <h1 class="text-xl font-bold text-gray-800 uppercase">COTIZACIÓN</h1>
+                    <div class="mt-2 flex flex-col items-end gap-1">
+                        <div class="flex items-center justify-end gap-1">
+                            <span class="text-xs font-bold text-gray-500">N°</span>
+                            <!-- Input Editable pero con lógica automática -->
+                            <input type="text" id="cotizacion_n" class="w-24 text-right text-sm font-bold text-red-600 border border-red-200 bg-red-50 rounded px-1 input-silent" title="Se puede editar manualmente si es necesario">
+                        </div>
+                        <div class="flex items-center justify-end gap-1">
+                            <span class="text-xs text-gray-500">Fecha:</span>
+                            <input type="date" id="fecha" class="w-28 text-right text-xs text-gray-600 border-none bg-transparent p-0">
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- DATOS CLIENTE & CONDICIONES -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <!-- Cliente -->
+                <div>
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Cliente</h3>
+                    <div class="space-y-1">
+                        <input type="text" id="cliente" placeholder="Nombre / Razón Social" class="font-bold text-gray-800 bg-transparent border-none p-0 text-sm focus:bg-white focus:border focus:p-1">
+                        <input type="text" id="rut_cliente" placeholder="RUT Cliente" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
+                        <input type="text" id="direccion" placeholder="Dirección del Proyecto" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
+                    </div>
+                </div>
+                <!-- Condiciones -->
+                <div>
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Condiciones Comerciales</h3>
+                    <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs items-center">
+                        <label class="text-gray-500 font-medium">Validez:</label>
+                        <input type="text" value="10 días hábiles" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
+                        
+                        <label class="text-gray-500 font-medium">Pago:</label>
+                        <input type="text" value="50% Anticipo / 50% Término" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
+                        
+                        <label class="text-gray-500 font-medium">Plazo:</label>
+                        <input type="text" placeholder="A convenir" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
+                    </div>
+                </div>
+            </section>
+
+            <!-- TABLA DE ÍTEMS -->
+            <section class="mb-6">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-blue-600 text-white text-[10px] uppercase font-bold tracking-wider">
+                            <th class="p-2 w-12 text-center rounded-tl">Cant.</th>
+                            <th class="p-2">Descripción del Servicio / Producto</th>
+                            <th class="p-2 w-24 text-right">P. Unitario</th>
+                            <th class="p-2 w-24 text-right rounded-tr">Total Neto</th>
+                            <th class="p-2 w-6 no-print bg-white"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-body" class="text-xs text-gray-700">
+                        <!-- Filas dinámicas -->
+                    </tbody>
+                </table>
+                <button id="addRow" class="mt-3 flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold text-xs no-print transition-colors px-2 py-1 rounded hover:bg-blue-50">
+                    <span class="text-lg">+</span> Agregar Ítem
+                </button>
+            </section>
+            
+            <!-- TOTALES Y NOTAS -->
+            <section class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2">
+                <!-- Notas (Izquierda) -->
+                <div class="md:col-span-7">
+                    <div class="bg-yellow-50 p-3 rounded border border-yellow-100 h-full">
+                        <h4 class="font-bold text-[10px] text-gray-600 mb-1 uppercase">Observaciones Técnicas</h4>
+                        <textarea class="w-full h-20 text-xs bg-transparent border-none p-0 text-gray-700 resize-none focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Cálculos (Derecha) -->
+                <div class="md:col-span-5">
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200">
+                        <div class="space-y-1 text-xs">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Subtotal Neto:</span>
+                                <span id="subtotal" class="font-mono font-medium">$0</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 items-center">
+                                <span>Descuento (-):</span>
+                                <div class="flex items-center gap-1 w-20 justify-end">
+                                    <input type="number" id="descuento" class="w-full text-right font-mono bg-white border border-gray-300 rounded px-1 py-0.5 text-xs focus:ring-1 focus:ring-blue-500" placeholder="0" min="0">
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>IVA (19%):</span>
+                                <span id="iva" class="font-mono font-medium">$0</span>
+                            </div>
+                            <div class="flex justify-between border-t border-gray-300 pt-2 mt-2">
+                                <span class="font-bold text-sm text-gray-800">TOTAL A PAGAR:</span>
+                                <span id="total" class="font-bold text-sm text-blue-600 font-mono">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- PIE DE PÁGINA (Idéntico al Informe Técnico) -->
+        <footer class="mt-8 pt-4 border-t-2 border-gray-200 text-center">
+            <div class="flex flex-col items-center gap-2 mb-2">
+                <p class="text-[10px] font-bold text-gray-600">Síguenos en nuestras redes:</p>
+                <a href="https://www.instagram.com/easycoolclimatizacion" target="_blank" class="text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline">
+                    📸 Instagram: @easycoolclimatizacion
+                </a>
+                <div class="bg-yellow-50 border border-yellow-200 rounded px-3 py-1 w-full max-w-xs text-center">
+                    <p class="text-[9px] font-bold text-gray-700">Tu opinión nos ayuda a seguir creciendo</p>
+                    <a href="https://g.page/r/Ccgzu2uxiaSiEBI/review" target="_blank" class="text-[10px] font-bold text-blue-700 hover:underline">
+                        ⭐⭐⭐⭐⭐ ¡Califícanos en Google!
+                    </a>
+                </div>
+            </div>
+            <p class="text-[8px] text-gray-400 mt-2">EasyCool Climatización - Documento generado digitalmente.</p>
+        </footer>
+
+    </div>
+
+    <!-- BOTÓN DE IMPRESIÓN FLOTANTE -->
+    <div class="fixed bottom-6 right-6 no-print z-50">
+        <button onclick="printCotizacion()" class="bg-gray-900 hover:bg-black text-white font-bold py-3 px-5 rounded-full shadow-xl flex items-center gap-2 transition-all transform hover:scale-105 border-2 border-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
+            Imprimir PDF
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- LÓGICA DE FOLIO AUTOMÁTICO INTELIGENTE ---
+            const folioInput = document.getElementById('cotizacion_n');
+            const currentYear = new Date().getFullYear();
+            
+            // Recuperar último estado guardado
+            const lastYear = localStorage.getItem('easycool_cot_year');
+            let nextNum = parseInt(localStorage.getItem('easycool_cot_num') || '1');
+
+            // Si cambiamos de año, reiniciar contador a 1
+            if (lastYear && parseInt(lastYear) !== currentYear) {
+                nextNum = 1;
+            }
+
+            // Formatear número (ej: 1 -> 01)
+            const formattedNum = nextNum.toString().padStart(2, '0');
+            const newFolio = `${currentYear}-${formattedNum}`;
+            
+            // Asignar al input
+            folioInput.value = newFolio;
+
+            // Guardar el año actual para futuras comprobaciones
+            localStorage.setItem('easycool_cot_year', currentYear);
+
+            // --- FIN LÓGICA FOLIO ---
+
+            const itemsBody = document.getElementById('items-body');
+            const addRowBtn = document.getElementById('addRow');
+            const discountInput = document.getElementById('descuento');
+            
+            const formatCurrency = (value) => {
+                return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+            };
+
+            const parseCurrency = (str) => {
+                return parseFloat(str.replace(/[^0-9-]/g, '')) || 0;
+            };
+
+            const calculateTotals = () => {
+                let subtotal = 0;
+                const rows = itemsBody.querySelectorAll('tr');
+
+                rows.forEach(row => {
+                    const qtyInput = row.querySelector('.qty');
+                    const priceInput = row.querySelector('.price');
+                    const totalInput = row.querySelector('.total-neto');
+
+                    if(qtyInput && priceInput) {
+                        const qty = parseFloat(qtyInput.value) || 0;
+                        const price = parseFloat(priceInput.value) || 0;
+                        const rowTotal = qty * price;
+                        
+                        if(totalInput) totalInput.value = formatCurrency(rowTotal);
+                        subtotal += rowTotal;
+                    }
+                });
+
+                const discount = parseFloat(discountInput.value) || 0;
+                const taxableAmount = Math.max(0, subtotal - discount); 
+                const iva = taxableAmount * 0.19;
+                const total = taxableAmount + iva;
+
+                document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+                document.getElementById('iva').textContent = formatCurrency(iva);
+                document.getElementById('total').textContent = formatCurrency(total);
+            };
+
+            const createRow = () => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors group align-top';
+                
+                row.innerHTML = `
+                    <td class="p-2 align-top"><input type="number" class="qty w-full text-center font-bold text-gray-700 bg-transparent focus:bg-white border-transparent focus:border-blue-300 rounded p-1" value="1" min="1" oninput="this.value = Math.abs(this.value)"></td>
+                    <td class="p-2 align-top"><textarea class="w-full bg-transparent resize-y overflow-hidden border-transparent focus:bg-white focus:border-blue-300 rounded p-1" rows="1" placeholder="Descripción..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></td>
+                    <td class="p-2 align-top"><input type="number" class="price w-full text-right bg-transparent border-transparent focus:bg-white focus:border-blue-300 rounded p-1" placeholder="0" min="0"></td>
+                    <td class="p-2 align-top"><input type="text" class="total-neto input-readonly-clean w-full text-right font-mono text-gray-700 font-bold bg-transparent border-none" value="$0" readonly tabindex="-1"></td>
+                    <td class="p-2 align-top text-center no-print pt-2">
+                        <button class="delete-row text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </td>
+                `;
+                itemsBody.appendChild(row);
+                
+                const inputs = row.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    input.addEventListener('input', calculateTotals);
+                });
+            };
+
+            // Event Listeners
+            discountInput.addEventListener('input', calculateTotals);
+
+            itemsBody.addEventListener('click', (e) => {
+                if (e.target.closest('.delete-row')) {
+                    const row = e.target.closest('tr');
+                    if (itemsBody.children.length > 1) {
+                        row.remove();
+                    } else {
+                        row.querySelector('.qty').value = 1;
+                        row.querySelector('textarea').value = '';
+                        row.querySelector('.price').value = '';
+                    }
+                    calculateTotals();
+                }
+            });
+
+            addRowBtn.addEventListener('click', createRow);
+
+            // Inicialización
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('fecha').value = today;
+            
+            // Fila inicial única (CAMBIO SOLICITADO)
+            createRow();
+            calculateTotals();
+        });
+
+        // Función de Impresión con nombre dinámico y actualización de folio
+        function printCotizacion() {
+            const numeroInput = document.getElementById('cotizacion_n');
+            const cliente = document.getElementById('cliente').value || 'Cliente';
+            const safeCliente = cliente.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim();
+            
+            const originalTitle = document.title;
+            // CAMBIO: Nombre del archivo PDF formateado como solicitado
+            document.title = `cotización Nº${numeroInput.value} - ${safeCliente}`;
+            
+            setTimeout(() => {
+                window.print();
+                
+                // --- ACTUALIZAR CONTADOR PARA LA PRÓXIMA ---
+                // Solo incrementamos si se imprimió correctamente
+                // Extraemos el número actual del input (ej: "2025-01" -> 1)
+                const parts = numeroInput.value.split('-');
+                if(parts.length === 2) {
+                    const currentNum = parseInt(parts[1]);
+                    if (!isNaN(currentNum)) {
+                        // Guardamos el SIGUIENTE número (actual + 1)
+                        localStorage.setItem('easycool_cot_num', currentNum + 1);
+                    }
+                }
+                
+                setTimeout(() => { document.title = originalTitle; }, 500);
+            }, 100);
+        }
+    </script>
+</body>
+</html>
