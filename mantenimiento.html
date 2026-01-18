@@ -1,0 +1,530 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- === NÚCLEO PWA === -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-title" content="EasyCool Mantención">
+    <!-- Icono genérico para la PWA (base64) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❄️</text></svg>">
+
+    <title>EasyCool - Informe Multi-Equipo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
+        
+        /* Edición Visual */
+        [contenteditable="true"]:hover { outline: 2px dashed #a5b4fc; cursor: text; }
+        [contenteditable="true"]:focus { outline: 2px solid #6366f1; background-color: #eef2ff; }
+        
+        canvas.signature-pad { background-color: #fff; border-bottom: 2px solid #000; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
+        .file-label { font-size: 0.75rem; color: #4b5563; margin-bottom: 0.25rem; display: block; font-weight: 600; }
+        .equipment-card { border-left: 4px solid #3b82f6; transition: all 0.3s ease; }
+        
+        /* Animaciones IA */
+        .ai-loading { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; opacity: 0.7; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+        /* === ESTILOS DE IMPRESIÓN PROFESIONAL (Carta Chile) === */
+        @media print {
+            /* Tamaño Carta (Letter): 21.59cm x 27.94cm */
+            @page { size: letter; margin: 1cm; }
+            
+            body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 11px; }
+            .no-print { display: none !important; }
+            .printable-section { 
+                display: block !important; 
+                width: 100% !important; 
+                max-width: 100% !important; 
+                box-shadow: none !important; 
+                border: none !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+            }
+            .page-break-inside-avoid { page-break-inside: avoid; }
+            .equipment-section { 
+                page-break-inside: avoid; 
+                border: 1px solid #e5e7eb;
+                margin-bottom: 20px; 
+                border-radius: 6px;
+                overflow: hidden;
+            }
+            /* Ajustes de texto para impresión */
+            h1 { font-size: 18px !important; }
+            h2 { font-size: 14px !important; }
+            p, td, th { font-size: 10px !important; }
+            .bg-blue-600 { background-color: #2563eb !important; color: white !important; }
+            .bg-gray-100 { background-color: #f3f4f6 !important; }
+            .bg-blue-50 { background-color: #eff6ff !important; }
+            .bg-green-100 { background-color: #dcfce7 !important; border: 1px solid #bbf7d0 !important; }
+            .bg-yellow-50 { background-color: #fefce8 !important; border: 1px solid #fef08a !important; }
+            
+            /* Forzar visualización de enlaces en PDF */
+            a { text-decoration: none !important; color: #2563eb !important; }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <!-- =========== PANTALLA 1: FORMULARIO =========== -->
+    <div id="form-section">
+        <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-2xl mb-8 no-print">
+            
+            <!-- CABECERA OFICIAL (LOGO ORIGINAL) -->
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <div>
+                    <!-- LOGO RESTAURADO -->
+                    <svg viewBox="0 0 250 50" class="h-12 w-auto"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-400" id="current-date-display">25-11-2025</p>
+                    <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10 mt-1">✨ AI Powered</span>
+                </div>
+            </div>
+            
+            <!-- DATOS CLIENTE -->
+            <div class="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h3 class="text-sm font-bold text-gray-700 uppercase mb-3 border-b pb-1">Datos del Cliente</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input id="gen-cliente-nombre" type="text" placeholder="Nombre Completo" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm">
+                    <input id="gen-cliente-rut" type="text" placeholder="RUT" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm">
+                    <input id="gen-cliente-direccion" type="text" placeholder="Dirección" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm md:col-span-2">
+                </div>
+            </div>
+
+            <!-- CONTENEDOR DE EQUIPOS -->
+            <div id="equipments-container">
+                <!-- Los equipos se agregan aquí dinámicamente -->
+            </div>
+
+            <!-- BOTONES ACCIÓN -->
+            <button onclick="addEquipmentForm()" class="w-full py-3 border-2 border-dashed border-blue-300 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors mb-8 flex justify-center items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                AGREGAR OTRO EQUIPO
+            </button>
+            
+            <button onclick="generateReport()" class="w-full bg-gray-900 text-white font-bold py-4 px-6 rounded-lg hover:bg-black transition-colors shadow-lg flex items-center justify-center gap-2">
+                <span>📄</span> GENERAR INFORME CONSOLIDADO
+            </button>
+
+            <div class="mt-8 text-center pt-6 border-t">
+                <button onclick="downloadApp()" class="text-xs text-blue-500 underline">📥 Descargar App</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========== PANTALLA 2: INFORME FINAL (CARTA) =========== -->
+    <!-- max-w ajustado para carta aprox 21.6cm -->
+    <div id="report-section" class="max-w-[21.5cm] mx-auto bg-white p-8 shadow-2xl printable-section hidden min-h-[27.9cm] relative flex flex-col justify-between">
+        
+        <!-- WRAPPER PARA CONTENIDO PRINCIPAL -->
+        <div>
+            <!-- HEADER INFORME (COMPLETO) -->
+            <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-6">
+                <div class="w-2/3">
+                    <svg viewBox="0 0 250 50" class="h-12 w-auto mb-2"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
+                    <div class="text-[10px] text-gray-500 leading-tight">
+                        <p class="font-bold text-gray-700">EasyCool Climatización</p>
+                        <p>RUT: 77.448.234-2</p>
+                        <p>Providencia, Santiago</p>
+                        <p>📞 +569 5777 6174 | ✉️ ventas@easycoolclimatizacion.com</p>
+                    </div>
+                </div>
+                <div class="w-1/3 text-right">
+                    <h1 class="text-xl font-bold text-gray-800 uppercase">INFORME TÉCNICO</h1>
+                    <div class="mt-1">
+                        <p id="rep-fecha" class="text-xs text-gray-600 mb-1">25-11-2025</p>
+                        <p id="rep-folio-numero" class="text-sm font-bold text-red-600 border border-red-200 bg-red-50 px-2 py-1 inline-block rounded">Folio: #2100</p>
+                    </div>
+                </div>
+            </header>
+
+            <main>
+                <!-- DATOS CLIENTE -->
+                <section class="mb-6 bg-gray-50 border border-gray-200 rounded p-3 flex justify-between items-center">
+                    <div class="w-1/2 border-r border-gray-300 pr-4">
+                        <span class="text-[10px] font-bold text-gray-500 uppercase block">Cliente</span>
+                        <p id="rep-cliente-nombre" contenteditable="true" class="text-sm font-bold text-gray-900 leading-tight"></p>
+                        <p id="rep-cliente-rut" contenteditable="true" class="text-xs text-gray-600"></p>
+                    </div>
+                    <div class="w-1/2 pl-4">
+                        <span class="text-[10px] font-bold text-gray-500 uppercase block">Dirección</span>
+                        <p id="rep-cliente-direccion" contenteditable="true" class="text-xs text-gray-700 leading-tight"></p>
+                    </div>
+                </section>
+
+                <!-- EQUIPOS -->
+                <div id="report-equipments-container" class="space-y-6"></div>
+
+                <!-- FIRMAS -->
+                <div class="grid grid-cols-2 gap-12 mt-12 pt-4 border-t border-gray-300 break-inside-avoid">
+                    <div class="text-center">
+                        <canvas id="sig-canvas-mant-tech" class="signature-pad mb-2 mx-auto h-16 w-48 border-b border-gray-400"></canvas>
+                        <button onclick="clearCanvas('sig-canvas-mant-tech')" class="text-[10px] text-red-500 no-print block mx-auto">Borrar</button>
+                        <p class="text-xs font-bold text-gray-900">José Guerrero</p>
+                        <p class="text-[10px] text-gray-500">Técnico EasyCool | RUT: 15.963.315-2</p>
+                    </div>
+                    <div class="text-center">
+                        <canvas id="sig-canvas-mant-client" class="signature-pad mb-2 mx-auto h-16 w-48 border-b border-gray-400"></canvas>
+                        <button onclick="clearCanvas('sig-canvas-mant-client')" class="text-[10px] text-red-500 no-print block mx-auto">Borrar</button>
+                        <p class="text-xs font-bold text-gray-900" id="mant-sig-client-name" contenteditable="true">Firma Cliente</p>
+                        <p class="text-[10px] text-gray-500" id="mant-sig-client-rut"></p>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- FOOTER RESTAURADO (SOCIAL & LEGAL) -->
+        <footer class="mt-8 pt-4 border-t-2 border-gray-200 text-center page-break-inside-avoid">
+            <div class="flex flex-col items-center gap-2 mb-2">
+                <p class="text-[10px] font-bold text-gray-600">Síguenos en nuestras redes:</p>
+                <a href="https://www.instagram.com/easycoolclimatizacion" target="_blank" class="text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline">
+                    📸 Instagram: @easycoolclimatizacion
+                </a>
+                <div class="bg-yellow-50 border border-yellow-200 rounded px-3 py-1 w-full max-w-xs text-center">
+                    <p class="text-[9px] font-bold text-gray-700">Tu opinión nos ayuda a seguir creciendo</p>
+                    <a href="https://g.page/r/Ccgzu2uxiaSiEBI/review" target="_blank" class="text-[10px] font-bold text-blue-700 hover:underline">
+                        ⭐⭐⭐⭐⭐ ¡Califícanos en Google!
+                    </a>
+                </div>
+            </div>
+            <p class="text-[8px] text-gray-400 mt-2">EasyCool Climatización - Documento generado digitalmente.</p>
+        </footer>
+    </div>
+
+    <!-- Botones Flotantes -->
+    <div class="fixed bottom-0 left-0 w-full bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] no-print z-50 hidden" id="mant-print-actions">
+         <div class="max-w-4xl mx-auto flex gap-3">
+             <button onclick="editReport()" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-lg">✏️ Editar Datos</button>
+            <button onclick="printReport()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg">🖨️ Imprimir / Guardar PDF</button>
+        </div>
+    </div>
+
+<script>
+    // --- API GEMINI CONFIG ---
+    // Pega tu API Key aquí para activar la IA
+    const apiKey = "AIzaSyCXlCWMUyaylWCmIDGVTHHigtfPlVXkkDU"; 
+    
+    // --- UTILS ---
+    function downloadApp() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([document.documentElement.outerHTML], {type:'text/html'})); a.download='index.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+    const getFolio = () => { let f = parseInt(localStorage.getItem('ec_fol') || '2100'); localStorage.setItem('ec_fol', f+1); return f; }
+    const today = () => new Date().toLocaleDateString('es-CL');
+    document.getElementById('current-date-display').innerText = today();
+
+    let equipmentCount = 0;
+
+    // --- FUNCIÓN DE IMPRESIÓN INTELIGENTE (NOMBRE DE ARCHIVO CORREGIDO) ---
+    function printReport() {
+        const folioElement = document.getElementById('rep-folio-numero');
+        const clienteElement = document.getElementById('rep-cliente-nombre');
+        
+        // Obtener texto crudo
+        let folioText = folioElement ? folioElement.innerText : "0000";
+        let clienteText = clienteElement ? clienteElement.innerText : "Cliente";
+
+        // Limpiar folio: Extraer solo números (Ej: de "Folio: #2100" -> "2100")
+        let folio = folioText.replace(/[^0-9]/g, ''); 
+        if (!folio) folio = "0000";
+
+        // Limpiar cliente: Permitir letras, números y espacios
+        let safeCliente = clienteText.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim();
+        if (!safeCliente) safeCliente = "Cliente";
+
+        // Construir el nombre del archivo deseado
+        const filename = `Informe mantenimiento Nº${folio} ${safeCliente}`;
+        
+        // Guardar título original
+        const originalTitle = document.title;
+        
+        // Cambiar título (Esto define el nombre del PDF en el navegador)
+        document.title = filename;
+
+        // Pequeño retraso para asegurar que el navegador detecte el cambio de título
+        setTimeout(() => {
+            window.print();
+            
+            // Restaurar título original después de imprimir
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 500);
+        }, 100);
+    }
+
+    // --- DIAGNÓSTICO IA ---
+    async function diagnoseEquipment(id) {
+        const resultDiv = document.getElementById(`ai-result-${id}`);
+        const resultText = document.getElementById(`ai-text-${id}`);
+        const hallazgosInput = document.querySelector(`#eq-form-${id} .eq-hallazgos`);
+        
+        const form = document.getElementById(`eq-form-${id}`);
+        const gas = form.querySelector('.eq-gas').value;
+        const pBaja = form.querySelector('.eq-p-baja').value;
+        const pAlta = form.querySelector('.eq-p-alta').value;
+        const tAmb = form.querySelector('.eq-t-amb').value;
+        const tIny = form.querySelector('.eq-t-iny').value;
+        const obs = hallazgosInput.value;
+        
+        resultDiv.classList.remove('hidden');
+        resultText.innerHTML = '<span class="ai-loading">✨ Analizando parámetros...</span>';
+
+        const prompt = `Analiza para informe técnico: Gas ${gas}, P.Baja ${pBaja}, P.Alta ${pAlta}, T.Amb ${tAmb}, T.Iny ${tIny}. Obs: ${obs}. Calcula Delta T. Da diagnóstico de 1 linea.`;
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const data = await response.json();
+            const aiText = data.candidates[0].content.parts[0].text;
+            
+            resultText.innerHTML = `<div class="font-bold text-purple-800">IA:</div><div class="text-xs">${aiText}</div>
+                <button onclick="copyToHallazgos(${id}, this)" data-text="${encodeURIComponent(aiText)}" class="mt-1 text-[9px] bg-purple-600 text-white px-2 py-1 rounded">Copiar</button>`;
+        } catch (e) { resultText.innerHTML = 'Error IA.'; }
+    }
+
+    function copyToHallazgos(id, btn) {
+        const text = decodeURIComponent(btn.getAttribute('data-text'));
+        const hallazgosBox = document.querySelector(`#eq-form-${id} .eq-hallazgos`);
+        hallazgosBox.value = hallazgosBox.value + " " + text.replace(/\*\*/g, '');
+    }
+
+    // --- AGREGAR FORMULARIO (CAMPOS DE IMAGENES RESTAURADOS) ---
+    function addEquipmentForm() {
+        equipmentCount++;
+        const container = document.getElementById('equipments-container');
+        const id = equipmentCount;
+        
+        const html = `
+        <div class="equipment-card bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6 relative" id="eq-form-${id}">
+            <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">EQ #${id}</div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 mt-4">
+                <input class="eq-marca w-full rounded border-gray-300 p-2 text-sm" placeholder="Marca (Ej: Midea)">
+                <input class="eq-tipo w-full rounded border-gray-300 p-2 text-sm" placeholder="Tipo (Split/Piso)">
+                <input class="eq-serie w-full rounded border-gray-300 p-2 text-sm" placeholder="Nº Serie">
+            </div>
+
+            <div class="mb-4 bg-gray-50 p-2 rounded">
+                <label class="text-xs font-bold text-gray-500 block mb-1">CHECKLIST MANTENCIÓN</label>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    ${["Filtros", "U. Interior", "U. Exterior", "Eléctrico", "Drenaje"].map(i => 
+                        `<label class="flex items-center gap-2"><input type="checkbox" checked class="eq-check" value="${i}"> ${i}</label>`
+                    ).join('')}
+                </div>
+            </div>
+
+            <!-- FOTOS SEPARADAS POR CATEGORÍA (RESTAURADO) -->
+            <div class="mb-4 border-t pt-2">
+                <label class="text-xs font-bold text-blue-600">REGISTRO FOTOGRÁFICO</label>
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                    <div>
+                        <label class="block text-[10px] text-gray-500">1. Filtros / Limpieza</label>
+                        <input type="file" multiple accept="image/*" class="block w-full text-xs" onchange="previewMulti(this, 'prev-filtros-${id}')">
+                        <div id="prev-filtros-${id}" class="flex flex-wrap gap-1 mt-1"></div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500">2. U. Interior</label>
+                        <input type="file" multiple accept="image/*" class="block w-full text-xs" onchange="previewMulti(this, 'prev-int-${id}')">
+                        <div id="prev-int-${id}" class="flex flex-wrap gap-1 mt-1"></div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500">3. U. Exterior</label>
+                        <input type="file" multiple accept="image/*" class="block w-full text-xs" onchange="previewMulti(this, 'prev-ext-${id}')">
+                        <div id="prev-ext-${id}" class="flex flex-wrap gap-1 mt-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4 border-t pt-2">
+                <div class="flex justify-between mb-1">
+                    <label class="text-xs font-bold text-gray-500">PARAMETROS</label>
+                    <button onclick="diagnoseEquipment(${id})" class="text-[10px] bg-purple-100 text-purple-700 px-2 rounded border border-purple-200">✨ IA</button>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <select class="eq-gas w-full rounded p-1 border text-xs"><option value="" disabled selected>Gas</option><option value="R410A">R410A</option><option value="R32">R32</option><option value="R22">R22</option><option value="R404A">R404A</option></select>
+                    <input class="eq-p-baja w-full rounded p-1 border text-xs" placeholder="P. Baja">
+                    <input class="eq-p-alta w-full rounded p-1 border text-xs" placeholder="P. Alta">
+                    <input class="eq-amp w-full rounded p-1 border text-xs" placeholder="Amp">
+                    <input class="eq-t-amb w-full rounded p-1 border text-xs" type="number" placeholder="T.Amb">
+                    <input class="eq-t-iny w-full rounded p-1 border text-xs" type="number" placeholder="T.Iny">
+                </div>
+                <div id="ai-result-${id}" class="hidden mt-1 p-2 bg-purple-50 rounded text-xs">
+                    <div id="ai-text-${id}"></div>
+                </div>
+            </div>
+
+            <div class="mt-2 border-t pt-2">
+                <label class="text-xs font-bold text-red-600">OBSERVACIONES / HALLAZGOS</label>
+                <textarea class="eq-hallazgos w-full rounded border-red-200 p-1 text-sm h-12" placeholder="Detalles..."></textarea>
+                <input type="file" multiple accept="image/*" class="mt-1 text-xs" onchange="previewMulti(this, 'prev-hall-${id}')">
+                <div id="prev-hall-${id}" class="flex flex-wrap gap-1 mt-1"></div>
+            </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+    }
+
+    window.previewMulti = function(input, divId) {
+        const div = document.getElementById(divId);
+        div.innerHTML = '';
+        Array.from(input.files).forEach(file => {
+            const r = new FileReader();
+            r.onload = (e) => { div.innerHTML += `<img src="${e.target.result}" class="w-12 h-12 object-cover border rounded">`; }
+            r.readAsDataURL(file);
+        });
+    }
+
+    // --- GENERAR REPORTE (CON FOTOS SEPARADAS) ---
+    function generateReport() {
+        // Transferencia de datos básicos
+        document.getElementById('rep-cliente-nombre').innerText = document.getElementById('gen-cliente-nombre').value || 'Sin Nombre';
+        document.getElementById('rep-cliente-rut').innerText = document.getElementById('gen-cliente-rut').value;
+        document.getElementById('rep-cliente-direccion').innerText = document.getElementById('gen-cliente-direccion').value;
+        document.getElementById('rep-fecha').innerText = today();
+        document.getElementById('rep-folio-numero').innerText = '#' + getFolio();
+        document.getElementById('mant-sig-client-name').innerText = document.getElementById('gen-cliente-nombre').value || 'Cliente';
+        document.getElementById('mant-sig-client-rut').innerText = document.getElementById('gen-cliente-rut').value;
+
+        // Renderizado de Equipos
+        const container = document.getElementById('report-equipments-container');
+        container.innerHTML = '';
+
+        for(let i=1; i<=equipmentCount; i++) {
+            const form = document.getElementById(`eq-form-${i}`);
+            if(!form) continue;
+
+            const marca = form.querySelector('.eq-marca').value || '-';
+            const tipo = form.querySelector('.eq-tipo').value || '-';
+            const serie = form.querySelector('.eq-serie').value || '-';
+            
+            const checks = Array.from(form.querySelectorAll('.eq-check:checked')).map(c => 
+                `<span class="inline-block bg-green-100 text-green-800 text-[9px] px-1 rounded mr-1 mb-1 border border-green-200">✓ ${c.value}</span>`
+            ).join('');
+
+            const gas = form.querySelector('.eq-gas').value || '-';
+            const pb = form.querySelector('.eq-p-baja').value || '-';
+            const pa = form.querySelector('.eq-p-alta').value || '-';
+            const amp = form.querySelector('.eq-amp').value || '-';
+            const ta = form.querySelector('.eq-t-amb').value;
+            const ti = form.querySelector('.eq-t-iny').value;
+            const dt = (ta && ti) ? Math.abs(ta - ti).toFixed(1) + '°C' : '-';
+
+            // --- PROCESAR FOTOS POR CATEGORÍA ---
+            const getImgsHtml = (divId, label) => {
+                const div = document.getElementById(divId);
+                if(!div || div.querySelectorAll('img').length === 0) return '';
+                let html = `<div class="mb-2"><p class="text-[9px] font-bold text-gray-500 mb-1">${label}</p><div class="flex flex-wrap gap-1">`;
+                div.querySelectorAll('img').forEach(img => {
+                    html += `<img src="${img.src}" class="h-16 w-auto object-cover border border-gray-300 rounded">`;
+                });
+                html += `</div></div>`;
+                return html;
+            };
+
+            const imgFiltros = getImgsHtml(`prev-filtros-${i}`, 'FILTROS / LIMPIEZA');
+            const imgInt = getImgsHtml(`prev-int-${i}`, 'UNIDAD INTERIOR');
+            const imgExt = getImgsHtml(`prev-ext-${i}`, 'UNIDAD EXTERIOR');
+            const imgHall = getImgsHtml(`prev-hall-${i}`, 'EVIDENCIA HALLAZGOS');
+            
+            const hasImages = imgFiltros || imgInt || imgExt || imgHall;
+
+            const obs = form.querySelector('.eq-hallazgos').value;
+
+            // HTML ESTRUCTURADO PARA IMPRESIÓN
+            const cardHtml = `
+            <div class="equipment-section border border-gray-300 rounded overflow-hidden page-break-inside-avoid shadow-sm">
+                <!-- Header Card -->
+                <div class="bg-blue-600 text-white p-2 flex justify-between items-center text-xs">
+                    <div class="font-bold uppercase">EQUIPO #${i} | ${marca}</div>
+                    <div class="opacity-90">${tipo} | SN: ${serie}</div>
+                </div>
+                
+                <div class="p-3 bg-white">
+                    <!-- Fila 1: Datos Técnicos -->
+                    <table class="w-full text-[10px] mb-3 border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-500 border-b border-gray-200">
+                                <th class="p-1 text-left">GAS</th>
+                                <th class="p-1 text-center">P.BAJA</th>
+                                <th class="p-1 text-center">P.ALTA</th>
+                                <th class="p-1 text-center">AMP</th>
+                                <th class="p-1 text-center font-bold text-blue-600">DELTA T</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="text-gray-800">
+                                <td class="p-1 border-b text-left font-bold">${gas}</td>
+                                <td class="p-1 border-b text-center">${pb}</td>
+                                <td class="p-1 border-b text-center">${pa}</td>
+                                <td class="p-1 border-b text-center">${amp}</td>
+                                <td class="p-1 border-b text-center font-bold bg-blue-50">${dt}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Fila 2: Checklist y Observaciones -->
+                    <div class="flex gap-4 border-b border-gray-100 pb-2 mb-2">
+                        <div class="w-1/2">
+                            <p class="text-[9px] font-bold text-gray-500 mb-1 uppercase">Mantenimiento Realizado</p>
+                            <div class="leading-tight">${checks}</div>
+                        </div>
+                        <div class="w-1/2">
+                             ${obs ? `<div class="bg-red-50 p-2 rounded border border-red-100 h-full">
+                                <p class="text-[9px] font-bold text-red-600 mb-1">OBSERVACIONES</p>
+                                <p class="text-[10px] text-gray-800 italic" contenteditable="true">${obs}</p>
+                             </div>` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Fila 3: Registro Fotográfico Organizado -->
+                    ${hasImages ? `<div class="mt-2">
+                        <p class="text-[9px] font-bold text-blue-600 border-b border-blue-100 mb-2 pb-1">REGISTRO FOTOGRÁFICO</p>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div class="col-span-1">${imgFiltros}</div>
+                            <div class="col-span-1">${imgInt}</div>
+                            <div class="col-span-1">${imgExt}</div>
+                            <div class="col-span-1">${imgHall}</div>
+                        </div>
+                    </div>` : ''}
+                </div>
+            </div>`;
+
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        }
+
+        document.getElementById('form-section').classList.add('hidden');
+        document.getElementById('report-section').classList.remove('hidden');
+        document.getElementById('mant-print-actions').classList.remove('hidden');
+        initPad('sig-canvas-mant-tech'); initPad('sig-canvas-mant-client');
+        window.scrollTo(0,0);
+    }
+
+    function editReport() {
+        document.getElementById('report-section').classList.add('hidden');
+        document.getElementById('mant-print-actions').classList.add('hidden');
+        document.getElementById('form-section').classList.remove('hidden');
+    }
+
+    function initPad(id) {
+        const c = document.getElementById(id); if(c.getAttribute('init')) return;
+        const ctx = c.getContext('2d'); ctx.lineWidth=2;
+        let p=false;
+        const pos=(e)=>{const r=c.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+        const start=(e)=>{if(e.touches)e.preventDefault();p=true;ctx.beginPath();ctx.moveTo(pos(e).x,pos(e).y);}
+        const move=(e)=>{if(!p)return;if(e.touches)e.preventDefault();ctx.lineTo(pos(e).x,pos(e).y);ctx.stroke();}
+        const end=(e)=>{if(e.touches)e.preventDefault();p=false;}
+        c.addEventListener('mousedown',start);c.addEventListener('mousemove',move);c.addEventListener('mouseup',end);
+        c.addEventListener('touchstart',start,{passive:false});c.addEventListener('touchmove',move,{passive:false});c.addEventListener('touchend',end);
+        c.setAttribute('init','true');
+    }
+    function clearCanvas(id) { const c=document.getElementById(id); c.getContext('2d').clearRect(0,0,c.width,c.height); }
+
+    addEquipmentForm();
+</script>
+</body>
+</html>
