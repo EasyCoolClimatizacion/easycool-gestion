@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EasyCool App v8.1 Manager</title>
+    <title>EasyCool App v8.8.3 Manager</title>
     
     <!-- CONFIGURACIÓN DE ICONO (APP NATIVA) -->
     <!-- Android / Chrome -->
@@ -135,8 +135,8 @@
                     <div><label class="block text-xs text-gray-500 mb-1">Cordón (m)</label><input type="number" id="qty-cordon" class="material-input input-mobile border border-gray-300 rounded p-2 w-full text-center font-semibold" value="3"></div>
                     <div><label class="block text-xs text-gray-500 mb-1">Canaleta 100</label><input type="number" id="qty-canaleta-1" class="material-input input-mobile border border-gray-300 rounded p-2 w-full text-center font-semibold" value="1"></div>
                     <div><label class="block text-xs text-gray-500 mb-1">Canaleta 20</label><input type="number" id="qty-canaleta-2" class="material-input input-mobile border border-gray-300 rounded p-2 w-full text-center font-semibold" value="1"></div>
-                    <div><label class="block text-xs text-gray-500 mb-1">Tubería (m)</label><input type="number" id="qty-tuberia" class="material-input input-mobile border border-gray-300 rounded p-2 w-full text-center font-semibold" value="0"></div>
-                    <div><label class="block text-xs text-gray-500 mb-1">Bomba</label><input type="number" id="qty-bomba" class="material-input input-mobile border border-gray-300 rounded p-2 w-full text-center font-semibold" value="0"></div>
+                    <div><label class="block text-xs text-gray-500 mb-1 font-bold text-blue-600">Tubería (m)</label><input type="number" id="qty-tuberia" class="material-input input-mobile border border-blue-200 rounded p-2 w-full text-center font-semibold text-blue-700 bg-blue-50" value="0"></div>
+                    <div><label class="block text-xs text-gray-500 mb-1 font-bold text-blue-600">Bomba</label><input type="number" id="qty-bomba" class="material-input input-mobile border border-blue-200 rounded p-2 w-full text-center font-semibold text-blue-700 bg-blue-50" value="0"></div>
                 </div>
                 <!-- Costos Ocultos -->
                 <div class="hidden">
@@ -158,42 +158,65 @@
                         <input type="number" id="costo-mano-obra" class="input-mobile w-24 text-right p-2 font-bold outline-none text-indigo-900" value="120000">
                     </div>
                 </div>
-                <div class="flex justify-between items-center mb-3">
-                    <label class="text-xs font-bold text-gray-500">Extras / Viáticos (Neto)</label>
-                    <div class="flex items-center bg-white border border-gray-300 rounded px-2">
-                        <span class="text-gray-500 text-xs">$</span>
-                        <input type="number" id="costo-adicionales" class="input-mobile w-24 text-right p-2 outline-none" value="0">
+                
+                <!-- SECCIÓN EXTRAS DINÁMICA -->
+                <div class="mb-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs font-bold text-gray-500">Costos Adicionales / Viáticos</label>
+                        <button id="add-extra-btn" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200 transition">+ Agregar Item Extra</button>
+                    </div>
+                    <div id="extras-container" class="space-y-2">
+                        <!-- Aquí se agregan los extras dinámicamente -->
                     </div>
                 </div>
                 
-                <div class="flex justify-between items-center bg-white p-2 rounded border border-gray-300">
+                <div class="flex justify-between items-center bg-white p-2 rounded border border-gray-300 mt-3">
                     <label class="text-xs font-bold text-gray-700">Margen Materiales %</label>
                     <input type="number" id="margen-ganancia" class="input-mobile w-16 text-center font-bold text-green-600 outline-none border-b border-green-200" value="30">
                 </div>
             </div>
 
-            <!-- PANEL DE GANANCIAS -->
+            <!-- PANEL DE GANANCIAS REAJUSTADO -->
             <div class="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 text-white mb-2">
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-700 pb-1">Tu Bolsillo (Privado)</h3>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-700 pb-1">Desglose Financiero Real (Privado)</h3>
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-[10px] text-gray-400 uppercase">Costo Materiales + IVA</p>
-                        <p id="live-costo-materiales" class="text-sm font-mono font-bold text-gray-200">$ 0</p>
+                    <!-- FILA 1: ENTRADAS Y SALIDAS -->
+                    <div class="bg-gray-700/50 p-2 rounded border border-gray-600">
+                        <p class="text-[9px] text-green-400 uppercase font-bold mb-1">💰 Total a Cobrar</p>
+                        <p id="live-total-cobrar" class="text-lg font-mono font-bold text-white">$ 0</p>
+                        <p class="text-[8px] text-gray-400">(Bruto con IVA)</p>
                     </div>
-                    <div>
-                        <p class="text-[10px] text-gray-400 uppercase">Venta Neta Total</p>
-                        <p id="live-venta-neta" class="text-sm font-mono font-bold text-blue-300">$ 0</p>
+                    <div class="bg-gray-700/50 p-2 rounded border border-gray-600">
+                        <p class="text-[9px] text-red-300 uppercase font-bold mb-1">🛒 Pagar Proveedores</p>
+                        <p id="live-pago-proveedores" class="text-lg font-mono font-bold text-white">$ 0</p>
+                        <p class="text-[8px] text-gray-400 font-bold text-yellow-300">(IVA Incluido)</p>
                     </div>
-                    <div class="col-span-2 bg-gray-700 p-2 rounded-lg border border-gray-600 mt-1">
-                        <div class="flex justify-between items-end">
-                            <div>
-                                <p class="text-[10px] text-green-400 uppercase font-bold">Ganancia Neta Real</p>
-                                <p class="text-[9px] text-gray-400">(Incluye Mano de Obra)</p>
-                            </div>
-                            <p id="live-ganancia" class="text-2xl font-mono font-bold text-green-400">$ 0</p>
+
+                    <!-- FILA 2: IMPUESTOS Y UTILIDAD -->
+                    <div class="bg-gray-700/50 p-2 rounded border border-gray-600">
+                        <p class="text-[9px] text-yellow-300 uppercase font-bold mb-1 border-b border-gray-600 pb-1">🏛️ Detalle IVA (F29)</p>
+                        
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[8px] text-gray-400">Venta (+):</span>
+                            <span id="live-iva-venta" class="text-[9px] font-mono text-green-300">$ 0</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[8px] text-gray-400">Compra (-):</span>
+                            <span id="live-iva-compra" class="text-[9px] font-mono text-red-300">$ 0</span>
+                        </div>
+                        
+                        <div class="border-t border-gray-600 pt-1 mt-1 flex justify-between items-center">
+                            <span class="text-[8px] text-yellow-200 font-bold">A PAGAR:</span>
+                            <span id="live-pago-iva" class="text-sm font-mono font-bold text-yellow-400">$ 0</span>
                         </div>
                     </div>
+                    <div class="bg-green-900/40 p-2 rounded border border-green-600">
+                        <p class="text-[9px] text-green-300 uppercase font-bold mb-1">💵 Tu Ganancia Líquida</p>
+                        <p id="live-utilidad" class="text-xl font-mono font-bold text-green-400">$ 0</p>
+                        <p class="text-[8px] text-green-200">(Libre en el Bolsillo)</p>
+                    </div>
                 </div>
+                <button id="update-stats-btn" class="mt-3 w-full text-xs text-gray-400 hover:text-white underline">Actualizar Cálculos</button>
             </div>
         </div>
         
@@ -331,7 +354,7 @@
                     <div><label class="text-xs text-gray-500">Cordón</label><input type="number" id="modal-costo-cordon" class="border w-full text-right p-1 rounded"></div>
                     <div><label class="text-xs text-gray-500">Bomba</label><input type="number" id="modal-costo-bomba" class="border w-full text-right p-1 rounded"></div>
                     <div><label class="text-xs text-gray-500">Tubería</label><input type="number" id="modal-costo-tuberia" class="border w-full text-right p-1 rounded"></div>
-                    <div class="col-span-2 bg-indigo-50 p-2 rounded border border-indigo-100"><label class="text-xs font-bold text-indigo-900">Mano de Obra Base</label><input type="number" id="modal-costo-mano-obra" class="border w-full text-right p-1 rounded font-bold text-indigo-900"></div>
+                    <div class="col-span-2 bg-indigo-50 p-2 rounded border border-indigo-100"><label class="text-xs font-bold text-indigo-900">Mano de Obra Base (Costo)</label><input type="number" id="modal-costo-mano-obra" class="border w-full text-right p-1 rounded font-bold text-indigo-900"></div>
                 </div>
 
                 <h4 class="text-xs font-bold text-gray-400 uppercase mb-2 sticky top-0 bg-white py-1 z-10">Lista de Equipos</h4>
@@ -360,6 +383,7 @@
 
 <script>
 let lastQuoteData = {};
+let specs = new Set(); 
 
 // DATA BASE INICIAL (Se usa si no hay nada guardado)
 const defaultEquiposDB = {
@@ -554,49 +578,117 @@ window.loadFromHistory = (index) => {
     window.scrollTo(0,0);
 };
 
-// --- FINANZAS ---
+// --- FINANZAS (MARGEN SOLO A EQ Y MAT) ---
 function calculateFinances() {
     const getEl = (id) => document.getElementById(id);
-    if (!getEl('live-costo-materiales')) return;
+    // REMOVED GUARD CLAUSE to prevent returning undefined
+    // if (!getEl('live-costo-materiales')) return; 
 
     let totalEq = 0;
+    let totalQtyEquipos = 0;
+    specs = new Set(); // Resetear specs para evitar duplicados
+
+    // 1. COSTO EQUIPOS
     document.querySelectorAll('.equipo-item').forEach(row => {
         const k = row.querySelector('.eq-sel').value;
         const q = parseFloat(row.querySelector('.eq-qty').value)||0;
-        // Chequeo de seguridad por si el equipo fue borrado
+        totalQtyEquipos += q;
         if(equiposDB[k]) {
             const c = (k==='otro') ? parseFloat(row.querySelector('.eq-cost').value)||0 : equiposDB[k].costo;
             totalEq += q*c;
+            if(k!=='otro') specs.add(k);
         }
     });
 
+    // 2. COSTO MATERIALES (SEPARACIÓN DE CUENTAS)
     const getVal = (id) => parseFloat(getEl(id)?.value) || 0;
     
+    // Materiales Base (Soportes, Canaletas, Cordón)
     const costoSoportes = getVal('qty-soporte') * getVal('costo-soporte');
     const costoCanaleta1 = getVal('qty-canaleta-1') * getVal('costo-canaleta-1');
     const costoCanaleta2 = getVal('qty-canaleta-2') * getVal('costo-canaleta-2');
     const costoCordon = getVal('qty-cordon') * getVal('costo-cordon');
-    const costoBomba = getVal('qty-bomba') * getVal('costo-bomba');
-    const costoTuberia = getVal('qty-tuberia') * getVal('costo-tuberia');
-
-    const totalMat = costoSoportes + costoCanaleta1 + costoCanaleta2 + costoCordon + costoBomba + costoTuberia;
-    const margen = getVal('margen-ganancia')/100;
-    const ventaEqMat = (totalEq + totalMat) * (1 + margen);
-    const moBase = getVal('costo-mano-obra');
-    const numEq = document.querySelectorAll('.equipo-item').length;
-    const totalMO = moBase * numEq;
-    const extras = getVal('costo-adicionales');
+    const totalMatBase = costoSoportes + costoCanaleta1 + costoCanaleta2 + costoCordon;
     
-    const neto = ventaEqMat + totalMO + extras;
-    const iva = neto * 0.19;
-    const total = neto + iva;
-    const ganancia = neto - (totalEq + totalMat); 
+    // Materiales Específicos (Bomba y Tubería)
+    const qtyBomba = getVal('qty-bomba');
+    const costoBombaTotal = qtyBomba * getVal('costo-bomba');
+    
+    const qtyTuberia = getVal('qty-tuberia');
+    const costoTuberiaTotal = qtyTuberia * getVal('costo-tuberia');
 
-    getEl('live-costo-materiales').textContent = "$ " + Math.round((totalEq + totalMat)*1.19).toLocaleString('es-CL');
-    getEl('live-venta-neta').textContent = "$ " + Math.round(neto).toLocaleString('es-CL');
-    getEl('live-ganancia').textContent = "$ " + Math.round(ganancia).toLocaleString('es-CL');
+    const margen = getVal('margen-ganancia')/100;
 
-    return { totalEq, itemsHtml: '', specs: new Set(), mainEq: '', totalMat, ventaEqMat, totalMO, extras, neto, iva, total };
+    // PRECIOS DE VENTA (CON MARGEN)
+    // Item 1: Equipos + Kit Base (Con Margen)
+    const ventaEqBaseMat = (totalEq + totalMatBase) * (1 + margen);
+    
+    // Item 2: Bombas (Con Margen)
+    const ventaBomba = costoBombaTotal * (1 + margen);
+    
+    // Item 3: Tubería (Con Margen)
+    const ventaTuberia = costoTuberiaTotal * (1 + margen);
+    
+    // 3. MANO DE OBRA (SIN MARGEN, SOLO COBRO DIRECTO)
+    const moBaseCosto = getVal('costo-mano-obra');
+    const totalMO = moBaseCosto * totalQtyEquipos;
+    
+    // 4. EXTRAS (SIN MARGEN, SOLO COBRO DIRECTO)
+    let extrasCosto = 0;
+    const extrasList = [];
+    document.querySelectorAll('.extra-item').forEach(row => {
+        const desc = row.querySelector('.extra-desc').value || 'Extra';
+        const cost = parseFloat(row.querySelector('.extra-cost').value) || 0;
+        if(cost > 0) {
+            extrasCosto += cost;
+            // Guardamos el precio tal cual (Sin margen)
+            extrasList.push({ description: desc, price: cost });
+        }
+    });
+    
+    // 5. TOTALES
+    const neto = ventaEqBaseMat + ventaBomba + ventaTuberia + totalMO + extrasCosto;
+    const ivaVenta = neto * 0.19;
+    const totalCobrar = neto + ivaVenta;
+    
+    // 6. CÁLCULOS DE BOLSILLO PRIVADO
+    // Costo Real Proveedores (Neto) = Eq + MatBase + Bombas + Tuberias + Extras (Asumiendo que los extras son compras)
+    const costosProveedoresNeto = totalEq + totalMatBase + costoBombaTotal + costoTuberiaTotal + extrasCosto;
+    const ivaCompra = costosProveedoresNeto * 0.19;
+    const pagoProveedoresBruto = costosProveedoresNeto * 1.19;
+
+    // IVA a Pagar (F29)
+    const ivaPagar = ivaVenta - ivaCompra;
+
+    // Utilidad Real (Liquida) = Total Cobrado - Pago Proveedores - Pago IVA
+    // O más simple: Utilidad = (Neto Venta - Neto Costos)
+    // Ingresos Netos (Mano de Obra + Ganancia sobre materiales)
+    const utilidadLiquida = neto - costosProveedoresNeto;
+
+    // ACTUALIZAR PANEL (Safe update)
+    if(getEl('live-total-cobrar')) getEl('live-total-cobrar').textContent = "$ " + Math.round(totalCobrar).toLocaleString('es-CL');
+    if(getEl('live-pago-proveedores')) getEl('live-pago-proveedores').textContent = "$ " + Math.round(pagoProveedoresBruto).toLocaleString('es-CL');
+    
+    // ACTUALIZAR DETALLE IVA (Nuevos campos)
+    if(getEl('live-iva-venta')) getEl('live-iva-venta').textContent = "$ " + Math.round(ivaVenta).toLocaleString('es-CL');
+    if(getEl('live-iva-compra')) getEl('live-iva-compra').textContent = "$ " + Math.round(ivaCompra).toLocaleString('es-CL');
+    if(getEl('live-pago-iva')) getEl('live-pago-iva').textContent = "$ " + Math.round(ivaPagar).toLocaleString('es-CL');
+    
+    if(getEl('live-utilidad')) getEl('live-utilidad').textContent = "$ " + Math.round(utilidadLiquida).toLocaleString('es-CL');
+
+    // Devolvemos objetos separados para pintar el PDF
+    return { 
+        ventaEqBaseMat, 
+        ventaBomba, 
+        ventaTuberia,
+        qtyBomba, 
+        qtyTuberia, 
+        totalMO, 
+        extrasList, 
+        neto, 
+        iva: ivaVenta, 
+        total: totalCobrar 
+    };
 }
 
 // --- INIT ---
@@ -605,7 +697,9 @@ document.addEventListener('DOMContentLoaded', () => {
         calcBtn: document.getElementById('calculate-btu-btn'),
         btuRes: document.getElementById('btu-result'),
         eqContainer: document.getElementById('equipos-container'),
+        extrasContainer: document.getElementById('extras-container'),
         addEqBtn: document.getElementById('add-equipo-btn'),
+        addExtraBtn: document.getElementById('add-extra-btn'),
         genQuoteBtn: document.getElementById('generate-quote-btn'),
         printBtn: document.getElementById('print-btn'),
         waBtn: document.getElementById('wa-btn'),
@@ -614,7 +708,8 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModalBtn: document.getElementById('close-modal-btn'),
         savePricesBtn: document.getElementById('save-prices-btn'),
         addNewEqBtn: document.getElementById('add-new-eq-btn'),
-        backBtn: document.getElementById('back-to-edit-btn')
+        backBtn: document.getElementById('back-to-edit-btn'),
+        updateStatsBtn: document.getElementById('update-stats-btn')
     };
 
     const savedFolio = localStorage.getItem('easycool_next_folio');
@@ -624,12 +719,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // CARGAR DB
     loadCustomPrices();
 
-    // Event Listeners Inputs
+    // Event Listeners Inputs Genéricos
     document.querySelectorAll('input').forEach(i => {
-        if(i.id !== 'new-eq-name' && i.id !== 'new-eq-price') {
+        if(i.id !== 'new-eq-name' && i.id !== 'new-eq-price' && !i.classList.contains('extra-desc') && !i.classList.contains('extra-cost')) {
              ['input', 'change', 'keyup'].forEach(evt => i.addEventListener(evt, calculateFinances));
         }
     });
+    
+    if(dom.updateStatsBtn) dom.updateStatsBtn.addEventListener('click', calculateFinances);
 
     // BTU Calc
     dom.calcBtn.addEventListener('click', () => {
@@ -660,12 +757,31 @@ document.addEventListener('DOMContentLoaded', () => {
         div.querySelector('.rm-btn').addEventListener('click', () => { if(dom.eqContainer.children.length>1) div.remove(); calculateFinances(); });
         div.querySelector('.eq-qty').addEventListener('input', calculateFinances);
         
-        // Seleccionar primero
         sel.value = Object.keys(equiposDB)[0]; 
         updateRow();
     }
     dom.addEqBtn.addEventListener('click', addRow);
     addRow();
+
+    // Agregar Fila Extra (Visual)
+    function addExtraRow() {
+        const div = document.createElement('div');
+        div.className = 'extra-item flex gap-2 items-center mb-2';
+        div.innerHTML = `
+            <input type="text" class="extra-desc border border-gray-300 rounded p-2 text-xs flex-1 outline-none" placeholder="Descripción (ej: Viáticos, Material Extra)">
+            <div class="flex items-center bg-white border border-gray-300 rounded px-2 w-24">
+                <span class="text-gray-500 text-xs">$</span>
+                <input type="number" class="extra-cost input-mobile w-full text-right p-1 outline-none text-xs" value="0">
+            </div>
+            <button class="rm-extra-btn text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>
+        `;
+        dom.extrasContainer.appendChild(div);
+        
+        div.querySelector('.extra-desc').addEventListener('input', calculateFinances);
+        div.querySelector('.extra-cost').addEventListener('input', calculateFinances);
+        div.querySelector('.rm-extra-btn').addEventListener('click', () => { div.remove(); calculateFinances(); });
+    }
+    dom.addExtraBtn.addEventListener('click', addExtraRow);
 
     // Generar Cotización
     dom.genQuoteBtn.addEventListener('click', () => {
@@ -690,7 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('current-date').textContent = dateStr;
 
         const fin = calculateFinances();
-        let itemsHtml = '', specs = new Set(), mainEq = '';
+        let itemsHtml = '';
         let equiposDescriptions = [];
 
         document.querySelectorAll('.equipo-item').forEach((row, idx) => {
@@ -698,11 +814,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const q = parseFloat(row.querySelector('.eq-qty').value)||0;
             if(equiposDB[k]) {
                 equiposDescriptions.push(`${q}x ${equiposDB[k].nombre}`);
-                if(k!=='otro') specs.add(k);
-                if(idx===0) mainEq = equiposDB[k].nombre.replace(/[^a-zA-Z0-9 ]/g,'');
             }
         });
-        
+
+        // 1. FILA EQUIPOS + KIT BÁSICO (Soportes, canaletas, etc integrados en el precio pero listados como "Kit")
         itemsHtml += `
         <tr>
             <td class="py-2 pl-2 border-b border-gray-100 align-top">
@@ -713,14 +828,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </td>
             <td class="py-2 pr-2 text-right border-b border-gray-100 align-top font-semibold text-gray-700">
-                $ ${Math.round(fin.ventaEqMat).toLocaleString('es-CL')}
+                $ ${Math.round(fin.ventaEqBaseMat).toLocaleString('es-CL')}
             </td>
         </tr>`;
 
+        // 2. FILAS ADICIONALES DE MATERIALES (SI APLICA)
+        if (fin.qtyBomba > 0) {
+            itemsHtml += `
+            <tr>
+                <td class="py-2 pl-2 border-b border-gray-100 align-top">
+                    <p class="font-bold text-gray-800">Suministro de Bomba de Condensado (${fin.qtyBomba} un)</p>
+                </td>
+                <td class="py-2 pr-2 text-right border-b border-gray-100 align-top font-semibold text-gray-700">
+                    $ ${Math.round(fin.ventaBomba).toLocaleString('es-CL')}
+                </td>
+            </tr>`;
+        }
+        
+        if (fin.qtyTuberia > 0) {
+            itemsHtml += `
+            <tr>
+                <td class="py-2 pl-2 border-b border-gray-100 align-top">
+                    <p class="font-bold text-gray-800">Suministro de Tubería de Refrigeración (${fin.qtyTuberia} mts)</p>
+                </td>
+                <td class="py-2 pr-2 text-right border-b border-gray-100 align-top font-semibold text-gray-700">
+                    $ ${Math.round(fin.ventaTuberia).toLocaleString('es-CL')}
+                </td>
+            </tr>`;
+        }
+
         const tbody = document.querySelector('#items-table tbody');
         tbody.innerHTML = itemsHtml;
+        
+        // 3. FILA INSTALACIÓN
         tbody.innerHTML += `<tr><td class="py-2 pl-2 border-b border-gray-100"><p class="font-bold text-gray-800">Servicio de Instalación Profesional</p><p class="text-xs text-gray-500">Mano de obra certificada, vacío técnico, puesta en marcha y capacitación.</p></td><td class="py-2 pr-2 text-right border-b border-gray-100 align-top font-semibold text-gray-700">$ ${Math.round(fin.totalMO).toLocaleString('es-CL')}</td></tr>`;
-        if(fin.extras>0) tbody.innerHTML += `<tr><td class="py-2 pl-2">Adicionales / Viáticos</td><td class="py-2 pr-2 text-right font-semibold text-gray-700">$ ${Math.round(fin.extras).toLocaleString('es-CL')}</td></tr>`;
+        
+        // 4. FILAS EXTRAS
+        fin.extrasList.forEach(ext => {
+             tbody.innerHTML += `<tr>
+                <td class="py-2 pl-2 text-xs text-gray-600">${ext.description}</td>
+                <td class="py-2 pr-2 text-right font-semibold text-gray-700">$ ${Math.round(ext.price).toLocaleString('es-CL')}</td>
+             </tr>`;
+        });
 
         const specBox = document.getElementById('tech-specs-content'); specBox.innerHTML = '';
         let specsHtml = '';
