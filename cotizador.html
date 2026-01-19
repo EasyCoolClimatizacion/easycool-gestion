@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EasyCool App v8.8.3 Manager</title>
+    <title>EasyCool App v8.8.4 Manager</title>
     
     <!-- CONFIGURACIÓN DE ICONO (APP NATIVA) -->
     <!-- Android / Chrome -->
@@ -581,8 +581,6 @@ window.loadFromHistory = (index) => {
 // --- FINANZAS (MARGEN SOLO A EQ Y MAT) ---
 function calculateFinances() {
     const getEl = (id) => document.getElementById(id);
-    // REMOVED GUARD CLAUSE to prevent returning undefined
-    // if (!getEl('live-costo-materiales')) return; 
 
     let totalEq = 0;
     let totalQtyEquipos = 0;
@@ -808,12 +806,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const fin = calculateFinances();
         let itemsHtml = '';
         let equiposDescriptions = [];
+        let mainEq = '';
 
         document.querySelectorAll('.equipo-item').forEach((row, idx) => {
             const k = row.querySelector('.eq-sel').value;
             const q = parseFloat(row.querySelector('.eq-qty').value)||0;
             if(equiposDB[k]) {
                 equiposDescriptions.push(`${q}x ${equiposDB[k].nombre}`);
+                if (idx === 0) mainEq = equiposDB[k].nombre;
             }
         });
 
