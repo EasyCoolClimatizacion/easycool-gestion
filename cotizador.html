@@ -54,16 +54,16 @@
                 max-width: 100% !important; 
                 box-shadow: none !important; 
                 margin: 0 !important; 
-                padding: 15mm !important; 
+                padding: 12mm !important; 
             }
-            header { margin-bottom: 5mm !important; padding-bottom: 4mm !important; }
-            .client-info-box { margin-bottom: 5mm !important; padding: 4mm !important; }
-            #items-table th, #items-table td { padding-top: 2mm !important; padding-bottom: 2mm !important; }
-            main .mb-8 { margin-bottom: 5mm !important; }
-            footer { margin-top: 8mm !important; padding-top: 4mm !important; page-break-inside: avoid; }
-            #tech-specs-section { page-break-inside: avoid; margin-top: 5mm !important; }
-            .mt-12 { margin-top: 10px !important; }
-            .pt-8 { padding-top: 5px !important; }
+            header { margin-bottom: 4mm !important; padding-bottom: 3mm !important; }
+            .client-info-box { margin-bottom: 4mm !important; padding: 3mm !important; }
+            #items-table th, #items-table td { padding-top: 1.5mm !important; padding-bottom: 1.5mm !important; }
+            main .mb-8 { margin-bottom: 4mm !important; }
+            footer { margin-top: 6mm !important; padding-top: 3mm !important; page-break-inside: avoid; }
+            #tech-specs-section { page-break-inside: avoid; margin-top: 4mm !important; }
+            .mt-12 { margin-top: 8px !important; }
+            .pt-8 { padding-top: 4px !important; }
             [contenteditable="true"]:hover { outline: none; }
             #bottom-nav { display: none !important; }
             .delete-row-btn { display: none !important; }
@@ -324,7 +324,7 @@
         <footer class="text-center mt-12 pt-8 border-t border-gray-100">
             <div class="mb-4">
                 <p class="text-xs font-bold text-indigo-600 mb-1">¡Síguenos en Instagram para ver nuestras instalaciones!</p>
-                <a href="https://instagram.com/easycool_climatizacion" target="_blank" class="text-sm font-bold text-gray-800 flex justify-center items-center gap-2 hover:text-pink-600 transition-colors cursor-pointer" style="text-decoration: none;">
+                <a href="https://instagram.com/easycool_climatizacion" target="_blank" class="text-sm font-bold text-gray-800 flex justify-center items-center gap-2 hover: pink-600 transition-colors cursor-pointer" style="text-decoration: none;">
                     <i class="fab fa-instagram text-pink-600 text-lg"></i> @easycool_climatizacion
                 </a>
             </div>
@@ -571,9 +571,12 @@ function recalculateQuoteTotals() {
     const rows = document.querySelectorAll('#items-table tbody tr');
     let subtotal = 0;
     rows.forEach(row => {
-        const priceText = row.children[row.children.length - 1].textContent;
-        const price = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
-        subtotal += price;
+        const lastCell = row.children[row.children.length - 1];
+        if (lastCell) {
+            const priceText = lastCell.textContent;
+            const price = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
+            subtotal += price;
+        }
     });
     const iva = Math.round(subtotal * 0.19);
     const total = subtotal + iva;
@@ -691,8 +694,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     dom.printBtn.addEventListener('click', () => {
-        document.title = `Cotización_${document.getElementById('quote-number').textContent}`;
+        // CORRECCIÓN: Generar el nombre del archivo dinámicamente según el folio y cliente
+        const rawName = document.getElementById('client-name').textContent || 'Cliente';
+        const cleanName = rawName.trim().replace(/[^a-zA-Z0-9]/g, '_');
+        const quoteNo = document.getElementById('quote-number').textContent || 'EC-000';
+        const originalTitle = document.title;
+        
+        document.title = `Cotizacion_${quoteNo}_${cleanName}`;
         window.print();
+        
+        // Restaurar el título original después de imprimir (opcional)
+        setTimeout(() => { document.title = originalTitle; }, 1000);
     });
 
     dom.openModalBtn.addEventListener('click', () => {
