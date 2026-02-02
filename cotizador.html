@@ -97,6 +97,7 @@
         </div>
         
         <div class="grid gap-4">
+            <!-- Cliente + Folio -->
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <div class="space-y-3">
                     <div class="flex justify-between items-start gap-2">
@@ -118,6 +119,7 @@
                 </div>
             </div>
 
+            <!-- BTU (Colapsable) -->
             <details class="bg-white p-3 rounded-xl border border-gray-200 group">
                 <summary class="flex justify-between items-center font-bold text-gray-700 cursor-pointer list-none text-sm">
                     <span class="flex items-center gap-2"><i class="fas fa-calculator text-orange-500"></i> Calculadora BTU</span>
@@ -132,12 +134,14 @@
                 <div class="hidden"><input id="alto-mts" value="2.4"><input id="numero-ventanas" value="1"><input id="numero-personas" value="2"><select id="exposicion-solar"><option value="mucha">Sol</option></select></div>
             </details>
 
+            <!-- Equipos -->
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <h3 class="text-sm font-bold text-gray-700 mb-2">Equipos de Aire Acondicionado</h3>
                 <div id="equipos-container" class="space-y-3 mb-3"></div>
                 <button id="add-equipo-btn" class="w-full py-3 rounded-lg border-2 border-dashed border-indigo-200 text-indigo-500 font-bold text-sm hover:bg-indigo-50 transition-colors">+ Agregar Equipo a Cotización</button>
             </div>
 
+            <!-- MATERIALES -->
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
                     <i class="fas fa-tools text-gray-500"></i> Materiales e Insumos
@@ -150,6 +154,7 @@
                     <div><label class="block text-xs text-gray-500 mb-1 font-bold text-blue-600">Tubería (m)</label><input type="number" id="qty-tuberia" class="material-input input-mobile border border-blue-200 rounded p-2 w-full text-center font-semibold text-blue-700 bg-blue-50" value="0"></div>
                     <div><label class="block text-xs text-gray-500 mb-1 font-bold text-blue-600">Bomba</label><input type="number" id="qty-bomba" class="material-input input-mobile border border-blue-200 rounded p-2 w-full text-center font-semibold text-blue-700 bg-blue-50" value="0"></div>
                 </div>
+                <!-- Costos Ocultos -->
                 <div class="hidden">
                     <input id="costo-soporte" value="7500">
                     <input id="costo-canaleta-1" value="5950">
@@ -160,6 +165,7 @@
                 </div>
             </div>
 
+            <!-- Costos -->
             <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
                 <div class="flex justify-between items-center mb-3">
                     <label class="text-xs font-bold text-indigo-900">Mano de Obra (x Equipo)</label>
@@ -183,9 +189,11 @@
                 </div>
             </div>
 
+            <!-- PANEL DE GANANCIAS REAJUSTADO -->
             <div class="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 text-white mb-2">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-700 pb-1">Desglose Financiero Real (Privado)</h3>
                 <div class="grid grid-cols-2 gap-4">
+                    <!-- FILA 1 -->
                     <div class="bg-gray-700/50 p-2 rounded border border-gray-600">
                         <p class="text-[9px] text-green-400 uppercase font-bold mb-1">💰 Total a Cobrar</p>
                         <p id="live-total-cobrar" class="text-lg font-mono font-bold text-white">$ 0</p>
@@ -197,6 +205,7 @@
                         <p class="text-[8px] text-gray-400 font-bold text-yellow-300">(IVA Incluido)</p>
                     </div>
 
+                    <!-- FILA 2 -->
                     <div class="bg-gray-700/50 p-2 rounded border border-gray-600">
                         <p class="text-[9px] text-yellow-300 uppercase font-bold mb-1 border-b border-gray-600 pb-1">🏛️ Detalle IVA (F29)</p>
                         <div class="flex justify-between items-center mb-1">
@@ -246,6 +255,7 @@
 
     <!-- VISTA 3: COTIZACIÓN (PDF) -->
     <div id="quote-section" class="max-w-4xl mx-auto bg-white p-10 shadow-2xl printable-section hidden">
+        <!-- HEADER PDF -->
         <header class="flex justify-between items-start pb-6 border-b border-gray-100 mb-8">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 flex-shrink-0">
@@ -267,6 +277,7 @@
             </div>
         </header>
         
+        <!-- INFO CLIENTE PDF -->
         <div class="bg-gray-50 p-6 rounded-lg mb-8 border border-gray-100 flex justify-between items-start header-contact-font client-info-box">
             <div class="w-2/3">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">CLIENTE</p>
@@ -324,7 +335,7 @@
         <footer class="text-center mt-12 pt-8 border-t border-gray-100">
             <div class="mb-4">
                 <p class="text-xs font-bold text-indigo-600 mb-1">¡Síguenos en Instagram para ver nuestras instalaciones!</p>
-                <a href="https://instagram.com/easycool_climatizacion" target="_blank" class="text-sm font-bold text-gray-800 flex justify-center items-center gap-2 hover: pink-600 transition-colors cursor-pointer" style="text-decoration: none;">
+                <a href="https://instagram.com/easycool_climatizacion" target="_blank" class="text-sm font-bold text-gray-800 flex justify-center items-center gap-2 hover:text-pink-600 transition-colors cursor-pointer" style="text-decoration: none;">
                     <i class="fab fa-instagram text-pink-600 text-lg"></i> @easycool_climatizacion
                 </a>
             </div>
@@ -341,11 +352,10 @@
         <button id="back-to-edit-btn" class="text-gray-400 text-xs font-bold py-2 uppercase tracking-wider">Volver a Editar</button>
     </div>
 
-    <!-- MODAL GESTIÓN DE EQUIPOS Y PRECIOS -->
+    <!-- MODAL GESTIÓN -->
     <div id="price-editor-modal" class="modal fixed inset-0 z-50 flex items-end justify-center bg-black bg-opacity-60 hidden opacity-0 no-print">
         <div class="modal-content bg-white w-full rounded-t-2xl p-6 h-[85vh] flex flex-col">
             <div class="flex justify-between border-b pb-3 mb-4"><h3 class="font-bold">Gestión de Equipos y Costos</h3><button id="close-modal-btn" class="text-2xl text-gray-500">&times;</button></div>
-            
             <div class="overflow-y-auto custom-scroll flex-1 pr-1">
                 <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Costos Unitarios Materiales</h4>
                 <div class="grid grid-cols-2 gap-3 mb-6">
@@ -357,22 +367,19 @@
                     <div><label class="text-xs text-gray-500">Tubería</label><input type="number" id="modal-costo-tuberia" class="border w-full text-right p-1 rounded"></div>
                     <div class="col-span-2 bg-indigo-50 p-2 rounded border border-indigo-100"><label class="text-xs font-bold text-indigo-900">Mano de Obra Base (Costo)</label><input type="number" id="modal-costo-mano-obra" class="border w-full text-right p-1 rounded font-bold text-indigo-900"></div>
                 </div>
-
                 <h4 class="text-xs font-bold text-gray-400 uppercase mb-2 sticky top-0 bg-white py-1 z-10">Lista de Equipos</h4>
                 <div id="equipment-price-editor" class="space-y-2 mb-4"></div>
-
                 <div class="bg-green-50 p-3 rounded-lg border border-green-200 mb-4">
                     <h5 class="text-[10px] font-bold uppercase text-green-700 mb-2"><i class="fas fa-plus-circle"></i> Agregar Nuevo Equipo</h5>
                     <div class="flex flex-col gap-2">
-                        <input id="new-eq-name" type="text" placeholder="Nombre (ej: Midea Xtreme 9.000)" class="text-xs border border-green-200 p-2 rounded w-full focus:outline-none focus:border-green-500">
+                        <input id="new-eq-name" type="text" placeholder="Nombre" class="text-xs border border-green-200 p-2 rounded w-full">
                         <div class="flex gap-2">
-                            <input id="new-eq-price" type="number" placeholder="Costo Neto" class="text-xs border border-green-200 p-2 rounded w-full focus:outline-none focus:border-green-500">
-                            <button id="add-new-eq-btn" class="bg-green-600 text-white px-4 rounded font-bold text-lg shadow-sm hover:bg-green-700">+</button>
+                            <input id="new-eq-price" type="number" placeholder="Costo Neto" class="text-xs border border-green-200 p-2 rounded w-full">
+                            <button id="add-new-eq-btn" class="bg-green-600 text-white px-4 rounded font-bold text-lg">+</button>
                         </div>
                     </div>
                 </div>
             </div>
-
             <div class="pt-4 border-t mt-2">
                 <button id="save-prices-btn" class="w-full bg-gray-900 text-white py-3 rounded-lg font-bold">Guardar Todo y Cerrar</button>
             </div>
@@ -432,17 +439,12 @@ function addNewEquipment() {
     equiposDB[key] = { nombre: name, costo: price, specs: ['Personalizado'] };
     document.getElementById('new-eq-name').value = '';
     document.getElementById('new-eq-price').value = '';
-    saveCustomPrices();
-    renderModalItems();
-    updateAllDropdowns();
+    saveCustomPrices(); renderModalItems(); updateAllDropdowns();
 }
 
 window.deleteEquipment = (key) => {
     if(confirm(`¿ELIMINAR "${equiposDB[key].nombre}"?`)) {
-        delete equiposDB[key];
-        saveCustomPrices();
-        renderModalItems();
-        updateAllDropdowns();
+        delete equiposDB[key]; saveCustomPrices(); renderModalItems(); updateAllDropdowns();
     }
 };
 
@@ -689,21 +691,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     dom.waBtn.addEventListener('click', () => {
-        const text = `Hola ${document.getElementById('client-name').textContent}, te envío la cotización EasyCool para ${lastQuoteData.equipoNombres}. Total: ${lastQuoteData.totalFormateado}. Incluye instalación profesional y garantía.`;
+        const text = `Hola ${document.getElementById('client-name').textContent}, te envío la cotización EasyCool para ${lastQuoteData.equipoNombres}. Total: ${lastQuoteData.totalFormateado}.`;
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     });
 
     dom.printBtn.addEventListener('click', () => {
-        // CORRECCIÓN: Generar el nombre del archivo dinámicamente según el folio y cliente
-        const rawName = document.getElementById('client-name').textContent || 'Cliente';
-        const cleanName = rawName.trim().replace(/[^a-zA-Z0-9]/g, '_');
-        const quoteNo = document.getElementById('quote-number').textContent || 'EC-000';
+        // CORRECCIÓN: Nombre de archivo exacto solicitado
+        const clientName = document.getElementById('client-name').textContent.trim() || 'Cliente';
+        const quoteNo = document.getElementById('quote-number').textContent.trim() || 'EC-000';
         const originalTitle = document.title;
         
-        document.title = `Cotizacion_${quoteNo}_${cleanName}`;
+        // Formato: Cotizacion EC-2026-045 - Juan Perez
+        document.title = `Cotizacion ${quoteNo} - ${clientName}`;
+        
         window.print();
         
-        // Restaurar el título original después de imprimir (opcional)
+        // Restauramos el título después para la aplicación
         setTimeout(() => { document.title = originalTitle; }, 1000);
     });
 
