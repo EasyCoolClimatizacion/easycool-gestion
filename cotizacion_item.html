@@ -134,7 +134,13 @@
             <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <!-- Cliente -->
                 <div>
-                    <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Cliente</h3>
+                    <div class="flex justify-between items-end mb-2 border-b border-gray-300 pb-1">
+                        <h3 class="text-[10px] font-bold text-gray-500 uppercase">Cliente</h3>
+                        <button id="btnRestaurar" class="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 no-print hidden transition-colors" title="Cargar datos de la última cotización generada">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                            Restaurar Última
+                        </button>
+                    </div>
                     <div class="space-y-1">
                         <input type="text" id="cliente" placeholder="Nombre / Razón Social" class="font-bold text-gray-800 bg-transparent border-none p-0 text-sm focus:bg-white focus:border focus:p-1">
                         <input type="text" id="rut_cliente" placeholder="RUT Cliente" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
@@ -184,7 +190,7 @@
                 <div class="md:col-span-7">
                     <div class="bg-yellow-50 p-3 rounded border border-yellow-100 h-full">
                         <h4 class="font-bold text-[10px] text-gray-600 mb-1 uppercase">Observaciones Técnicas</h4>
-                        <textarea class="w-full h-20 text-xs bg-transparent border-none p-0 text-gray-700 resize-none focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía..."></textarea>
+                        <textarea id="observaciones" class="w-full h-20 text-xs bg-transparent border-none p-0 text-gray-700 resize-none focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía..."></textarea>
                     </div>
                 </div>
 
@@ -343,15 +349,15 @@
                 document.getElementById('total').textContent = formatCurrency(total);
             };
 
-            const createRow = () => {
+            const createRow = (pQty = 1, pDesc = '', pPrice = '') => {
                 const row = document.createElement('tr');
                 row.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors group align-top';
                 
                 // MODIFICACIÓN: type="text" en el input .price para permitir escribir puntos sin que el navegador bloquee el input
                 row.innerHTML = `
-                    <td class="p-2 align-top"><input type="number" class="qty w-full text-center font-bold text-gray-700 bg-transparent focus:bg-white border-transparent focus:border-blue-300 rounded p-1" value="1" min="1" oninput="this.value = Math.abs(this.value)"></td>
-                    <td class="p-2 align-top"><textarea class="w-full bg-transparent resize-y overflow-hidden border-transparent focus:bg-white focus:border-blue-300 rounded p-1" rows="1" placeholder="Descripción..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></td>
-                    <td class="p-2 align-top"><input type="text" class="price w-full text-right bg-transparent border-transparent focus:bg-white focus:border-blue-300 rounded p-1" placeholder="0"></td>
+                    <td class="p-2 align-top"><input type="number" class="qty w-full text-center font-bold text-gray-700 bg-transparent focus:bg-white border-transparent focus:border-blue-300 rounded p-1" value="${pQty}" min="1" oninput="this.value = Math.abs(this.value)"></td>
+                    <td class="p-2 align-top"><textarea class="w-full bg-transparent resize-y overflow-hidden border-transparent focus:bg-white focus:border-blue-300 rounded p-1" rows="1" placeholder="Descripción..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${pDesc}</textarea></td>
+                    <td class="p-2 align-top"><input type="text" class="price w-full text-right bg-transparent border-transparent focus:bg-white focus:border-blue-300 rounded p-1" placeholder="0" value="${pPrice}"></td>
                     <td class="p-2 align-top"><input type="text" class="total-neto input-readonly-clean w-full text-right font-mono text-gray-700 font-bold bg-transparent border-none" value="$0" readonly tabindex="-1"></td>
                     <td class="p-2 align-top text-center no-print pt-2">
                         <button class="delete-row text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
@@ -365,6 +371,15 @@
                 inputs.forEach(input => {
                     input.addEventListener('input', calculateTotals);
                 });
+
+                // Ajustar altura del textarea si viene con contenido del historial
+                const textarea = row.querySelector('textarea');
+                if(pDesc) {
+                    setTimeout(() => {
+                        textarea.style.height = '';
+                        textarea.style.height = textarea.scrollHeight + 'px';
+                    }, 10);
+                }
             };
 
             // Event Listeners
@@ -385,7 +400,62 @@
                 }
             });
 
-            addRowBtn.addEventListener('click', createRow);
+            addRowBtn.addEventListener('click', () => createRow());
+
+            // --- LÓGICA DE HISTORIAL DE COTIZACIÓN ---
+            const btnRestaurar = document.getElementById('btnRestaurar');
+            const lastQuoteStr = localStorage.getItem('easycool_last_quote');
+            
+            // Mostrar el botón si existe un historial guardado
+            if (lastQuoteStr) {
+                btnRestaurar.classList.remove('hidden');
+            }
+
+            btnRestaurar.addEventListener('click', () => {
+                if(confirm('¿Deseas sobreescribir los datos actuales con la última cotización generada?')) {
+                    try {
+                        const data = JSON.parse(localStorage.getItem('easycool_last_quote'));
+                        
+                        document.getElementById('cliente').value = data.cliente || '';
+                        document.getElementById('rut_cliente').value = data.rut_cliente || '';
+                        document.getElementById('direccion').value = data.direccion || '';
+                        
+                        // Observaciones
+                        document.getElementById('observaciones').value = data.notas || '';
+                        
+                        // Descuento
+                        const descTipo = document.getElementById('descuento_tipo');
+                        descTipo.value = data.descuento_tipo || 'manual';
+                        
+                        const descInput = document.getElementById('descuento');
+                        descInput.value = data.descuento || '';
+                        
+                        if (data.descuento_tipo !== 'manual') {
+                            descInput.readOnly = true;
+                            descInput.classList.add('bg-gray-100', 'text-gray-500');
+                        } else {
+                            descInput.readOnly = false;
+                            descInput.classList.remove('bg-gray-100', 'text-gray-500');
+                        }
+                        
+                        // Items
+                        itemsBody.innerHTML = ''; // Limpiar filas actuales
+                        if(data.items && data.items.length > 0) {
+                            data.items.forEach(item => {
+                                createRow(item.qty, item.desc, item.price);
+                            });
+                        } else {
+                            createRow();
+                        }
+                        
+                        calculateTotals();
+                        // Mostrar pequeña confirmación visual o mediante mensaje temporal
+                    } catch(e) {
+                        console.error('Error al cargar historial', e);
+                    }
+                }
+            });
+            // --- FIN LÓGICA DE HISTORIAL ---
 
             // Inicialización
             const today = new Date().toISOString().split('T')[0];
@@ -402,6 +472,33 @@
             const cliente = document.getElementById('cliente').value || 'Cliente';
             const safeCliente = cliente.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim();
             
+            // --- GUARDAR HISTORIAL ANTES DE IMPRIMIR ---
+            const items = [];
+            document.querySelectorAll('#items-body tr').forEach(row => {
+                const qty = row.querySelector('.qty').value;
+                const desc = row.querySelector('textarea').value;
+                const price = row.querySelector('.price').value;
+                if(qty || desc || price) {
+                    items.push({ qty, desc, price });
+                }
+            });
+            
+            const quoteData = {
+                cliente: document.getElementById('cliente').value,
+                rut_cliente: document.getElementById('rut_cliente').value,
+                direccion: document.getElementById('direccion').value,
+                notas: document.getElementById('observaciones').value,
+                descuento_tipo: document.getElementById('descuento_tipo').value,
+                descuento: document.getElementById('descuento').value,
+                items: items
+            };
+            localStorage.setItem('easycool_last_quote', JSON.stringify(quoteData));
+            
+            // Asegurar que el botón de restaurar sea visible tras guardar
+            const btnRestaurar = document.getElementById('btnRestaurar');
+            if(btnRestaurar) btnRestaurar.classList.remove('hidden');
+            // --- FIN GUARDAR HISTORIAL ---
+
             const originalTitle = document.title;
             // CAMBIO: Nombre del archivo PDF formateado como solicitado
             document.title = `cotización Nº${numeroInput.value} - ${safeCliente}`;
