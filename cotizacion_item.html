@@ -142,9 +142,23 @@
                         </button>
                     </div>
                     <div class="space-y-1">
-                        <input type="text" id="cliente" placeholder="Nombre / Razón Social" class="font-bold text-gray-800 bg-transparent border-none p-0 text-sm focus:bg-white focus:border focus:p-1">
-                        <input type="text" id="rut_cliente" placeholder="RUT Cliente" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
-                        <input type="text" id="direccion" placeholder="Dirección del Proyecto" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
+                        <input type="text" id="cliente" placeholder="Nombre / Razón Social" spellcheck="true" class="font-bold text-gray-800 bg-transparent border-none p-0 text-sm focus:bg-white focus:border focus:p-1">
+                        <input type="text" id="rut_cliente" placeholder="RUT Cliente" spellcheck="false" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
+                        <input type="text" id="direccion" placeholder="Dirección del Proyecto" spellcheck="true" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
+                    </div>
+                </div>
+                <!-- Condiciones -->
+                <div>
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Condiciones Comerciales</h3>
+                    <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs items-center">
+                        <label class="text-gray-500 font-medium">Validez:</label>
+                        <input type="text" value="10 días hábiles" spellcheck="true" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
+                        
+                        <label class="text-gray-500 font-medium">Pago:</label>
+                        <input type="text" value="50% Anticipo / 50% Término" spellcheck="true" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
+                        
+                        <label class="text-gray-500 font-medium">Plazo:</label>
+                        <input type="text" placeholder="A convenir" spellcheck="true" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
                     </div>
                 </div>
                 <!-- Condiciones -->
@@ -190,7 +204,7 @@
                 <div class="md:col-span-7">
                     <div class="bg-yellow-50 p-3 rounded border border-yellow-100 h-full">
                         <h4 class="font-bold text-[10px] text-gray-600 mb-1 uppercase">Observaciones Técnicas</h4>
-                        <textarea id="observaciones" class="w-full h-20 text-xs bg-transparent border-none p-0 text-gray-700 resize-none focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía..."></textarea>
+                        <textarea id="observaciones" spellcheck="true" class="w-full h-20 text-xs bg-transparent border-none p-0 text-gray-700 resize-none focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía..."></textarea>
                     </div>
                 </div>
 
@@ -356,7 +370,7 @@
                 // MODIFICACIÓN: type="text" en el input .price para permitir escribir puntos sin que el navegador bloquee el input
                 row.innerHTML = `
                     <td class="p-2 align-top"><input type="number" class="qty w-full text-center font-bold text-gray-700 bg-transparent focus:bg-white border-transparent focus:border-blue-300 rounded p-1" value="${pQty}" min="1" oninput="this.value = Math.abs(this.value)"></td>
-                    <td class="p-2 align-top"><textarea class="w-full bg-transparent resize-y overflow-hidden border-transparent focus:bg-white focus:border-blue-300 rounded p-1" rows="1" placeholder="Descripción..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${pDesc}</textarea></td>
+                    <td class="p-2 align-top"><textarea class="w-full bg-transparent resize-y overflow-hidden border-transparent focus:bg-white focus:border-blue-300 rounded p-1" rows="1" placeholder="Descripción..." spellcheck="true" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${pDesc}</textarea></td>
                     <td class="p-2 align-top"><input type="text" class="price w-full text-right bg-transparent border-transparent focus:bg-white focus:border-blue-300 rounded p-1" placeholder="0" value="${pPrice}"></td>
                     <td class="p-2 align-top"><input type="text" class="total-neto input-readonly-clean w-full text-right font-mono text-gray-700 font-bold bg-transparent border-none" value="$0" readonly tabindex="-1"></td>
                     <td class="p-2 align-top text-center no-print pt-2">
