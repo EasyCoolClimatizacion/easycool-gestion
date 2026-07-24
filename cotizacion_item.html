@@ -38,6 +38,12 @@
                 max-width: 100% !important;
             }
 
+            /* Evita que el cuadro de totales se corte por la mitad entre 2 hojas */
+            #seccion-totales {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
             /* Inputs transparentes al imprimir */
             input, textarea, select { 
                 border: none !important; 
@@ -45,16 +51,16 @@
                 padding: 0 !important;
                 resize: none;
                 font-family: 'Inter', sans-serif;
-                appearance: none; /* Elimina la flecha del select al imprimir */
+                appearance: none;
+                -webkit-appearance: none;
             }
             input::placeholder, textarea::placeholder { color: transparent; }
             
-            /* Ocultar flechas e iconos del calendario al imprimir */
-            input[type="date"]::-webkit-calendar-picker-indicator,
+            /* Ocultar iconos de calendario en impresión */
             input[type="date"]::-webkit-inner-spin-button,
-            input[type="date"]::-webkit-clear-button {
-                display: none !important;
-                -webkit-appearance: none !important;
+            input[type="date"]::-webkit-calendar-picker-indicator {
+                display: none;
+                -webkit-appearance: none;
             }
             
             /* Colores forzados para impresión */
@@ -81,7 +87,7 @@
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #3B82F6;
-            ring: 2px solid #93C5FD;
+            box-shadow: 0 0 0 2px #93C5FD;
         }
         
         /* Clase para totales (Solo lectura, aspecto limpio) */
@@ -98,22 +104,28 @@
         .input-silent {
             background: transparent;
             border: 1px solid transparent;
-            text-align: center;
         }
         .input-silent:hover { border-color: #e5e7eb; }
         .input-silent:focus { background: white; border-color: #3B82F6; }
+
+        /* Modal Background */
+        #history-modal {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
     </style>
 </head>
 <body class="p-4 sm:p-8 min-h-screen flex flex-col items-center">
 
     <!-- CONTENEDOR PRINCIPAL (Hoja Carta) -->
-    <div class="w-full max-w-[21.59cm] bg-white p-8 sm:p-10 rounded-xl shadow-2xl min-h-[27.94cm] flex flex-col justify-between relative" id="cotizacion-container">
+    <div class="w-full max-w-[21.59cm] bg-white p-8 sm:p-10 rounded-xl shadow-2xl min-h-[27.94cm] flex flex-col justify-between relative mx-auto" id="cotizacion-container">
         
         <!-- CONTENIDO SUPERIOR -->
         <div>
-            <!-- ENCABEZADO (Idéntico al Informe Técnico) -->
+            <!-- ENCABEZADO -->
             <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-6">
-                <div class="w-2/3">
+                <!-- Izquierda: Logo y Empresa -->
+                <div class="flex-1">
                     <svg viewBox="0 0 250 50" class="h-12 w-auto mb-2"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
                     <div class="text-[10px] text-gray-500 leading-tight">
                         <p class="font-bold text-gray-700">EasyCool Climatización</p>
@@ -122,36 +134,37 @@
                         <p>📞 +569 5777 6174 | ✉️ ventas@easycoolclimatizacion.com</p>
                     </div>
                 </div>
-                <div class="w-1/3 text-right">
-                    <h1 class="text-xl font-bold text-gray-800 uppercase">COTIZACIÓN</h1>
-                    <div class="mt-2 flex justify-end">
-                        <!-- Cuadrícula para alinear perfectamente N° y Fecha -->
-                        <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 items-center w-40">
-                            <span class="text-xs font-bold text-gray-500 text-right">N°</span>
-                            <input type="text" id="cotizacion_n" class="w-full text-right text-sm font-bold text-red-600 border border-red-200 bg-red-50 rounded px-1 input-silent" title="Se puede editar manualmente si es necesario">
-                            
-                            <span class="text-xs text-gray-500 text-right">Fecha:</span>
-                            <input type="date" id="fecha" class="w-full text-right text-xs text-gray-600 border-none bg-transparent p-0">
-                        </div>
-                    </div>
+                <!-- Derecha: Cotización y Fecha (Tabla para forzar alineación derecha absoluta) -->
+                <div class="flex-none text-right flex flex-col items-end">
+                    <h1 class="text-xl font-bold text-gray-800 uppercase mb-2">COTIZACIÓN</h1>
+                    <table class="w-auto border-collapse">
+                        <tbody>
+                            <tr>
+                                <td class="text-xs font-bold text-gray-500 text-right pr-2 py-1 align-middle">N°</td>
+                                <td class="p-0 text-right">
+                                    <input type="text" id="cotizacion_n" class="w-28 text-right text-sm font-bold text-red-600 border border-red-200 bg-red-50 rounded px-1 input-silent" style="margin:0;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-xs text-gray-500 text-right pr-2 py-1 align-middle">Fecha:</td>
+                                <td class="p-0 text-right">
+                                    <input type="date" id="fecha" class="w-28 text-right text-xs text-gray-600 border-none bg-transparent p-0 m-0">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </header>
 
             <!-- DATOS CLIENTE & CONDICIONES -->
-            <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
                 <!-- Cliente -->
                 <div>
-                    <div class="flex justify-between items-end mb-2 border-b border-gray-300 pb-1">
-                        <h3 class="text-[10px] font-bold text-gray-500 uppercase">Cliente</h3>
-                        <button id="btnRestaurar" class="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 no-print hidden transition-colors" title="Cargar datos de la última cotización generada">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                            Restaurar Última
-                        </button>
-                    </div>
+                    <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Cliente</h3>
                     <div class="space-y-1">
-                        <input type="text" id="cliente" placeholder="Nombre / Razón Social" spellcheck="true" class="font-bold text-gray-800 bg-transparent border-none p-0 text-sm focus:bg-white focus:border focus:p-1">
-                        <input type="text" id="rut_cliente" placeholder="RUT Cliente" spellcheck="false" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
-                        <input type="text" id="direccion" placeholder="Dirección del Proyecto" spellcheck="true" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
+                        <input type="text" id="cliente" spellcheck="true" placeholder="Nombre / Razón Social" class="font-bold text-gray-800 bg-transparent border-none p-0 text-sm focus:bg-white focus:border focus:p-1">
+                        <input type="text" id="rut_cliente" spellcheck="false" placeholder="RUT Cliente" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
+                        <input type="text" id="direccion" spellcheck="true" placeholder="Dirección del Proyecto" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
                     </div>
                 </div>
                 <!-- Condiciones -->
@@ -159,13 +172,13 @@
                     <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Condiciones Comerciales</h3>
                     <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs items-center">
                         <label class="text-gray-500 font-medium">Validez:</label>
-                        <input type="text" value="10 días hábiles" spellcheck="true" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
+                        <input type="text" id="validez" spellcheck="true" value="10 días hábiles" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
                         
                         <label class="text-gray-500 font-medium">Pago:</label>
-                        <input type="text" value="50% Anticipo / 50% Término" spellcheck="true" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
+                        <input type="text" id="pago" spellcheck="true" value="50% Anticipo / 50% Término" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
                         
                         <label class="text-gray-500 font-medium">Plazo:</label>
-                        <input type="text" placeholder="A convenir" spellcheck="true" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
+                        <input type="text" id="plazo" spellcheck="true" placeholder="A convenir" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
                     </div>
                 </div>
             </section>
@@ -177,8 +190,8 @@
                         <tr class="bg-blue-600 text-white text-[10px] uppercase font-bold tracking-wider">
                             <th class="p-2 w-12 text-center rounded-tl">Cant.</th>
                             <th class="p-2">Descripción del Servicio / Producto</th>
-                            <th class="p-2 w-24 text-right">P. Unitario</th>
-                            <th class="p-2 w-24 text-right rounded-tr">Total Neto</th>
+                            <th class="p-2 w-28 text-right">P. Unitario</th>
+                            <th class="p-2 w-28 text-right rounded-tr">Total Neto</th>
                             <th class="p-2 w-6 no-print bg-white"></th>
                         </tr>
                     </thead>
@@ -191,14 +204,13 @@
                 </button>
             </section>
             
-            <!-- TOTALES Y NOTAS -->
-            <!-- SE AGREGÓ 'break-inside-avoid' a la clase para que el total no se corte al imprimir -->
-            <section class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2 break-inside-avoid">
+            <!-- TOTALES Y NOTAS (Puesto en una caja que evita cortarse al imprimir) -->
+            <section id="seccion-totales" class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2">
                 <!-- Notas (Izquierda) -->
                 <div class="md:col-span-7">
                     <div class="bg-yellow-50 p-3 rounded border border-yellow-100 h-full">
                         <h4 class="font-bold text-[10px] text-gray-600 mb-1 uppercase">Observaciones Técnicas</h4>
-                        <textarea id="observaciones" spellcheck="true" class="w-full h-20 text-xs bg-transparent border-none p-0 text-gray-700 resize-none focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía..."></textarea>
+                        <textarea id="notas" spellcheck="true" class="w-full h-20 text-xs bg-transparent border-none p-0 text-gray-700 resize-none focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía..."></textarea>
                     </div>
                 </div>
 
@@ -211,22 +223,22 @@
                                 <span id="subtotal" class="font-mono font-medium">$0</span>
                             </div>
                             
-                            <!-- MODIFICACIÓN: Descuento dinámico -->
+                            <!-- DESCUENTO DINÁMICO -->
                             <div class="flex justify-between text-gray-600 items-center">
                                 <span>Descuento (-):</span>
-                                <div class="flex items-center gap-1 justify-end">
-                                    <select id="descuento_tipo" class="text-[10px] border border-gray-300 rounded px-1 py-0.5 bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer text-gray-700 no-print" title="Tipo de Descuento">
-                                        <option value="manual">Manual</option>
-                                        <option value="0.03">3%</option>
-                                        <option value="0.05">5%</option>
-                                        <option value="0.07">7%</option>
-                                        <option value="0.10">10%</option>
-                                        <option value="0.15">15%</option>
+                                <div class="flex items-center gap-1 justify-end w-40">
+                                    <select id="tipo_descuento" class="text-[10px] bg-white border border-gray-300 rounded px-1 py-1 h-6 focus:ring-1 focus:ring-blue-500 w-16">
+                                        <option value="manual">Monto</option>
+                                        <option value="3">3%</option>
+                                        <option value="5">5%</option>
+                                        <option value="7">7%</option>
+                                        <option value="10">10%</option>
+                                        <option value="15">15%</option>
                                     </select>
-                                    <input type="text" id="descuento" class="w-20 text-right font-mono bg-white border border-gray-300 rounded px-1 py-0.5 text-xs focus:ring-1 focus:ring-blue-500" placeholder="0">
+                                    <input type="text" id="descuento" class="w-20 text-right font-mono bg-white border border-gray-300 rounded px-1 py-1 h-6 text-xs focus:ring-1 focus:ring-blue-500" placeholder="0" spellcheck="false" oninput="this.value = this.value.replace(/[^0-9.]/g, '')">
                                 </div>
                             </div>
-
+                            
                             <div class="flex justify-between text-gray-600">
                                 <span>IVA (19%):</span>
                                 <span id="iva" class="font-mono font-medium">$0</span>
@@ -241,7 +253,7 @@
             </section>
         </div>
 
-        <!-- PIE DE PÁGINA (Idéntico al Informe Técnico) -->
+        <!-- PIE DE PÁGINA -->
         <footer class="mt-8 pt-4 border-t-2 border-gray-200 text-center">
             <div class="flex flex-col items-center gap-2 mb-2">
                 <p class="text-[10px] font-bold text-gray-600">Síguenos en nuestras redes:</p>
@@ -260,185 +272,68 @@
 
     </div>
 
-    <!-- BOTONES FLOTANTES (Impresión e Historial) -->
-    <div class="fixed bottom-6 right-6 no-print z-50 flex flex-col gap-3 items-end">
-        <!-- Botón Historial -->
-        <button onclick="abrirHistorial()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-full shadow-xl flex items-center gap-2 transition-all transform hover:scale-105 border-2 border-white">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path></svg>
-            Ver Historial
+    <!-- BOTONES FLOTANTES (Imprimir y Ver Historial) -->
+    <div class="fixed bottom-6 right-6 no-print z-40 flex flex-col gap-3">
+        <button onclick="openHistory()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full shadow-lg flex items-center justify-center gap-2 transition-all transform hover:scale-105 border-2 border-white text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><path d="M12 7v5l4 2"></path></svg>
+            Historial
         </button>
-        <!-- Botón Imprimir -->
+        
         <button onclick="printCotizacion()" class="bg-gray-900 hover:bg-black text-white font-bold py-3 px-5 rounded-full shadow-xl flex items-center gap-2 transition-all transform hover:scale-105 border-2 border-white">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
             Imprimir PDF
         </button>
     </div>
 
-    <!-- MODAL HISTORIAL -->
-    <div id="modal-historial" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center p-4 no-print">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
-            <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
-                <h2 class="font-bold text-xl text-gray-800 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path></svg>
-                    Historial de Cotizaciones
-                </h2>
-                <button onclick="cerrarHistorial()" class="text-gray-500 hover:text-red-500 text-3xl font-bold leading-none">&times;</button>
+    <!-- MODAL DE HISTORIAL -->
+    <div id="history-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-lg">
+                <h2 class="text-lg font-bold text-gray-800">Historial de Cotizaciones Guardadas</h2>
+                <button onclick="closeHistory()" class="text-gray-500 hover:text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
-            <div class="overflow-y-auto p-4 flex-1 bg-gray-50">
-                <div id="historial-vacio" class="hidden text-center text-gray-500 py-12 flex-col items-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-gray-300"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    <p>No hay cotizaciones guardadas aún.<br><span class="text-xs">Las cotizaciones se guardan automáticamente al presionar "Imprimir PDF".</span></p>
-                </div>
-                <div class="overflow-x-auto shadow rounded-lg border border-gray-200 bg-white">
-                    <table class="w-full text-sm text-left hidden" id="tabla-historial">
-                        <thead class="text-xs text-gray-700 uppercase bg-blue-50 border-b border-gray-200">
-                            <tr>
-                                <th class="px-4 py-3">N° / Fecha</th>
-                                <th class="px-4 py-3">Cliente</th>
-                                <th class="px-4 py-3 text-right">Total</th>
-                                <th class="px-4 py-3 text-center">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historial-lista" class="divide-y divide-gray-200">
-                            <!-- Llenado dinámicamente -->
-                        </tbody>
-                    </table>
+            <div class="p-4 overflow-y-auto flex-1">
+                <div id="history-list" class="space-y-2">
+                    <!-- Lista de historial insertada vía JS -->
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- CONSTANTES Y UTILIDADES ---
+        const formatCurrency = (value) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+        
+        // Limpia cualquier string (incluso con puntos) y devuelve número
+        const parseCurrency = (str) => {
+            if (!str) return 0;
+            // Quitamos puntos (separador de miles en Chile) y dejamos solo números
+            return parseFloat(String(str).replace(/\./g, '').replace(/[^0-9-]/g, '')) || 0;
+        };
+
+        const itemsBody = document.getElementById('items-body');
+        const discountSelect = document.getElementById('tipo_descuento');
+        const discountInput = document.getElementById('descuento');
+
         document.addEventListener('DOMContentLoaded', () => {
-            // --- LÓGICA DE FOLIO AUTOMÁTICO INTELIGENTE ---
+            // --- FOLIO ---
             const folioInput = document.getElementById('cotizacion_n');
             const currentYear = new Date().getFullYear();
-            
-            // Recuperar último estado guardado
             const lastYear = localStorage.getItem('easycool_cot_year');
             let nextNum = parseInt(localStorage.getItem('easycool_cot_num') || '1');
 
-            // Si cambiamos de año, reiniciar contador a 1
-            if (lastYear && parseInt(lastYear) !== currentYear) {
-                nextNum = 1;
-            }
+            if (lastYear && parseInt(lastYear) !== currentYear) nextNum = 1;
 
-            // Formatear número (ej: 1 -> 01)
-            const formattedNum = nextNum.toString().padStart(2, '0');
-            const newFolio = `${currentYear}-${formattedNum}`;
-            
-            // Asignar al input
-            folioInput.value = newFolio;
-
-            // Guardar el año actual para futuras comprobaciones
+            const formattedNum = nextNum.toString().padStart(4, '0');
+            if(!folioInput.value) folioInput.value = `${currentYear}-${formattedNum}`;
             localStorage.setItem('easycool_cot_year', currentYear);
-            // --- FIN LÓGICA FOLIO ---
 
-            const itemsBody = document.getElementById('items-body');
-            const addRowBtn = document.getElementById('addRow');
-            
-            const discountInput = document.getElementById('descuento');
-            const discountTypeSelect = document.getElementById('descuento_tipo');
-            
-            const formatCurrency = (value) => {
-                return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
-            };
-
-            const parseCurrency = (str) => {
-                // Remueve cualquier caracter que no sea número, limpiando así los puntos y comas
-                return parseFloat(str.replace(/[^0-9-]/g, '')) || 0;
-            };
-
-            const calculateTotals = () => {
-                let subtotal = 0;
-                const rows = itemsBody.querySelectorAll('tr');
-
-                rows.forEach(row => {
-                    const qtyInput = row.querySelector('.qty');
-                    const priceInput = row.querySelector('.price');
-                    const totalInput = row.querySelector('.total-neto');
-
-                    if(qtyInput && priceInput) {
-                        const qty = parseFloat(qtyInput.value) || 0;
-                        // MODIFICACIÓN: Usar parseCurrency aquí permite que el usuario ingrese puntos
-                        const price = parseCurrency(priceInput.value); 
-                        const rowTotal = qty * price;
-                        
-                        if(totalInput) totalInput.value = formatCurrency(rowTotal);
-                        subtotal += rowTotal;
-                    }
-                });
-
-                // MODIFICACIÓN: Lógica de descuento con selector de porcentaje
-                let discount = 0;
-                
-                // Si el selector no está en "manual", calculamos el porcentaje automáticamente
-                if (discountTypeSelect.value !== 'manual') {
-                    const percent = parseFloat(discountTypeSelect.value);
-                    discount = Math.round(subtotal * percent);
-                    
-                    // Mostramos el descuento calculado y lo bloqueamos
-                    discountInput.value = discount; 
-                    discountInput.readOnly = true;
-                    discountInput.classList.add('bg-gray-100', 'text-gray-500');
-                } else {
-                    // Si es manual, leemos lo que el usuario haya escrito usando parseCurrency (acepta puntos)
-                    discountInput.readOnly = false;
-                    discountInput.classList.remove('bg-gray-100', 'text-gray-500');
-                    discount = parseCurrency(discountInput.value) || 0;
-                }
-
-                const taxableAmount = Math.max(0, subtotal - discount); 
-                const iva = taxableAmount * 0.19;
-                const total = taxableAmount + iva;
-
-                document.getElementById('subtotal').textContent = formatCurrency(subtotal);
-                document.getElementById('iva').textContent = formatCurrency(iva);
-                document.getElementById('total').textContent = formatCurrency(total);
-            };
-            
-            // Exponer al scope global para que el historial pueda usarlas
-            window.calculateTotalsGlobal = calculateTotals; 
-
-            const createRow = (pQty = 1, pDesc = '', pPrice = '') => {
-                const row = document.createElement('tr');
-                row.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors group align-top';
-                
-                // MODIFICACIÓN: type="text" en el input .price para permitir escribir puntos sin que el navegador bloquee el input
-                row.innerHTML = `
-                    <td class="p-2 align-top"><input type="number" class="qty w-full text-center font-bold text-gray-700 bg-transparent focus:bg-white border-transparent focus:border-blue-300 rounded p-1" value="${pQty}" min="1" oninput="this.value = Math.abs(this.value)"></td>
-                    <td class="p-2 align-top"><textarea class="w-full bg-transparent resize-y overflow-hidden border-transparent focus:bg-white focus:border-blue-300 rounded p-1" rows="1" placeholder="Descripción..." spellcheck="true" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${pDesc}</textarea></td>
-                    <td class="p-2 align-top"><input type="text" class="price w-full text-right bg-transparent border-transparent focus:bg-white focus:border-blue-300 rounded p-1" placeholder="0" value="${pPrice}"></td>
-                    <td class="p-2 align-top"><input type="text" class="total-neto input-readonly-clean w-full text-right font-mono text-gray-700 font-bold bg-transparent border-none" value="$0" readonly tabindex="-1"></td>
-                    <td class="p-2 align-top text-center no-print pt-2">
-                        <button class="delete-row text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        </button>
-                    </td>
-                `;
-                itemsBody.appendChild(row);
-                
-                const inputs = row.querySelectorAll('input, textarea');
-                inputs.forEach(input => {
-                    input.addEventListener('input', calculateTotals);
-                });
-
-                // Ajustar altura del textarea si viene con contenido del historial
-                const textarea = row.querySelector('textarea');
-                if(pDesc) {
-                    setTimeout(() => {
-                        textarea.style.height = '';
-                        textarea.style.height = textarea.scrollHeight + 'px';
-                    }, 10);
-                }
-            };
-            
-            // Exponer al scope global para que el historial pueda usarlas
-            window.createRowGlobal = createRow;
-
-            // Event Listeners
+            // Event Listeners principales
+            document.getElementById('addRow').addEventListener('click', createRow);
+            discountSelect.addEventListener('change', calculateTotals);
             discountInput.addEventListener('input', calculateTotals);
-            discountTypeSelect.addEventListener('change', calculateTotals); // Nuevo event listener
 
             itemsBody.addEventListener('click', (e) => {
                 if (e.target.closest('.delete-row')) {
@@ -454,219 +349,223 @@
                 }
             });
 
-            addRowBtn.addEventListener('click', () => createRow());
-
-            // --- LÓGICA DE HISTORIAL DE COTIZACIÓN ---
-            const btnRestaurar = document.getElementById('btnRestaurar');
-            const lastQuoteStr = localStorage.getItem('easycool_last_quote');
-            
-            // Mostrar el botón si existe un historial guardado
-            if (lastQuoteStr) {
-                btnRestaurar.classList.remove('hidden');
-            }
-
-            btnRestaurar.addEventListener('click', () => {
-                if(confirm('¿Deseas sobreescribir los datos actuales con la última cotización generada?')) {
-                    try {
-                        const data = JSON.parse(localStorage.getItem('easycool_last_quote'));
-                        
-                        document.getElementById('cliente').value = data.cliente || '';
-                        document.getElementById('rut_cliente').value = data.rut_cliente || '';
-                        document.getElementById('direccion').value = data.direccion || '';
-                        
-                        // Observaciones
-                        document.getElementById('observaciones').value = data.notas || '';
-                        
-                        // Descuento
-                        const descTipo = document.getElementById('descuento_tipo');
-                        descTipo.value = data.descuento_tipo || 'manual';
-                        
-                        const descInput = document.getElementById('descuento');
-                        descInput.value = data.descuento || '';
-                        
-                        if (data.descuento_tipo !== 'manual') {
-                            descInput.readOnly = true;
-                            descInput.classList.add('bg-gray-100', 'text-gray-500');
-                        } else {
-                            descInput.readOnly = false;
-                            descInput.classList.remove('bg-gray-100', 'text-gray-500');
-                        }
-                        
-                        // Items
-                        itemsBody.innerHTML = ''; // Limpiar filas actuales
-                        if(data.items && data.items.length > 0) {
-                            data.items.forEach(item => {
-                                createRow(item.qty, item.desc, item.price);
-                            });
-                        } else {
-                            createRow();
-                        }
-                        
-                        calculateTotals();
-                        // Mostrar pequeña confirmación visual o mediante mensaje temporal
-                    } catch(e) {
-                        console.error('Error al cargar historial', e);
-                    }
-                }
-            });
-            // --- FIN LÓGICA DE HISTORIAL ---
-
-            // Inicialización
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('fecha').value = today;
-            
-            // Fila inicial única
+            document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
             createRow();
             calculateTotals();
         });
 
-        // Función de Impresión con nombre dinámico y actualización de folio
+        // --- CÁLCULOS MATEMÁTICOS ---
+        const calculateTotals = () => {
+            let subtotal = 0;
+            const rows = itemsBody.querySelectorAll('tr');
+
+            // 1. Calcular filas
+            rows.forEach(row => {
+                const qtyInput = row.querySelector('.qty');
+                const priceInput = row.querySelector('.price');
+                const totalInput = row.querySelector('.total-neto');
+
+                if(qtyInput && priceInput) {
+                    const qty = parseFloat(qtyInput.value) || 0;
+                    const price = parseCurrency(priceInput.value); 
+                    const rowTotal = qty * price;
+                    
+                    if(totalInput) totalInput.value = formatCurrency(rowTotal);
+                    subtotal += rowTotal;
+                }
+            });
+
+            // 2. Calcular Descuento (Manual o Porcentaje)
+            let discountMonto = 0;
+            if (discountSelect.value === 'manual') {
+                discountInput.readOnly = false;
+                discountInput.classList.remove('bg-gray-100', 'text-gray-500');
+                discountMonto = parseCurrency(discountInput.value);
+            } else {
+                discountInput.readOnly = true;
+                discountInput.classList.add('bg-gray-100', 'text-gray-500');
+                const porcentaje = parseFloat(discountSelect.value) / 100;
+                discountMonto = subtotal * porcentaje;
+                // Mostrar el valor numérico en el input bloqueado (sin el signo $)
+                discountInput.value = Math.round(discountMonto).toLocaleString('es-CL');
+            }
+
+            // 3. Totales Finales
+            const taxableAmount = Math.max(0, subtotal - discountMonto); 
+            const iva = taxableAmount * 0.19;
+            const total = taxableAmount + iva;
+
+            document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+            document.getElementById('iva').textContent = formatCurrency(iva);
+            document.getElementById('total').textContent = formatCurrency(total);
+        };
+
+        const createRow = (data = null) => {
+            const row = document.createElement('tr');
+            row.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors group align-top';
+            
+            // Si le pasamos datos (desde historial), los carga, sino vacío
+            const qty = data ? data.qty : 1;
+            const desc = data ? data.desc : '';
+            const price = data ? data.price : '';
+
+            row.innerHTML = `
+                <td class="p-2 align-top"><input type="number" class="qty w-full text-center font-bold text-gray-700 bg-transparent focus:bg-white border-transparent focus:border-blue-300 rounded p-1" value="${qty}" min="1" oninput="this.value = Math.abs(this.value); calculateTotals();"></td>
+                <td class="p-2 align-top"><textarea class="w-full bg-transparent resize-y overflow-hidden border-transparent focus:bg-white focus:border-blue-300 rounded p-1" rows="1" placeholder="Descripción..." spellcheck="true" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; calculateTotals();">${desc}</textarea></td>
+                <td class="p-2 align-top"><input type="text" class="price w-full text-right bg-transparent border-transparent focus:bg-white focus:border-blue-300 rounded p-1" placeholder="0" value="${price}" spellcheck="false" oninput="this.value = this.value.replace(/[^0-9.]/g, ''); calculateTotals();"></td>
+                <td class="p-2 align-top"><input type="text" class="total-neto input-readonly-clean w-full text-right font-mono text-gray-700 font-bold bg-transparent border-none" value="$0" readonly tabindex="-1"></td>
+                <td class="p-2 align-top text-center no-print pt-2">
+                    <button class="delete-row text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </td>
+            `;
+            itemsBody.appendChild(row);
+            
+            // Ajustar altura de textarea si venía con datos
+            const textarea = row.querySelector('textarea');
+            textarea.style.height = textarea.scrollHeight + 'px';
+        };
+
+        // --- SISTEMA DE HISTORIAL Y GUARDADO ---
+        function saveToHistory() {
+            const num = document.getElementById('cotizacion_n').value;
+            const cliente = document.getElementById('cliente').value || 'Cliente sin nombre';
+            const totalStr = document.getElementById('total').textContent;
+            
+            // Recolectar Items
+            const items = [];
+            document.querySelectorAll('#items-body tr').forEach(row => {
+                items.push({
+                    qty: row.querySelector('.qty').value,
+                    desc: row.querySelector('textarea').value,
+                    price: row.querySelector('.price').value
+                });
+            });
+
+            const data = {
+                id: Date.now(),
+                fechaReal: new Date().toLocaleString('es-CL'),
+                numero: num,
+                fecha: document.getElementById('fecha').value,
+                cliente: cliente,
+                rut: document.getElementById('rut_cliente').value,
+                direccion: document.getElementById('direccion').value,
+                validez: document.getElementById('validez').value,
+                pago: document.getElementById('pago').value,
+                plazo: document.getElementById('plazo').value,
+                notas: document.getElementById('notas').value,
+                tipoDesc: discountSelect.value,
+                montoDesc: discountInput.value,
+                items: items,
+                total: totalStr
+            };
+
+            let history = JSON.parse(localStorage.getItem('easycool_history') || '[]');
+            // Evitar duplicar guardado exacto. Revisar el último guardado.
+            if(history.length > 0 && history[0].numero === num && history[0].cliente === cliente && history[0].total === totalStr) {
+                history[0] = data; // Actualiza el último
+            } else {
+                history.unshift(data); // Añade al principio
+            }
+            
+            // Guardar máximo 50 cotizaciones
+            if (history.length > 50) history.pop();
+            localStorage.setItem('easycool_history', JSON.stringify(history));
+        }
+
+        function loadHistoryData(id) {
+            const history = JSON.parse(localStorage.getItem('easycool_history') || '[]');
+            const data = history.find(h => h.id === id);
+            
+            if(!data) return;
+
+            document.getElementById('cotizacion_n').value = data.numero;
+            document.getElementById('fecha').value = data.fecha;
+            document.getElementById('cliente').value = data.cliente;
+            document.getElementById('rut_cliente').value = data.rut || '';
+            document.getElementById('direccion').value = data.direccion || '';
+            document.getElementById('validez').value = data.validez || '';
+            document.getElementById('pago').value = data.pago || '';
+            document.getElementById('plazo').value = data.plazo || '';
+            document.getElementById('notas').value = data.notas || '';
+            
+            discountSelect.value = data.tipoDesc || 'manual';
+            discountInput.value = data.montoDesc || '';
+
+            // Limpiar items actuales y crear nuevos
+            itemsBody.innerHTML = '';
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(item => createRow(item));
+            } else {
+                createRow();
+            }
+
+            calculateTotals();
+            closeHistory();
+        }
+
+        function openHistory() {
+            const modal = document.getElementById('history-modal');
+            const list = document.getElementById('history-list');
+            const history = JSON.parse(localStorage.getItem('easycool_history') || '[]');
+            
+            list.innerHTML = '';
+            
+            if (history.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-center py-8">No hay cotizaciones guardadas en este dispositivo.</p>';
+            } else {
+                history.forEach(h => {
+                    const item = document.createElement('div');
+                    item.className = 'border border-gray-200 rounded p-3 flex justify-between items-center hover:bg-blue-50 transition-colors bg-white';
+                    item.innerHTML = `
+                        <div>
+                            <p class="font-bold text-gray-800 text-sm">Cotización Nº ${h.numero}</p>
+                            <p class="text-xs text-gray-600">${h.cliente}</p>
+                            <p class="text-[10px] text-gray-400 mt-1">Guardada: ${h.fechaReal}</p>
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="font-bold text-blue-600">${h.total}</span>
+                            <button onclick="loadHistoryData(${h.id})" class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded font-bold hover:bg-blue-200">
+                                Cargar
+                            </button>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeHistory() {
+            document.getElementById('history-modal').classList.add('hidden');
+        }
+
+        // --- FUNCIÓN DE IMPRESIÓN ---
         function printCotizacion() {
+            saveToHistory(); // Guardar antes de imprimir
+            
             const numeroInput = document.getElementById('cotizacion_n');
             const cliente = document.getElementById('cliente').value || 'Cliente';
             const safeCliente = cliente.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim();
-            
-            // --- GUARDAR HISTORIAL ANTES DE IMPRIMIR ---
-            const items = [];
-            document.querySelectorAll('#items-body tr').forEach(row => {
-                const qty = row.querySelector('.qty').value;
-                const desc = row.querySelector('textarea').value;
-                const price = row.querySelector('.price').value;
-                if(qty || desc || price) {
-                    items.push({ qty, desc, price });
-                }
-            });
-            
-            const quoteData = {
-                id: Date.now(), // Identificador único
-                folio: numeroInput.value,
-                fechaFormato: new Date().toLocaleDateString('es-CL'),
-                totalVisual: document.getElementById('total').textContent,
-                cliente: document.getElementById('cliente').value,
-                rut_cliente: document.getElementById('rut_cliente').value,
-                direccion: document.getElementById('direccion').value,
-                notas: document.getElementById('observaciones').value,
-                descuento_tipo: document.getElementById('descuento_tipo') ? document.getElementById('descuento_tipo').value : 'manual',
-                descuento: document.getElementById('descuento').value,
-                items: items
-            };
-            
-            // Guardar en array de historial general
-            let history = JSON.parse(localStorage.getItem('easycool_history') || '[]');
-            history.unshift(quoteData); 
-            if(history.length > 50) history.pop(); // Limitar a las últimas 50 cotizaciones
-            localStorage.setItem('easycool_history', JSON.stringify(history));
-            
-            // Mantenemos esta variable por compatibilidad
-            localStorage.setItem('easycool_last_quote', JSON.stringify(quoteData));
-            // --- FIN GUARDAR HISTORIAL ---
-
             const originalTitle = document.title;
-            // CAMBIO: Nombre del archivo PDF formateado como solicitado
+            
             document.title = `cotización Nº${numeroInput.value} - ${safeCliente}`;
             
             setTimeout(() => {
                 window.print();
                 
-                // --- ACTUALIZAR CONTADOR PARA LA PRÓXIMA ---
-                // Solo incrementamos si se imprimió correctamente
-                // Extraemos el número actual del input (ej: "2025-01" -> 1)
+                // Actualizar Folio
                 const parts = numeroInput.value.split('-');
                 if(parts.length === 2) {
                     const currentNum = parseInt(parts[1]);
                     if (!isNaN(currentNum)) {
-                        // Guardamos el SIGUIENTE número (actual + 1)
                         localStorage.setItem('easycool_cot_num', currentNum + 1);
                     }
                 }
-                
                 setTimeout(() => { document.title = originalTitle; }, 500);
             }, 100);
-        }
-
-        // --- FUNCIONES DEL MODAL DE HISTORIAL ---
-        function abrirHistorial() {
-            const modal = document.getElementById('modal-historial');
-            const lista = document.getElementById('historial-lista');
-            const msjVacio = document.getElementById('historial-vacio');
-            const tabla = document.getElementById('tabla-historial');
-            
-            const history = JSON.parse(localStorage.getItem('easycool_history') || '[]');
-            
-            lista.innerHTML = '';
-            if(history.length === 0) {
-                msjVacio.classList.remove('hidden');
-                msjVacio.classList.add('flex');
-                tabla.classList.add('hidden');
-            } else {
-                msjVacio.classList.add('hidden');
-                msjVacio.classList.remove('flex');
-                tabla.classList.remove('hidden');
-                
-                history.forEach(quote => {
-                    const row = document.createElement('tr');
-                    row.className = 'hover:bg-blue-50 transition-colors';
-                    row.innerHTML = `
-                        <td class="px-4 py-3 whitespace-nowrap"><span class="font-bold text-red-600">${quote.folio || 'N/A'}</span><br><span class="text-xs text-gray-500">${quote.fechaFormato || ''}</span></td>
-                        <td class="px-4 py-3 font-medium text-gray-800">${quote.cliente || 'Sin nombre'}</td>
-                        <td class="px-4 py-3 text-right font-mono font-bold text-blue-600">${quote.totalVisual || '$0'}</td>
-                        <td class="px-4 py-3 text-center">
-                            <button onclick="cargarCotizacion(${quote.id})" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm">
-                                Cargar Datos
-                            </button>
-                        </td>
-                    `;
-                    lista.appendChild(row);
-                });
-            }
-            modal.classList.remove('hidden');
-        }
-
-        function cerrarHistorial() {
-            document.getElementById('modal-historial').classList.add('hidden');
-        }
-
-        function cargarCotizacion(id) {
-            if(!confirm('¿Deseas cargar esta cotización? Los datos actuales en pantalla serán reemplazados.')) return;
-            
-            const history = JSON.parse(localStorage.getItem('easycool_history') || '[]');
-            const data = history.find(q => q.id === id);
-            
-            if(data) {
-                document.getElementById('cliente').value = data.cliente || '';
-                document.getElementById('rut_cliente').value = data.rut_cliente || '';
-                document.getElementById('direccion').value = data.direccion || '';
-                document.getElementById('observaciones').value = data.notas || '';
-                
-                const descTipo = document.getElementById('descuento_tipo');
-                if(descTipo) descTipo.value = data.descuento_tipo || 'manual';
-                
-                const descInput = document.getElementById('descuento');
-                if(descInput) {
-                    descInput.value = data.descuento || '';
-                    if (data.descuento_tipo && data.descuento_tipo !== 'manual') {
-                        descInput.readOnly = true;
-                        descInput.classList.add('bg-gray-100', 'text-gray-500');
-                    } else {
-                        descInput.readOnly = false;
-                        descInput.classList.remove('bg-gray-100', 'text-gray-500');
-                    }
-                }
-                
-                const itemsBody = document.getElementById('items-body');
-                itemsBody.innerHTML = ''; // Limpiar filas actuales
-                
-                if(data.items && data.items.length > 0 && window.createRowGlobal) {
-                    data.items.forEach(item => {
-                        window.createRowGlobal(item.qty, item.desc, item.price);
-                    });
-                } else if(window.createRowGlobal) {
-                    window.createRowGlobal();
-                }
-                
-                if(window.calculateTotalsGlobal) window.calculateTotalsGlobal();
-                cerrarHistorial();
-            }
         }
     </script>
 </body>
