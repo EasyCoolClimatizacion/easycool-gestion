@@ -39,12 +39,13 @@
             }
 
             /* Inputs transparentes al imprimir */
-            input, textarea { 
+            input, textarea, select { 
                 border: none !important; 
                 background-color: transparent !important;
                 padding: 0 !important;
                 resize: none;
                 font-family: 'Inter', sans-serif;
+                appearance: none; /* Elimina la flecha del select al imprimir */
             }
             input::placeholder, textarea::placeholder { color: transparent; }
             
@@ -59,7 +60,7 @@
         }
 
         /* Estilos de Inputs en pantalla */
-        input, textarea {
+        input, textarea, select {
             border: 1px solid #D1D5DB;
             padding: 6px 8px;
             border-radius: 4px;
@@ -69,7 +70,7 @@
             font-family: 'Inter', sans-serif;
             font-size: 0.875rem; /* text-sm */
         }
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #3B82F6;
             ring: 2px solid #93C5FD;
@@ -195,12 +196,23 @@
                                 <span>Subtotal Neto:</span>
                                 <span id="subtotal" class="font-mono font-medium">$0</span>
                             </div>
+                            
+                            <!-- MODIFICACIÓN: Descuento dinámico -->
                             <div class="flex justify-between text-gray-600 items-center">
                                 <span>Descuento (-):</span>
-                                <div class="flex items-center gap-1 w-20 justify-end">
-                                    <input type="number" id="descuento" class="w-full text-right font-mono bg-white border border-gray-300 rounded px-1 py-0.5 text-xs focus:ring-1 focus:ring-blue-500" placeholder="0" min="0">
+                                <div class="flex items-center gap-1 justify-end">
+                                    <select id="descuento_tipo" class="text-[10px] border border-gray-300 rounded px-1 py-0.5 bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer text-gray-700 no-print" title="Tipo de Descuento">
+                                        <option value="manual">Manual</option>
+                                        <option value="0.03">3%</option>
+                                        <option value="0.05">5%</option>
+                                        <option value="0.07">7%</option>
+                                        <option value="0.10">10%</option>
+                                        <option value="0.15">15%</option>
+                                    </select>
+                                    <input type="text" id="descuento" class="w-20 text-right font-mono bg-white border border-gray-300 rounded px-1 py-0.5 text-xs focus:ring-1 focus:ring-blue-500" placeholder="0">
                                 </div>
                             </div>
+
                             <div class="flex justify-between text-gray-600">
                                 <span>IVA (19%):</span>
                                 <span id="iva" class="font-mono font-medium">$0</span>
@@ -266,18 +278,20 @@
 
             // Guardar el año actual para futuras comprobaciones
             localStorage.setItem('easycool_cot_year', currentYear);
-
             // --- FIN LÓGICA FOLIO ---
 
             const itemsBody = document.getElementById('items-body');
             const addRowBtn = document.getElementById('addRow');
+            
             const discountInput = document.getElementById('descuento');
+            const discountTypeSelect = document.getElementById('descuento_tipo');
             
             const formatCurrency = (value) => {
                 return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
             };
 
             const parseCurrency = (str) => {
+                // Remueve cualquier caracter que no sea número, limpiando así los puntos y comas
                 return parseFloat(str.replace(/[^0-9-]/g, '')) || 0;
             };
 
@@ -292,7 +306,8 @@
 
                     if(qtyInput && priceInput) {
                         const qty = parseFloat(qtyInput.value) || 0;
-                        const price = parseFloat(priceInput.value) || 0;
+                        // MODIFICACIÓN: Usar parseCurrency aquí permite que el usuario ingrese puntos
+                        const price = parseCurrency(priceInput.value); 
                         const rowTotal = qty * price;
                         
                         if(totalInput) totalInput.value = formatCurrency(rowTotal);
@@ -300,7 +315,25 @@
                     }
                 });
 
-                const discount = parseFloat(discountInput.value) || 0;
+                // MODIFICACIÓN: Lógica de descuento con selector de porcentaje
+                let discount = 0;
+                
+                // Si el selector no está en "manual", calculamos el porcentaje automáticamente
+                if (discountTypeSelect.value !== 'manual') {
+                    const percent = parseFloat(discountTypeSelect.value);
+                    discount = Math.round(subtotal * percent);
+                    
+                    // Mostramos el descuento calculado y lo bloqueamos
+                    discountInput.value = discount; 
+                    discountInput.readOnly = true;
+                    discountInput.classList.add('bg-gray-100', 'text-gray-500');
+                } else {
+                    // Si es manual, leemos lo que el usuario haya escrito usando parseCurrency (acepta puntos)
+                    discountInput.readOnly = false;
+                    discountInput.classList.remove('bg-gray-100', 'text-gray-500');
+                    discount = parseCurrency(discountInput.value) || 0;
+                }
+
                 const taxableAmount = Math.max(0, subtotal - discount); 
                 const iva = taxableAmount * 0.19;
                 const total = taxableAmount + iva;
@@ -314,10 +347,11 @@
                 const row = document.createElement('tr');
                 row.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors group align-top';
                 
+                // MODIFICACIÓN: type="text" en el input .price para permitir escribir puntos sin que el navegador bloquee el input
                 row.innerHTML = `
                     <td class="p-2 align-top"><input type="number" class="qty w-full text-center font-bold text-gray-700 bg-transparent focus:bg-white border-transparent focus:border-blue-300 rounded p-1" value="1" min="1" oninput="this.value = Math.abs(this.value)"></td>
                     <td class="p-2 align-top"><textarea class="w-full bg-transparent resize-y overflow-hidden border-transparent focus:bg-white focus:border-blue-300 rounded p-1" rows="1" placeholder="Descripción..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></td>
-                    <td class="p-2 align-top"><input type="number" class="price w-full text-right bg-transparent border-transparent focus:bg-white focus:border-blue-300 rounded p-1" placeholder="0" min="0"></td>
+                    <td class="p-2 align-top"><input type="text" class="price w-full text-right bg-transparent border-transparent focus:bg-white focus:border-blue-300 rounded p-1" placeholder="0"></td>
                     <td class="p-2 align-top"><input type="text" class="total-neto input-readonly-clean w-full text-right font-mono text-gray-700 font-bold bg-transparent border-none" value="$0" readonly tabindex="-1"></td>
                     <td class="p-2 align-top text-center no-print pt-2">
                         <button class="delete-row text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
@@ -335,6 +369,7 @@
 
             // Event Listeners
             discountInput.addEventListener('input', calculateTotals);
+            discountTypeSelect.addEventListener('change', calculateTotals); // Nuevo event listener
 
             itemsBody.addEventListener('click', (e) => {
                 if (e.target.closest('.delete-row')) {
@@ -356,7 +391,7 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('fecha').value = today;
             
-            // Fila inicial única (CAMBIO SOLICITADO)
+            // Fila inicial única
             createRow();
             calculateTotals();
         });
