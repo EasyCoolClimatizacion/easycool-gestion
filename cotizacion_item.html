@@ -161,20 +161,6 @@
                         <input type="text" placeholder="A convenir" spellcheck="true" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
                     </div>
                 </div>
-                <!-- Condiciones -->
-                <div>
-                    <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Condiciones Comerciales</h3>
-                    <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs items-center">
-                        <label class="text-gray-500 font-medium">Validez:</label>
-                        <input type="text" value="10 días hábiles" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
-                        
-                        <label class="text-gray-500 font-medium">Pago:</label>
-                        <input type="text" value="50% Anticipo / 50% Término" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
-                        
-                        <label class="text-gray-500 font-medium">Plazo:</label>
-                        <input type="text" placeholder="A convenir" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
-                    </div>
-                </div>
             </section>
 
             <!-- TABLA DE ÍTEMS -->
@@ -199,7 +185,8 @@
             </section>
             
             <!-- TOTALES Y NOTAS -->
-            <section class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2">
+            <!-- SE AGREGÓ 'break-inside-avoid' a la clase para que el total no se corte al imprimir -->
+            <section class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2 break-inside-avoid">
                 <!-- Notas (Izquierda) -->
                 <div class="md:col-span-7">
                     <div class="bg-yellow-50 p-3 rounded border border-yellow-100 h-full">
@@ -266,12 +253,52 @@
 
     </div>
 
-    <!-- BOTÓN DE IMPRESIÓN FLOTANTE -->
-    <div class="fixed bottom-6 right-6 no-print z-50">
+    <!-- BOTONES FLOTANTES (Impresión e Historial) -->
+    <div class="fixed bottom-6 right-6 no-print z-50 flex flex-col gap-3 items-end">
+        <!-- Botón Historial -->
+        <button onclick="abrirHistorial()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-full shadow-xl flex items-center gap-2 transition-all transform hover:scale-105 border-2 border-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path></svg>
+            Ver Historial
+        </button>
+        <!-- Botón Imprimir -->
         <button onclick="printCotizacion()" class="bg-gray-900 hover:bg-black text-white font-bold py-3 px-5 rounded-full shadow-xl flex items-center gap-2 transition-all transform hover:scale-105 border-2 border-white">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
             Imprimir PDF
         </button>
+    </div>
+
+    <!-- MODAL HISTORIAL -->
+    <div id="modal-historial" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="font-bold text-xl text-gray-800 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path></svg>
+                    Historial de Cotizaciones
+                </h2>
+                <button onclick="cerrarHistorial()" class="text-gray-500 hover:text-red-500 text-3xl font-bold leading-none">&times;</button>
+            </div>
+            <div class="overflow-y-auto p-4 flex-1 bg-gray-50">
+                <div id="historial-vacio" class="hidden text-center text-gray-500 py-12 flex-col items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-gray-300"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <p>No hay cotizaciones guardadas aún.<br><span class="text-xs">Las cotizaciones se guardan automáticamente al presionar "Imprimir PDF".</span></p>
+                </div>
+                <div class="overflow-x-auto shadow rounded-lg border border-gray-200 bg-white">
+                    <table class="w-full text-sm text-left hidden" id="tabla-historial">
+                        <thead class="text-xs text-gray-700 uppercase bg-blue-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-4 py-3">N° / Fecha</th>
+                                <th class="px-4 py-3">Cliente</th>
+                                <th class="px-4 py-3 text-right">Total</th>
+                                <th class="px-4 py-3 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historial-lista" class="divide-y divide-gray-200">
+                            <!-- Llenado dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -362,6 +389,9 @@
                 document.getElementById('iva').textContent = formatCurrency(iva);
                 document.getElementById('total').textContent = formatCurrency(total);
             };
+            
+            // Exponer al scope global para que el historial pueda usarlas
+            window.calculateTotalsGlobal = calculateTotals; 
 
             const createRow = (pQty = 1, pDesc = '', pPrice = '') => {
                 const row = document.createElement('tr');
@@ -395,6 +425,9 @@
                     }, 10);
                 }
             };
+            
+            // Exponer al scope global para que el historial pueda usarlas
+            window.createRowGlobal = createRow;
 
             // Event Listeners
             discountInput.addEventListener('input', calculateTotals);
@@ -498,19 +531,27 @@
             });
             
             const quoteData = {
+                id: Date.now(), // Identificador único
+                folio: numeroInput.value,
+                fechaFormato: new Date().toLocaleDateString('es-CL'),
+                totalVisual: document.getElementById('total').textContent,
                 cliente: document.getElementById('cliente').value,
                 rut_cliente: document.getElementById('rut_cliente').value,
                 direccion: document.getElementById('direccion').value,
                 notas: document.getElementById('observaciones').value,
-                descuento_tipo: document.getElementById('descuento_tipo').value,
+                descuento_tipo: document.getElementById('descuento_tipo') ? document.getElementById('descuento_tipo').value : 'manual',
                 descuento: document.getElementById('descuento').value,
                 items: items
             };
-            localStorage.setItem('easycool_last_quote', JSON.stringify(quoteData));
             
-            // Asegurar que el botón de restaurar sea visible tras guardar
-            const btnRestaurar = document.getElementById('btnRestaurar');
-            if(btnRestaurar) btnRestaurar.classList.remove('hidden');
+            // Guardar en array de historial general
+            let history = JSON.parse(localStorage.getItem('easycool_history') || '[]');
+            history.unshift(quoteData); 
+            if(history.length > 50) history.pop(); // Limitar a las últimas 50 cotizaciones
+            localStorage.setItem('easycool_history', JSON.stringify(history));
+            
+            // Mantenemos esta variable por compatibilidad
+            localStorage.setItem('easycool_last_quote', JSON.stringify(quoteData));
             // --- FIN GUARDAR HISTORIAL ---
 
             const originalTitle = document.title;
@@ -534,6 +575,91 @@
                 
                 setTimeout(() => { document.title = originalTitle; }, 500);
             }, 100);
+        }
+
+        // --- FUNCIONES DEL MODAL DE HISTORIAL ---
+        function abrirHistorial() {
+            const modal = document.getElementById('modal-historial');
+            const lista = document.getElementById('historial-lista');
+            const msjVacio = document.getElementById('historial-vacio');
+            const tabla = document.getElementById('tabla-historial');
+            
+            const history = JSON.parse(localStorage.getItem('easycool_history') || '[]');
+            
+            lista.innerHTML = '';
+            if(history.length === 0) {
+                msjVacio.classList.remove('hidden');
+                msjVacio.classList.add('flex');
+                tabla.classList.add('hidden');
+            } else {
+                msjVacio.classList.add('hidden');
+                msjVacio.classList.remove('flex');
+                tabla.classList.remove('hidden');
+                
+                history.forEach(quote => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-blue-50 transition-colors';
+                    row.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap"><span class="font-bold text-red-600">${quote.folio || 'N/A'}</span><br><span class="text-xs text-gray-500">${quote.fechaFormato || ''}</span></td>
+                        <td class="px-4 py-3 font-medium text-gray-800">${quote.cliente || 'Sin nombre'}</td>
+                        <td class="px-4 py-3 text-right font-mono font-bold text-blue-600">${quote.totalVisual || '$0'}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="cargarCotizacion(${quote.id})" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm">
+                                Cargar Datos
+                            </button>
+                        </td>
+                    `;
+                    lista.appendChild(row);
+                });
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function cerrarHistorial() {
+            document.getElementById('modal-historial').classList.add('hidden');
+        }
+
+        function cargarCotizacion(id) {
+            if(!confirm('¿Deseas cargar esta cotización? Los datos actuales en pantalla serán reemplazados.')) return;
+            
+            const history = JSON.parse(localStorage.getItem('easycool_history') || '[]');
+            const data = history.find(q => q.id === id);
+            
+            if(data) {
+                document.getElementById('cliente').value = data.cliente || '';
+                document.getElementById('rut_cliente').value = data.rut_cliente || '';
+                document.getElementById('direccion').value = data.direccion || '';
+                document.getElementById('observaciones').value = data.notas || '';
+                
+                const descTipo = document.getElementById('descuento_tipo');
+                if(descTipo) descTipo.value = data.descuento_tipo || 'manual';
+                
+                const descInput = document.getElementById('descuento');
+                if(descInput) {
+                    descInput.value = data.descuento || '';
+                    if (data.descuento_tipo && data.descuento_tipo !== 'manual') {
+                        descInput.readOnly = true;
+                        descInput.classList.add('bg-gray-100', 'text-gray-500');
+                    } else {
+                        descInput.readOnly = false;
+                        descInput.classList.remove('bg-gray-100', 'text-gray-500');
+                    }
+                }
+                
+                const itemsBody = document.getElementById('items-body');
+                itemsBody.innerHTML = ''; // Limpiar filas actuales
+                
+                if(data.items && data.items.length > 0 && window.createRowGlobal) {
+                    data.items.forEach(item => {
+                        window.createRowGlobal(item.qty, item.desc, item.price);
+                    });
+                } else if(window.createRowGlobal) {
+                    window.createRowGlobal();
+                }
+                
+                if(window.calculateTotalsGlobal) window.calculateTotalsGlobal();
+                cerrarHistorial();
+            }
         }
     </script>
 </body>
