@@ -10,12 +10,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-title" content="EasyCool Mantención">
-    <!-- Icono genérico para la PWA (base64) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❄️</text></svg>">
+    <link id="pwa-favicon" rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❄️</text></svg>">
 
     <title>EasyCool - Informe Multi-Equipo</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
@@ -24,7 +23,9 @@
         [contenteditable="true"]:hover { outline: 2px dashed #a5b4fc; cursor: text; }
         [contenteditable="true"]:focus { outline: 2px solid #6366f1; background-color: #eef2ff; }
         
-        canvas.signature-pad { background-color: #fff; border-bottom: 2px solid #000; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
+        /* Canvas corregido visualmente, el tamaño real se setea en JS */
+        canvas.signature-pad { background-color: #fff; border-bottom: 2px solid #000; cursor: crosshair; touch-action: none; width: 100%; height: 100px; display: block; }
+        
         .file-label { font-size: 0.75rem; color: #4b5563; margin-bottom: 0.25rem; display: block; font-weight: 600; }
         .equipment-card { border-left: 4px solid #3b82f6; transition: all 0.3s ease; }
         
@@ -32,7 +33,10 @@
         .ai-loading { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; opacity: 0.7; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 
-        /* === ESTILOS DE IMPRESIÓN PROFESIONAL OPTIMIZADOS (Carta Chile sin doble hoja) === */
+        /* Modal custom */
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
+
+        /* === ESTILOS DE IMPRESIÓN PROFESIONAL OPTIMIZADOS === */
         @media print {
             @page { 
                 size: letter; 
@@ -77,7 +81,6 @@
                 overflow: hidden !important;
             }
             
-            /* Ajustes de texto para impresión */
             h1 { font-size: 16px !important; }
             h2 { font-size: 12px !important; }
             p, td, th { font-size: 9px !important; }
@@ -87,36 +90,62 @@
             .bg-green-50 { background-color: #f0fdf4 !important; border: 1px solid #bbf7d0 !important; }
             .bg-yellow-50 { background-color: #fefce8 !important; border: 1px solid #fef08a !important; }
             
-            /* Forzar visualización de enlaces en PDF */
             a { text-decoration: none !important; color: #2563eb !important; }
         }
     </style>
 </head>
 <body class="p-4 sm:p-8">
 
+    <!-- CUSTOM MODAL (Reemplazo de alert()) -->
+    <div id="custom-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center modal-overlay no-print">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform transition-all scale-100">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-red-100 p-2 rounded-full text-red-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900">Aviso</h3>
+            </div>
+            <p id="modal-message" class="text-gray-600 text-sm mb-6"></p>
+            <button onclick="closeModal()" class="w-full bg-gray-900 text-white font-bold py-2.5 rounded-lg hover:bg-gray-800 transition-colors">
+                Entendido
+            </button>
+        </div>
+    </div>
+
     <!-- =========== PANTALLA 1: FORMULARIO =========== -->
     <div id="form-section">
         <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-2xl mb-8 no-print">
             
-            <!-- CABECERA OFICIAL (LOGO ORIGINAL) -->
+            <!-- CABECERA OFICIAL -->
             <div class="flex justify-between items-center mb-6 border-b pb-4">
                 <div>
-                    <!-- LOGO RESTAURADO -->
                     <svg viewBox="0 0 250 50" class="h-12 w-auto"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
                 </div>
                 <div class="text-right">
-                    <p class="text-xs text-gray-400" id="current-date-display">25-11-2025</p>
+                    <div class="flex justify-end items-center mb-0.5 gap-1">
+                        <span class="text-sm font-bold text-gray-700">Informe Nº</span>
+                        <input type="number" id="form-folio-input" class="w-20 text-sm font-bold text-gray-900 border border-gray-300 rounded px-1.5 py-0.5 text-right focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm">
+                    </div>
+                    <p class="text-xs text-gray-400" id="current-date-display"></p>
                     <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10 mt-1">✨ AI Powered</span>
                 </div>
             </div>
+
+            <!-- BOTÓN HISTORIAL DESTACADO -->
+            <div class="mb-8">
+                <button onclick="loadLastReport()" class="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-3 px-4 rounded-lg border border-blue-200 transition-all shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    RECUPERAR ÚLTIMO INFORME GENERADO
+                </button>
+            </div>
             
-            <!-- DATOS CLIENTE -->
+            <!-- DATOS CLIENTE (Con auto-guardado básico) -->
             <div class="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 class="text-sm font-bold text-gray-700 uppercase mb-3 border-b pb-1">Datos del Cliente</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input id="gen-cliente-nombre" type="text" placeholder="Nombre Completo" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm">
-                    <input id="gen-cliente-rut" type="text" placeholder="RUT" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm">
-                    <input id="gen-cliente-direccion" type="text" placeholder="Dirección" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm md:col-span-2">
+                    <input id="gen-cliente-nombre" type="text" placeholder="Nombre Completo (Obligatorio)" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm border focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" onchange="saveClientData()">
+                    <input id="gen-cliente-rut" type="text" placeholder="RUT" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm border focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" onchange="saveClientData()">
+                    <input id="gen-cliente-direccion" type="text" placeholder="Dirección" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm md:col-span-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" onchange="saveClientData()">
                 </div>
             </div>
 
@@ -131,12 +160,12 @@
                 AGREGAR OTRO EQUIPO
             </button>
             
-            <button onclick="generateReport()" class="w-full bg-gray-900 text-white font-bold py-4 px-6 rounded-lg hover:bg-black transition-colors shadow-lg flex items-center justify-center gap-2">
+            <button onclick="validateAndGenerateReport()" class="w-full bg-gray-900 text-white font-bold py-4 px-6 rounded-lg hover:bg-black transition-colors shadow-lg flex items-center justify-center gap-2">
                 <span>📄</span> GENERAR INFORME CONSOLIDADO
             </button>
 
             <div class="mt-8 text-center pt-6 border-t">
-                <button onclick="downloadApp()" class="text-xs text-blue-500 underline">📥 Descargar App</button>
+                <button onclick="downloadApp()" class="text-xs text-blue-500 hover:text-blue-700 underline font-medium">📥 Descargar Copia HTML (Uso Offline)</button>
             </div>
         </div>
     </div>
@@ -144,9 +173,8 @@
     <!-- =========== PANTALLA 2: INFORME FINAL (CARTA) =========== -->
     <div id="report-section" class="max-w-[21.5cm] mx-auto bg-white p-8 shadow-2xl printable-section hidden min-h-0 relative flex flex-col justify-between">
         
-        <!-- WRAPPER PARA CONTENIDO PRINCIPAL -->
         <div>
-            <!-- HEADER INFORME (COMPLETO) -->
+            <!-- HEADER INFORME -->
             <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-4">
                 <div class="w-2/3">
                     <svg viewBox="0 0 250 50" class="h-10 w-auto mb-1"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
@@ -159,8 +187,8 @@
                 <div class="w-1/3 text-right">
                     <h1 class="text-lg font-bold text-gray-800 uppercase leading-none">INFORME TÉCNICO</h1>
                     <div class="mt-1">
-                        <p id="rep-fecha" class="text-[10px] text-gray-600 mb-1">25-11-2025</p>
-                        <p id="rep-folio-numero" class="text-xs font-bold text-red-600 border border-red-200 bg-red-50 px-2 py-0.5 inline-block rounded">Folio: #2100</p>
+                        <p id="rep-fecha" class="text-[10px] text-gray-600 mb-1"></p>
+                        <p id="rep-folio-numero" class="text-xs font-bold text-red-600 border border-red-200 bg-red-50 px-2 py-0.5 inline-block rounded">Informe Nº 2100</p>
                     </div>
                 </div>
             </header>
@@ -185,22 +213,26 @@
                 <!-- FIRMAS -->
                 <div class="grid grid-cols-2 gap-8 mt-6 pt-3 border-t border-gray-300 page-break-inside-avoid">
                     <div class="text-center">
-                        <canvas id="sig-canvas-mant-tech" class="signature-pad mb-1 mx-auto h-12 w-44 border-b border-gray-400"></canvas>
-                        <button onclick="clearCanvas('sig-canvas-mant-tech')" class="text-[9px] text-red-500 no-print block mx-auto hover:underline">Borrar</button>
-                        <p class="text-xs font-bold text-gray-900 leading-tight">José Guerrero</p>
+                        <!-- El contenedor asegura que el canvas tome este tamaño exacto -->
+                        <div class="h-12 w-44 mx-auto mb-1 border-b border-gray-400">
+                            <canvas id="sig-canvas-mant-tech" class="signature-pad w-full h-full"></canvas>
+                        </div>
+                        <button onclick="clearCanvas('sig-canvas-mant-tech')" class="text-[9px] text-red-500 no-print block mx-auto hover:underline cursor-pointer">Borrar Firma</button>
+                        <p class="text-xs font-bold text-gray-900 leading-tight mt-1">José Guerrero</p>
                         <p class="text-[9px] text-gray-500">Técnico EasyCool | RUT: 15.963.315-2</p>
                     </div>
                     <div class="text-center">
-                        <canvas id="sig-canvas-mant-client" class="signature-pad mb-1 mx-auto h-12 w-44 border-b border-gray-400"></canvas>
-                        <button onclick="clearCanvas('sig-canvas-mant-client')" class="text-[9px] text-red-500 no-print block mx-auto hover:underline">Borrar</button>
-                        <p class="text-xs font-bold text-gray-900 leading-tight" id="mant-sig-client-name" contenteditable="true">Firma Cliente</p>
+                         <div class="h-12 w-44 mx-auto mb-1 border-b border-gray-400">
+                            <canvas id="sig-canvas-mant-client" class="signature-pad w-full h-full"></canvas>
+                        </div>
+                        <button onclick="clearCanvas('sig-canvas-mant-client')" class="text-[9px] text-red-500 no-print block mx-auto hover:underline cursor-pointer">Borrar Firma</button>
+                        <p class="text-xs font-bold text-gray-900 leading-tight mt-1" id="mant-sig-client-name" contenteditable="true">Firma Cliente</p>
                         <p class="text-[9px] text-gray-500" id="mant-sig-client-rut"></p>
                     </div>
                 </div>
             </main>
         </div>
         
-        <!-- FOOTER RESTAURADO (SOCIAL & LEGAL) -->
         <footer class="mt-4 pt-3 border-t-2 border-gray-100 text-center page-break-inside-avoid">
             <div class="flex flex-col items-center gap-1">
                 <div class="flex items-center gap-4">
@@ -216,60 +248,316 @@
                     </a>
                 </div>
             </div>
-            <p class="text-[8px] text-gray-400 mt-2">EasyCool Climatización - Documento generado digitalmente de manera conforme.</p>
+            <p class="text-[8px] text-gray-400 mt-2">EasyCool Climatización - Documento generado digitalmente de manera segura.</p>
         </footer>
     </div>
 
     <!-- Botones Flotantes -->
-    <div class="fixed bottom-0 left-0 w-full bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] no-print z-50 hidden" id="mant-print-actions">
+    <div class="fixed bottom-0 left-0 w-full bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] no-print z-50 hidden border-t border-gray-200" id="mant-print-actions">
          <div class="max-w-4xl mx-auto flex gap-3">
-             <button onclick="editReport()" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-300 transition-all">✏️ Editar Datos</button>
+             <button onclick="editReport()" class="flex-1 bg-gray-100 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-all">✏️ Editar Datos</button>
              <button onclick="printReport()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-blue-700 transition-all">🖨️ Imprimir / Guardar PDF</button>
         </div>
     </div>
 
 <script>
     // --- API GEMINI CONFIG ---
-    // Clave de API de respaldo. El entorno inyecta la clave automáticamente de ser necesario.
     const apiKey = ""; 
     
-    // --- UTILS ---
-    function downloadApp() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([document.documentElement.outerHTML], {type:'text/html'})); a.download='index.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-    const getFolio = () => { let f = parseInt(localStorage.getItem('ec_fol') || '2100'); localStorage.setItem('ec_fol', f+1); return f; }
-    const today = () => new Date().toLocaleDateString('es-CL');
-    document.getElementById('current-date-display').innerText = today();
+    // --- INYECCIÓN DINÁMICA DE MANIFEST PWA ---
+    const pwaManifest = {
+        "name": "EasyCool Reportes Terreno",
+        "short_name": "EasyCool App",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#3B82F6",
+        "icons": [{
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>",
+            "sizes": "192x192 512x512",
+            "type": "image/svg+xml"
+        }]
+    };
+    const manifestBlob = new Blob([JSON.stringify(pwaManifest)], {type: 'application/json'});
+    const manifestUrl = URL.createObjectURL(manifestBlob);
+    document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`);
 
+    // --- UTILS Y ESTADO ---
     let equipmentCount = 0;
+    const today = () => {
+        const d = new Date();
+        return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
+    };
+    document.getElementById('current-date-display').innerText = today();
+    document.getElementById('rep-fecha').innerText = today();
 
-    // --- FUNCIÓN DE IMPRESIÓN INTELIGENTE CON NOMBRE DE ARCHIVO OFICIAL REQUERIDO ---
-    function printReport() {
-        const folioElement = document.getElementById('rep-folio-numero');
-        const clienteElement = document.getElementById('rep-cliente-nombre');
+    // Auto-restaurar datos del cliente
+    window.onload = () => {
+        if(localStorage.getItem('ec_cliente')) document.getElementById('gen-cliente-nombre').value = localStorage.getItem('ec_cliente');
+        if(localStorage.getItem('ec_rut')) document.getElementById('gen-cliente-rut').value = localStorage.getItem('ec_rut');
+        if(localStorage.getItem('ec_dir')) document.getElementById('gen-cliente-direccion').value = localStorage.getItem('ec_dir');
         
-        let folioText = folioElement ? folioElement.innerText : "0000";
-        let clienteText = clienteElement ? clienteElement.innerText : "Cliente";
+        // Mostrar número de informe en el formulario (Editable)
+        const currentFolio = parseInt(localStorage.getItem('ec_fol') || '2100');
+        document.getElementById('form-folio-input').value = currentFolio;
 
-        let folio = folioText.replace(/[^0-9]/g, ''); 
-        if (!folio) folio = "0000";
+        // Agregar primer equipo si está vacío
+        if(equipmentCount === 0) addEquipmentForm();
+    };
 
-        let safeCliente = clienteText.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim();
-        if (!safeCliente) safeCliente = "Cliente";
-
-        // Formato exacto requerido: INFORME MANTENCION Nº[FOLIO] - [CLIENTE]
-        const filename = `INFORME MANTENCION Nº${folio} - ${safeCliente}`;
-        const originalTitle = document.title;
-        document.title = filename;
-
-        setTimeout(() => {
-            window.print();
-            setTimeout(() => {
-                document.title = originalTitle;
-            }, 500);
-        }, 100);
+    // Funciones de historial
+    function saveLastReportData(folio) {
+        try {
+            const reportData = {
+                folio: folio,
+                equipments: []
+            };
+            for(let i=1; i<=equipmentCount; i++) {
+                const form = document.getElementById(`eq-form-${i}`);
+                if(!form) continue;
+                
+                const checks = Array.from(form.querySelectorAll('.eq-check:checked')).map(c => c.value);
+                
+                reportData.equipments.push({
+                    marca: form.querySelector('.eq-marca').value,
+                    tipo: form.querySelector('.eq-tipo').value,
+                    serie: form.querySelector('.eq-serie').value,
+                    checks: checks,
+                    modo: form.querySelector('.eq-modo').value,
+                    gas: form.querySelector('.eq-gas').value,
+                    pb: form.querySelector('.eq-p-baja').value,
+                    pa: form.querySelector('.eq-p-alta').value,
+                    amp: form.querySelector('.eq-amp').value,
+                    ta: form.querySelector('.eq-t-amb').value,
+                    ti: form.querySelector('.eq-t-iny').value,
+                    hallazgos: form.querySelector('.eq-hallazgos').value
+                });
+            }
+            localStorage.setItem('ec_last_report', JSON.stringify(reportData));
+        } catch(e) { console.error("Error al guardar historial", e); }
     }
 
-    // --- ENTORNO CON SOPORTE DE RETORNO Y RETRY EXPO (MANDATORIO) ---
-    async function fetchWithBackoff(url, options, maxRetries = 5) {
+    function loadLastReport() {
+        const data = localStorage.getItem('ec_last_report');
+        if(!data) {
+            showModal("No hay un informe previo guardado en este dispositivo.");
+            return;
+        }
+        try {
+            const report = JSON.parse(data);
+            
+            // Sugerir el folio anterior guardado
+            if(report.folio) document.getElementById('form-folio-input').value = report.folio;
+            
+            // Limpiar equipos actuales
+            document.getElementById('equipments-container').innerHTML = '';
+            equipmentCount = 0;
+            
+            // Recrear equipos
+            report.equipments.forEach(eq => {
+                addEquipmentForm();
+                const form = document.getElementById(`eq-form-${equipmentCount}`);
+                
+                form.querySelector('.eq-marca').value = eq.marca || '';
+                form.querySelector('.eq-tipo').value = eq.tipo || '';
+                form.querySelector('.eq-serie').value = eq.serie || '';
+                
+                form.querySelectorAll('.eq-check').forEach(c => {
+                    c.checked = eq.checks.includes(c.value);
+                });
+                
+                if(eq.modo) form.querySelector('.eq-modo').value = eq.modo;
+                if(eq.gas) form.querySelector('.eq-gas').value = eq.gas;
+                form.querySelector('.eq-p-baja').value = eq.pb || '';
+                form.querySelector('.eq-p-alta').value = eq.pa || '';
+                form.querySelector('.eq-amp').value = eq.amp || '';
+                form.querySelector('.eq-t-amb').value = eq.ta || '';
+                form.querySelector('.eq-t-iny').value = eq.ti || '';
+                form.querySelector('.eq-hallazgos').value = eq.hallazgos || '';
+            });
+            
+            showModal("✅ Datos técnicos del último informe recuperados exitosamente.\n\nNota: Por motivos de memoria del dispositivo, las fotografías y firmas deben volver a cargarse manualmente.");
+            
+        } catch(e) {
+            showModal("Error al leer el historial del informe.");
+        }
+    }
+
+    function saveClientData() {
+        localStorage.setItem('ec_cliente', document.getElementById('gen-cliente-nombre').value);
+        localStorage.setItem('ec_rut', document.getElementById('gen-cliente-rut').value);
+        localStorage.setItem('ec_dir', document.getElementById('gen-cliente-direccion').value);
+    }
+
+    function downloadApp() { 
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(new Blob([document.documentElement.outerHTML], {type:'text/html'})); 
+        a.download='easycool_app_offline.html'; 
+        document.body.appendChild(a); 
+        a.click(); 
+        document.body.removeChild(a); 
+    }
+    
+    // Modal UI
+    function showModal(message) {
+        document.getElementById('modal-message').innerText = message;
+        document.getElementById('custom-modal').classList.remove('hidden');
+    }
+    function closeModal() {
+        document.getElementById('custom-modal').classList.add('hidden');
+    }
+
+    // --- SANITIZACIÓN XSS ---
+    function escapeHTML(str) {
+        if (!str) return "";
+        return str.replace(/[&<>'"]/g, 
+            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
+        );
+    }
+
+    // --- COMPRESIÓN DE IMÁGENES (Evita OOM Crash en móviles) ---
+    async function compressImage(file, maxWidth = 800, quality = 0.7) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = event => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = error => reject(error);
+            };
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    window.previewMulti = async function(input, divId) {
+        const div = document.getElementById(divId);
+        // Indicador de carga animado y profesional para dar feedback al técnico
+        div.innerHTML = `<div class="flex items-center gap-2 text-[10px] text-blue-600 font-bold col-span-full py-1">
+            <svg class="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            Optimizando fotografías...
+        </div>`;
+        
+        let htmlImages = '';
+        const files = Array.from(input.files);
+        
+        if (files.length > 0) {
+            try {
+                for (let file of files) {
+                    if(file.type.startsWith('image/')) {
+                         // Pausa de 10ms para permitir que la interfaz del celular se actualice y no se congele
+                         await new Promise(r => setTimeout(r, 10));
+                         // Aumentamos un poco la resolución (1024px) para mejor calidad en PDF, pero comprimimos a 65%
+                         const compressedBase64 = await compressImage(file, 1024, 0.65);
+                         // Se aplica aspect-square para que todas las fotos se vean como cuadrados perfectos en la grilla
+                         htmlImages += `<img src="${compressedBase64}" class="w-full aspect-square object-cover border border-gray-300 rounded shadow-sm">`;
+                    }
+                }
+                div.innerHTML = htmlImages;
+            } catch (err) {
+                console.error("Error al comprimir imagen:", err);
+                div.innerHTML = '<span class="text-[10px] text-red-500 col-span-full">⚠️ Error procesando imagen. Intente con menos fotos.</span>';
+            }
+        } else {
+             div.innerHTML = '';
+        }
+    }
+
+    function addEquipmentForm() {
+        equipmentCount++;
+        const container = document.getElementById('equipments-container');
+        const id = equipmentCount;
+        
+        const html = `
+        <div class="equipment-card bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6 relative" id="eq-form-${id}">
+            <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">EQ #${id}</div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 mt-4">
+                <input class="eq-marca w-full rounded border-gray-300 p-2 text-sm border focus:border-blue-500 focus:ring-1 outline-none transition-all" placeholder="Marca (Ej: Khone, Midea)">
+                <input class="eq-tipo w-full rounded border-gray-300 p-2 text-sm border focus:border-blue-500 focus:ring-1 outline-none transition-all" placeholder="Tipo (Split Muro/Piso Cielo)">
+                <input class="eq-serie w-full rounded border-gray-300 p-2 text-sm border focus:border-blue-500 focus:ring-1 outline-none transition-all" placeholder="Nº Serie">
+            </div>
+
+            <div class="mb-4 bg-gray-50 p-3 rounded border border-gray-100">
+                <label class="text-xs font-bold text-gray-500 block mb-2">CHECKLIST MANTENCIÓN</label>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    ${["Filtros", "U. Interior", "U. Exterior", "Eléctrico", "Drenaje"].map(i => 
+                        `<label class="flex items-center gap-2 cursor-pointer select-none text-gray-700 hover:text-blue-600 transition-colors"><input type="checkbox" checked class="eq-check w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="${i}"> ${i}</label>`
+                    ).join('')}
+                </div>
+            </div>
+
+            <div class="mb-4 border-t pt-3">
+                <label class="text-xs font-bold text-blue-600 mb-2 block">REGISTRO FOTOGRÁFICO EN TERRENO (Optimizadas autómaticamente)</label>
+                <div class="grid grid-cols-2 gap-3 mt-1">
+                    <div class="bg-gray-50 p-2 rounded border border-gray-100">
+                        <label class="block text-[10px] text-gray-600 font-medium mb-1">1. Filtros / Limpieza</label>
+                        <input type="file" multiple accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" onchange="previewMulti(this, 'prev-filtros-${id}')">
+                        <div id="prev-filtros-${id}" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 mt-2"></div>
+                    </div>
+                    <div class="bg-gray-50 p-2 rounded border border-gray-100">
+                        <label class="block text-[10px] text-gray-600 font-medium mb-1">2. U. Interior</label>
+                        <input type="file" multiple accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" onchange="previewMulti(this, 'prev-int-${id}')">
+                        <div id="prev-int-${id}" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 mt-2"></div>
+                    </div>
+                    <div class="bg-gray-50 p-2 rounded border border-gray-100">
+                        <label class="block text-[10px] text-gray-600 font-medium mb-1">3. U. Exterior</label>
+                        <input type="file" multiple accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" onchange="previewMulti(this, 'prev-ext-${id}')">
+                        <div id="prev-ext-${id}" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 mt-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4 border-t pt-3">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-xs font-bold text-gray-500">PARÁMETROS DE MEDICIÓN</label>
+                    <button onclick="diagnoseEquipment(${id})" class="text-[10px] bg-purple-100 text-purple-700 px-3 py-1 rounded border border-purple-200 font-bold hover:bg-purple-200 transition-colors">✨ Diagnóstico IA</button>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <select class="eq-modo w-full rounded p-1.5 border border-gray-300 text-xs bg-white font-medium focus:border-blue-500 outline-none">
+                        <option value="frio">❄️ Modo Frío</option>
+                        <option value="calor" selected>🔥 Modo Calor</option>
+                    </select>
+                    <select class="eq-gas w-full rounded p-1.5 border border-gray-300 text-xs bg-white focus:border-blue-500 outline-none"><option value="" disabled selected>Gas</option><option value="R410A">R410A</option><option value="R32">R32</option><option value="R22">R22</option><option value="R404A">R404A</option></select>
+                    <input class="eq-p-baja w-full rounded p-1.5 border border-gray-300 text-xs focus:border-blue-500 outline-none" placeholder="P. Baja (PSI)">
+                    <input class="eq-p-alta w-full rounded p-1.5 border border-gray-300 text-xs focus:border-blue-500 outline-none" placeholder="P. Alta (PSI)">
+                    <input class="eq-amp w-full rounded p-1.5 border border-gray-300 text-xs focus:border-blue-500 outline-none" placeholder="Amp (A)">
+                    <input class="eq-t-amb w-full rounded p-1.5 border border-gray-300 text-xs focus:border-blue-500 outline-none" type="number" step="0.1" placeholder="T.Amb (°C)">
+                    <input class="eq-t-iny w-full rounded p-1.5 border border-gray-300 text-xs focus:border-blue-500 outline-none" type="number" step="0.1" placeholder="T.Iny (°C)">
+                </div>
+                <div id="ai-result-${id}" class="hidden mt-3 p-3 bg-purple-50 rounded text-xs border border-purple-100 shadow-inner">
+                    <div id="ai-text-${id}"></div>
+                </div>
+            </div>
+
+            <div class="mt-2 border-t pt-3">
+                <label class="text-xs font-bold text-red-600 mb-1 block">OBSERVACIONES / HALLAZGOS</label>
+                <textarea class="eq-hallazgos w-full rounded border border-red-200 p-2 text-sm h-16 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all resize-none" placeholder="Detalles de lo encontrado o recomendaciones de reparación..."></textarea>
+                <div class="bg-gray-50 p-2 rounded border border-gray-100 mt-2">
+                     <label class="block text-[10px] text-gray-600 font-medium mb-1">Evidencia Hallazgos</label>
+                     <input type="file" multiple accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" onchange="previewMulti(this, 'prev-hall-${id}')">
+                     <div id="prev-hall-${id}" class="grid grid-cols-4 sm:grid-cols-6 gap-1.5 mt-2"></div>
+                </div>
+            </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+    }
+
+    async function fetchWithBackoff(url, options, maxRetries = 3) {
         let delay = 1000;
         for (let i = 0; i < maxRetries; i++) {
             try {
@@ -279,13 +567,18 @@
                 if (i === maxRetries - 1) throw error;
             }
             await new Promise(resolve => setTimeout(resolve, delay));
-            delay *= 2; // Duplica el tiempo (1s, 2s, 4s, 8s, 16s)
+            delay *= 2; 
         }
-        throw new Error('No se pudo establecer conexión con el servidor de análisis tras varios intentos.');
+        throw new Error('Timeout');
     }
 
-    // --- DIAGNÓSTICO IA ---
     async function diagnoseEquipment(id) {
+        if(!apiKey) {
+            // Entornos de prueba sin apiKey inyectada
+            showModal("La funcionalidad de IA requiere configuración de API Key en este entorno.");
+            return;
+        }
+
         const resultDiv = document.getElementById(`ai-result-${id}`);
         const resultText = document.getElementById(`ai-text-${id}`);
         const hallazgosInput = document.querySelector(`#eq-form-${id} .eq-hallazgos`);
@@ -309,17 +602,17 @@
         }
 
         const prompt = `Analiza para un informe técnico de climatización el siguiente equipo en terreno:
-- Modo de operación testeado: ${modo === 'frio' ? 'Modo FRÍO (Aire Acondicionado)' : 'Modo CALOR (Calefacción / Bomba de Calor)'}
-- Gas Refrigerante: ${gas}
-- Presión de Baja: ${pBaja} PSI
-- Presión de Alta: ${pAlta} PSI
-- Corriente (Amperaje): ${amp} A
-- Temperatura Ambiente Recinto: ${tAmb}°C
-- Temperatura de Inyección del aire: ${tIny}°C
-- Delta T calculado (Salto Térmico): ${deltaTxt}
-- Comentarios/Observaciones del técnico: "${obs}"
+- Modo: ${modo}
+- Gas: ${gas}
+- P. Baja: ${pBaja} PSI
+- P. Alta: ${pAlta} PSI
+- Amp: ${amp} A
+- T.Amb: ${tAmb}°C
+- T.Iny: ${tIny}°C
+- Delta T: ${deltaTxt}
+- Obs: "${obs}"
 
-Entrega una evaluación termodinámica de exactamente 1 línea. Si las presiones/temperaturas sugieren problemas de carga de gas, suciedad crítica en condensador/evaporador, o retorno de líquido, indícalo de manera directa y profesional. No uses formatos markdown en negritas como (**).`;
+Entrega una evaluación termodinámica de exactamente 1 línea. Si sugieren problemas, indícalo directamente. Sin markdown.`;
 
         try {
             const response = await fetchWithBackoff(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
@@ -330,10 +623,10 @@ Entrega una evaluación termodinámica de exactamente 1 línea. Si las presiones
             const data = await response.json();
             const aiText = data.candidates[0].content.parts[0].text;
             
-            resultText.innerHTML = `<div class="font-bold text-purple-800 flex items-center gap-1">✨ Diagnóstico Inteligente EasyCool:</div><div class="text-xs text-gray-700 mt-1">${aiText}</div>
-                <button onclick="copyToHallazgos(${id}, this)" data-text="${encodeURIComponent(aiText)}" class="mt-2 text-[9px] bg-purple-600 hover:bg-purple-700 text-white px-2.5 py-1 rounded transition-all">Copiar Diagnóstico a Hallazgos</button>`;
+            resultText.innerHTML = `<div class="font-bold text-purple-800 flex items-center gap-1">✨ Diagnóstico Inteligente EasyCool:</div><div class="text-xs text-gray-800 mt-1">${escapeHTML(aiText)}</div>
+                <button onclick="copyToHallazgos(${id}, this)" data-text="${encodeURIComponent(aiText)}" class="mt-2 text-[9px] bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded transition-all shadow-sm">Copiar a Hallazgos</button>`;
         } catch (e) { 
-            resultText.innerHTML = '<span class="text-red-500 font-medium">⚠️ Error al conectar con el motor IA. Verifique su conexión o intente nuevamente más tarde.</span>'; 
+            resultText.innerHTML = '<span class="text-red-500 font-medium">⚠️ Error al conectar con IA. Revise conexión.</span>'; 
         }
     }
 
@@ -343,106 +636,53 @@ Entrega una evaluación termodinámica de exactamente 1 línea. Si las presiones
         hallazgosBox.value = (hallazgosBox.value + " " + text.replace(/\*\*/g, '')).trim();
     }
 
-    // --- AGREGAR FORMULARIO (CAMPOS DE IMAGENES RESTAURADOS Y ACTUALIZADOS) ---
-    function addEquipmentForm() {
-        equipmentCount++;
-        const container = document.getElementById('equipments-container');
-        const id = equipmentCount;
+    function validateAndGenerateReport() {
+        const clienteInput = document.getElementById('gen-cliente-nombre').value.trim();
+        if (!clienteInput) {
+            showModal("⚠️ El Nombre del Cliente es obligatorio para generar el informe.");
+            document.getElementById('gen-cliente-nombre').focus();
+            return;
+        }
+
+        // Validate at least one equipment has Marca
+        let hasEquipInfo = false;
+        for(let i=1; i<=equipmentCount; i++) {
+            const form = document.getElementById(`eq-form-${i}`);
+            if(form && form.querySelector('.eq-marca').value.trim() !== '') {
+                hasEquipInfo = true;
+                break;
+            }
+        }
         
-        const html = `
-        <div class="equipment-card bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6 relative" id="eq-form-${id}">
-            <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">EQ #${id}</div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 mt-4">
-                <input class="eq-marca w-full rounded border-gray-300 p-2 text-sm" placeholder="Marca (Ej: Khone, Midea)">
-                <input class="eq-tipo w-full rounded border-gray-300 p-2 text-sm" placeholder="Tipo (Split Muro/Piso Cielo)">
-                <input class="eq-serie w-full rounded border-gray-300 p-2 text-sm" placeholder="Nº Serie">
-            </div>
+        if(!hasEquipInfo) {
+             showModal("⚠️ Ingrese al menos la 'Marca' de uno de los equipos para continuar.");
+             return;
+        }
 
-            <div class="mb-4 bg-gray-50 p-2 rounded">
-                <label class="text-xs font-bold text-gray-500 block mb-1">CHECKLIST MANTENCIÓN</label>
-                <div class="grid grid-cols-2 gap-2 text-sm">
-                    ${["Filtros", "U. Interior", "U. Exterior", "Eléctrico", "Drenaje"].map(i => 
-                        `<label class="flex items-center gap-2"><input type="checkbox" checked class="eq-check" value="${i}"> ${i}</label>`
-                    ).join('')}
-                </div>
-            </div>
-
-            <!-- FOTOS SEPARADAS POR CATEGORÍA (RESTAURADO CON CONTENEDORES ADAPTABLES) -->
-            <div class="mb-4 border-t pt-2">
-                <label class="text-xs font-bold text-blue-600">REGISTRO FOTOGRÁFICO EN TERRENO</label>
-                <div class="grid grid-cols-2 gap-2 mt-1">
-                    <div>
-                        <label class="block text-[10px] text-gray-500">1. Filtros / Limpieza</label>
-                        <input type="file" multiple accept="image/*" class="block w-full text-xs" onchange="previewMulti(this, 'prev-filtros-${id}')">
-                        <div id="prev-filtros-${id}" class="flex flex-wrap gap-1 mt-1"></div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-gray-500">2. U. Interior</label>
-                        <input type="file" multiple accept="image/*" class="block w-full text-xs" onchange="previewMulti(this, 'prev-int-${id}')">
-                        <div id="prev-int-${id}" class="flex flex-wrap gap-1 mt-1"></div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-gray-500">3. U. Exterior</label>
-                        <input type="file" multiple accept="image/*" class="block w-full text-xs" onchange="previewMulti(this, 'prev-ext-${id}')">
-                        <div id="prev-ext-${id}" class="flex flex-wrap gap-1 mt-1"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-4 border-t pt-2">
-                <div class="flex justify-between mb-1">
-                    <label class="text-xs font-bold text-gray-500">PARÁMETROS DE MEDICIÓN</label>
-                    <button onclick="diagnoseEquipment(${id})" class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded border border-purple-200 font-bold">✨ Diagnóstico IA</button>
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <!-- NUEVO SELECTOR DE MODO DE OPERACIÓN TERMODINÁMICA -->
-                    <select class="eq-modo w-full rounded p-1 border text-xs bg-white font-medium">
-                        <option value="frio">❄️ Modo Frío</option>
-                        <option value="calor" selected>🔥 Modo Calor</option>
-                    </select>
-                    <select class="eq-gas w-full rounded p-1 border text-xs bg-white"><option value="" disabled selected>Gas</option><option value="R410A">R410A</option><option value="R32">R32</option><option value="R22">R22</option><option value="R404A">R404A</option></select>
-                    <input class="eq-p-baja w-full rounded p-1 border text-xs" placeholder="P. Baja">
-                    <input class="eq-p-alta w-full rounded p-1 border text-xs" placeholder="P. Alta">
-                    <input class="eq-amp w-full rounded p-1 border text-xs" placeholder="Amp">
-                    <input class="eq-t-amb w-full rounded p-1 border text-xs" type="number" step="0.1" placeholder="T.Amb">
-                    <input class="eq-t-iny w-full rounded p-1 border text-xs" type="number" step="0.1" placeholder="T.Iny">
-                </div>
-                <div id="ai-result-${id}" class="hidden mt-2 p-2.5 bg-purple-50 rounded text-xs border border-purple-100">
-                    <div id="ai-text-${id}"></div>
-                </div>
-            </div>
-
-            <div class="mt-2 border-t pt-2">
-                <label class="text-xs font-bold text-red-600">OBSERVACIONES / HALLAZGOS</label>
-                <textarea class="eq-hallazgos w-full rounded border-red-200 p-1 text-sm h-12" placeholder="Detalles de lo encontrado o recomendaciones de reparación..."></textarea>
-                <input type="file" multiple accept="image/*" class="mt-1 text-xs" onchange="previewMulti(this, 'prev-hall-${id}')">
-                <div id="prev-hall-${id}" class="flex flex-wrap gap-1 mt-1"></div>
-            </div>
-        </div>`;
-        container.insertAdjacentHTML('beforeend', html);
+        generateReport();
     }
 
-    window.previewMulti = function(input, divId) {
-        const div = document.getElementById(divId);
-        div.innerHTML = '';
-        Array.from(input.files).forEach(file => {
-            const r = new FileReader();
-            r.onload = (e) => { div.innerHTML += `<img src="${e.target.result}" class="w-12 h-12 object-cover border rounded shadow-sm">`; }
-            r.readAsDataURL(file);
-        });
-    }
-
-    // --- GENERAR REPORTE (CON FOTOS SEPARADAS) ---
     function generateReport() {
-        // Transferencia de datos básicos
-        document.getElementById('rep-cliente-nombre').innerText = document.getElementById('gen-cliente-nombre').value || 'Sin Nombre';
-        document.getElementById('rep-cliente-rut').innerText = document.getElementById('gen-cliente-rut').value;
-        document.getElementById('rep-cliente-direccion').innerText = document.getElementById('gen-cliente-direccion').value;
-        document.getElementById('rep-fecha').innerText = today();
-        document.getElementById('rep-folio-numero').innerText = '#' + getFolio();
-        document.getElementById('mant-sig-client-name').innerText = document.getElementById('gen-cliente-nombre').value || 'Cliente';
-        document.getElementById('mant-sig-client-rut').innerText = document.getElementById('gen-cliente-rut').value;
+        // Sanitización y Transferencia de datos
+        document.getElementById('rep-cliente-nombre').innerText = escapeHTML(document.getElementById('gen-cliente-nombre').value);
+        document.getElementById('rep-cliente-rut').innerText = escapeHTML(document.getElementById('gen-cliente-rut').value);
+        document.getElementById('rep-cliente-direccion').innerText = escapeHTML(document.getElementById('gen-cliente-direccion').value);
+        
+        // Lógica del Número de Informe (Folio) y Auto-incremento
+        const folioInputVal = parseInt(document.getElementById('form-folio-input').value) || 2100;
+        document.getElementById('rep-folio-numero').innerText = 'Informe Nº ' + folioInputVal;
+        
+        // Solo incrementar el correlativo guardado si se está usando el actual o uno mayor
+        const savedFolio = parseInt(localStorage.getItem('ec_fol') || '2100');
+        if (folioInputVal >= savedFolio) {
+            localStorage.setItem('ec_fol', folioInputVal + 1);
+        }
+
+        // Guardar historial técnico del informe
+        saveLastReportData(folioInputVal);
+        
+        document.getElementById('mant-sig-client-name').innerText = escapeHTML(document.getElementById('gen-cliente-nombre').value) || 'Cliente';
+        document.getElementById('mant-sig-client-rut').innerText = escapeHTML(document.getElementById('gen-cliente-rut').value);
 
         // Renderizado de Equipos
         const container = document.getElementById('report-equipments-container');
@@ -452,52 +692,53 @@ Entrega una evaluación termodinámica de exactamente 1 línea. Si las presiones
             const form = document.getElementById(`eq-form-${i}`);
             if(!form) continue;
 
-            const marca = form.querySelector('.eq-marca').value || '-';
-            const tipo = form.querySelector('.eq-tipo').value || '-';
-            const serie = form.querySelector('.eq-serie').value || '-';
+            const marca = escapeHTML(form.querySelector('.eq-marca').value) || '-';
+            const tipo = escapeHTML(form.querySelector('.eq-tipo').value) || '-';
+            const serie = escapeHTML(form.querySelector('.eq-serie').value) || '-';
             
             const checks = Array.from(form.querySelectorAll('.eq-check:checked')).map(c => 
                 `<span class="inline-block bg-green-100 text-green-800 text-[9px] px-1.5 py-0.5 rounded mr-1 mb-1 border border-green-200 font-medium">✓ ${c.value}</span>`
             ).join('');
 
             const modo = form.querySelector('.eq-modo').value || 'frio';
-            const gas = form.querySelector('.eq-gas').value || '-';
-            const pb = form.querySelector('.eq-p-baja').value || '-';
-            const pa = form.querySelector('.eq-p-alta').value || '-';
-            const amp = form.querySelector('.eq-amp').value || '-';
+            const gas = escapeHTML(form.querySelector('.eq-gas').value) || '-';
+            const pb = escapeHTML(form.querySelector('.eq-p-baja').value) || '-';
+            const pa = escapeHTML(form.querySelector('.eq-p-alta').value) || '-';
+            const amp = escapeHTML(form.querySelector('.eq-amp').value) || '-';
             const ta = parseFloat(form.querySelector('.eq-t-amb').value);
             const ti = parseFloat(form.querySelector('.eq-t-iny').value);
             
-            // --- NUEVA LÓGICA DE CÁLCULO DE DELTA T SEGÚN MODO ---
             let dt = '-';
-            let dtColorClass = 'bg-blue-50 text-blue-700';
+            let dtColorClass = 'bg-blue-50 text-blue-700 border-blue-200';
             if (!isNaN(ta) && !isNaN(ti)) {
                 if (modo === 'frio') {
                     const diff = ta - ti;
                     dt = diff.toFixed(1) + '°C';
                     if (diff >= 12 && diff <= 18) {
-                        dtColorClass = 'bg-green-50 text-green-800 border border-green-200'; // Óptimo
+                        dtColorClass = 'bg-green-50 text-green-800 border-green-200'; 
                     } else if (diff < 10) {
-                        dtColorClass = 'bg-yellow-50 text-yellow-800 border border-yellow-200'; // Subóptimo
+                        dtColorClass = 'bg-yellow-50 text-yellow-800 border-yellow-200'; 
                     }
                 } else {
                     const diff = ti - ta;
                     dt = diff.toFixed(1) + '°C';
                     if (diff >= 18 && diff <= 32) {
-                        dtColorClass = 'bg-green-50 text-green-800 border border-green-200'; // Óptimo
+                        dtColorClass = 'bg-green-50 text-green-800 border-green-200'; 
                     } else if (diff < 15) {
-                        dtColorClass = 'bg-yellow-50 text-yellow-800 border border-yellow-200'; // Subóptimo
+                        dtColorClass = 'bg-yellow-50 text-yellow-800 border-yellow-200'; 
                     }
                 }
             }
 
-            // --- PROCESAR FOTOS POR CATEGORÍA CON TAMAÑO EXPANDIDO ---
             const getImgsHtml = (divId, label) => {
                 const div = document.getElementById(divId);
                 if(!div || div.querySelectorAll('img').length === 0) return '';
-                let html = `<div class="mb-2"><p class="text-[9px] font-bold text-gray-500 mb-1 tracking-wider">${label}</p><div class="flex flex-wrap gap-1.5">`;
+                // Implementación de Grilla exacta (3 columnas) con aspecto cuadrado
+                let html = `<div class="mb-2 page-break-inside-avoid">
+                                <p class="text-[9px] font-bold text-gray-500 mb-1.5 tracking-wider border-b border-gray-200 pb-0.5">${label}</p>
+                                <div class="grid grid-cols-3 gap-1.5">`;
                 div.querySelectorAll('img').forEach(img => {
-                    html += `<img src="${img.src}" class="h-28 w-28 object-cover border border-gray-300 rounded shadow-sm">`;
+                    html += `<img src="${img.src}" class="w-full aspect-square object-cover border border-gray-300 rounded shadow-[0_1px_2px_rgba(0,0,0,0.1)]">`;
                 });
                 html += `</div></div>`;
                 return html;
@@ -508,36 +749,32 @@ Entrega una evaluación termodinámica de exactamente 1 línea. Si las presiones
             const imgExt = getImgsHtml(`prev-ext-${i}`, 'UNIDAD EXTERIOR');
             const imgHall = getImgsHtml(`prev-hall-${i}`, 'EVIDENCIA HALLAZGOS');
             
-            // --- GRUPO FOTOGRÁFICO INTELIGENTE ---
             let photoBlocks = [];
-            if (imgFiltros) photoBlocks.push(`<div class="p-1.5 bg-gray-50 rounded border border-gray-100">${imgFiltros}</div>`);
-            if (imgInt) photoBlocks.push(`<div class="p-1.5 bg-gray-50 rounded border border-gray-100">${imgInt}</div>`);
-            if (imgExt) photoBlocks.push(`<div class="p-1.5 bg-gray-50 rounded border border-gray-100">${imgExt}</div>`);
-            if (imgHall) photoBlocks.push(`<div class="p-1.5 bg-gray-50 rounded border border-gray-100">${imgHall}</div>`);
+            if (imgHall) photoBlocks.push(`<div>${imgHall}</div>`);
 
-            const hasImages = photoBlocks.length > 0;
-            const imagesContainerHtml = hasImages ? `
-                <div class="mt-3 page-break-inside-avoid">
-                    <p class="text-[9px] font-bold text-blue-600 border-b border-blue-100 mb-2 pb-0.5 uppercase tracking-wider">Registro Fotográfico del Servicio</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 print:grid-cols-2">
+            const imagesContainerHtml = photoBlocks.length > 0 ? `
+                <div class="mt-4 pt-3 border-t border-gray-200 page-break-inside-avoid">
+                    <p class="text-[10px] font-bold text-blue-700 mb-3 uppercase tracking-wider flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Registro Fotográfico del Servicio
+                    </p>
+                    <div class="grid grid-cols-1 print:grid-cols-2 gap-x-4 gap-y-2">
                         ${photoBlocks.join('')}
                     </div>
                 </div>
             ` : '';
 
-            const obs = form.querySelector('.eq-hallazgos').value;
+            // Sanitizar texto de hallazgos
+            const obs = escapeHTML(form.querySelector('.eq-hallazgos').value);
 
-            // HTML ESTRUCTURADO Y REFINADO PARA CARTA
             const cardHtml = `
             <div class="equipment-section border border-gray-200 rounded overflow-hidden page-break-inside-avoid shadow-sm bg-white">
-                <!-- Header Card -->
                 <div class="bg-blue-600 text-white p-2 flex justify-between items-center text-[10px]">
                     <div class="font-bold uppercase tracking-wide">EQUIPO #${i} | ${marca}</div>
                     <div class="opacity-95 font-medium">${tipo} | S/N: ${serie}</div>
                 </div>
                 
                 <div class="p-3">
-                    <!-- Fila 1: Datos Técnicos y Modo -->
                     <table class="w-full text-[9px] mb-3 border-collapse">
                         <thead>
                             <tr class="bg-gray-100 text-gray-500 border-b border-gray-200 font-semibold">
@@ -556,12 +793,11 @@ Entrega una evaluación termodinámica de exactamente 1 línea. Si las presiones
                                 <td class="p-1 border-b text-center">${pb}</td>
                                 <td class="p-1 border-b text-center">${pa}</td>
                                 <td class="p-1 border-b text-center">${amp}</td>
-                                <td class="p-1 border-b text-center font-bold ${dtColorClass}">${dt}</td>
+                                <td class="p-1 border-b text-center border font-bold ${dtColorClass} rounded-sm">${dt}</td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <!-- Fila 2: Checklist y Observaciones -->
                     <div class="grid grid-cols-2 gap-3 border-b border-gray-100 pb-2 mb-2">
                         <div>
                             <p class="text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Mantenimiento Realizado</p>
@@ -571,12 +807,11 @@ Entrega una evaluación termodinámica de exactamente 1 línea. Si las presiones
                              ${obs ? `
                              <div class="bg-red-50 p-2 rounded border border-red-100 h-full">
                                 <p class="text-[9px] font-bold text-red-600 mb-0.5 tracking-wider uppercase">Observaciones y Hallazgos</p>
-                                <p class="text-[10px] text-gray-800 italic leading-snug" contenteditable="true">${obs}</p>
+                                <p class="text-[10px] text-gray-800 italic leading-snug break-words">${obs}</p>
                              </div>` : '<div class="bg-gray-50 p-2 rounded border border-gray-100 h-full flex items-center justify-center"><p class="text-[9px] text-gray-400 italic">Sin observaciones reportadas en este equipo.</p></div>'}
                         </div>
                     </div>
 
-                    <!-- Fila 3: Registro Fotográfico Dinámico -->
                     ${imagesContainerHtml}
                 </div>
             </div>`;
@@ -584,10 +819,15 @@ Entrega una evaluación termodinámica de exactamente 1 línea. Si las presiones
             container.insertAdjacentHTML('beforeend', cardHtml);
         }
 
+        // Transiciones UI
         document.getElementById('form-section').classList.add('hidden');
         document.getElementById('report-section').classList.remove('hidden');
         document.getElementById('mant-print-actions').classList.remove('hidden');
-        initPad('sig-canvas-mant-tech'); initPad('sig-canvas-mant-client');
+        
+        // Inicializar o Redibujar Firmas
+        initPad('sig-canvas-mant-tech'); 
+        initPad('sig-canvas-mant-client');
+        
         window.scrollTo(0,0);
     }
 
@@ -595,23 +835,105 @@ Entrega una evaluación termodinámica de exactamente 1 línea. Si las presiones
         document.getElementById('report-section').classList.add('hidden');
         document.getElementById('mant-print-actions').classList.add('hidden');
         document.getElementById('form-section').classList.remove('hidden');
+        window.scrollTo(0,0);
     }
 
+    function printReport() {
+        const folioElement = document.getElementById('rep-folio-numero');
+        const clienteElement = document.getElementById('rep-cliente-nombre');
+        
+        let folioText = folioElement ? folioElement.innerText : "0000";
+        let clienteText = clienteElement ? clienteElement.innerText : "Cliente";
+
+        let folio = folioText.replace(/[^0-9]/g, ''); 
+        if (!folio) folio = "0000";
+
+        let safeCliente = clienteText.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim();
+        if (!safeCliente) safeCliente = "Cliente";
+
+        const filename = `INFORME MANTENCION Nº${folio} - ${safeCliente}`;
+        const originalTitle = document.title;
+        document.title = filename;
+
+        setTimeout(() => {
+            window.print();
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 500);
+        }, 100);
+    }
+
+    // --- LÓGICA DE CANVAS CORREGIDA ---
     function initPad(id) {
-        const c = document.getElementById(id); if(c.getAttribute('init')) return;
-        const ctx = c.getContext('2d'); ctx.lineWidth=2;
-        let p=false;
-        const pos=(e)=>{const r=c.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
-        const start=(e)=>{if(e.touches)e.preventDefault();p=true;ctx.beginPath();ctx.moveTo(pos(e).x,pos(e).y);}
-        const move=(e)=>{if(!p)return;if(e.touches)e.preventDefault();ctx.lineTo(pos(e).x,pos(e).y);ctx.stroke();}
-        const end=(e)=>{if(e.touches)e.preventDefault();p=false;}
-        c.addEventListener('mousedown',start);c.addEventListener('mousemove',move);c.addEventListener('mouseup',end);
-        c.addEventListener('touchstart',start,{passive:false});c.addEventListener('touchmove',move,{passive:false});c.addEventListener('touchend',end);
-        c.setAttribute('init','true');
-    }
-    function clearCanvas(id) { const c=document.getElementById(id); c.getContext('2d').clearRect(0,0,c.width,c.height); }
+        const c = document.getElementById(id); 
+        
+        // CORRECCIÓN CRÍTICA: Ajustar resolución intrínseca del Canvas al tamaño CSS
+        const rect = c.parentElement.getBoundingClientRect();
+        // Solo ajustar si las dimensiones reales cambiaron para no borrar firmas existentes por error
+        if(c.width !== Math.round(rect.width) || c.height !== Math.round(rect.height)) {
+            // Guardar contexto anterior si existía (opcional para firmas avanzadas, por ahora solo repinta tamaño)
+            c.width = rect.width;
+            c.height = rect.height;
+        }
 
-    addEquipmentForm();
+        if(c.getAttribute('init') === 'true') return; // Evitar multiples event listeners
+        
+        const ctx = c.getContext('2d'); 
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#000000';
+        
+        let p = false;
+        
+        // Coordenadas relativas exactas
+        const pos = (e) => {
+            const r = c.getBoundingClientRect();
+            const t = e.touches ? e.touches[0] : e;
+            return { x: t.clientX - r.left, y: t.clientY - r.top };
+        }
+        
+        const start = (e) => {
+            if(e.cancelable && e.type.includes('touch')) e.preventDefault();
+            p = true;
+            const position = pos(e);
+            ctx.beginPath();
+            ctx.moveTo(position.x, position.y);
+            // Dibujar un punto por si solo hacen un toque
+            ctx.lineTo(position.x, position.y);
+            ctx.stroke();
+        }
+        
+        const move = (e) => {
+            if(!p) return;
+            if(e.cancelable && e.type.includes('touch')) e.preventDefault();
+            const position = pos(e);
+            ctx.lineTo(position.x, position.y);
+            ctx.stroke();
+        }
+        
+        const end = (e) => {
+            if(e.cancelable && e.type.includes('touch')) e.preventDefault();
+            p = false;
+        }
+        
+        c.addEventListener('mousedown', start);
+        c.addEventListener('mousemove', move);
+        c.addEventListener('mouseup', end);
+        c.addEventListener('mouseleave', end);
+        
+        c.addEventListener('touchstart', start, {passive: false});
+        c.addEventListener('touchmove', move, {passive: false});
+        c.addEventListener('touchend', end, {passive: false});
+        
+        c.setAttribute('init', 'true');
+    }
+    
+    function clearCanvas(id) { 
+        const c = document.getElementById(id); 
+        const ctx = c.getContext('2d');
+        ctx.clearRect(0, 0, c.width, c.height); 
+    }
 </script>
 </body>
 </html>
