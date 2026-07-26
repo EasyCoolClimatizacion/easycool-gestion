@@ -46,6 +46,8 @@
         }
         .delete-row-btn:hover { opacity: 1; }
         
+        .privacy-blur { filter: blur(5px); transition: filter 0.3s ease; user-select: none; pointer-events: none; }
+        
         @media print {
             body { background: white; padding: 0; margin: 0; }
             .no-print { display: none !important; }
@@ -102,7 +104,8 @@
                 <div class="space-y-3">
                     <div class="flex justify-between items-start gap-2">
                         <div class="flex-1">
-                            <input type="text" id="calc-client-name" placeholder="Nombre Cliente" class="input-mobile border-b border-gray-300 p-2 w-full focus:border-indigo-600 outline-none font-bold text-lg">
+                            <input type="text" id="calc-client-name" list="clientes-guardados" placeholder="Nombre Cliente" class="input-mobile border-b border-gray-300 p-2 w-full focus:border-indigo-600 outline-none font-bold text-lg">
+                            <datalist id="clientes-guardados"></datalist>
                         </div>
                         <div class="w-24 bg-gray-50 p-1 rounded border border-gray-200 text-center">
                             <label class="block text-[9px] text-gray-500 font-bold uppercase">Folio</label>
@@ -191,8 +194,11 @@
 
             <!-- PANEL DE GANANCIAS REAJUSTADO -->
             <div class="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 text-white mb-2">
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-700 pb-1">Desglose Financiero Real (Privado)</h3>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="flex justify-between items-center mb-3 border-b border-gray-700 pb-1">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Desglose Financiero Real (Privado)</h3>
+                    <button id="toggle-privacy-btn" class="text-gray-400 hover:text-white transition-colors" title="Ocultar/Mostrar Valores"><i class="fas fa-eye-slash"></i></button>
+                </div>
+                <div class="grid grid-cols-2 gap-4" id="financial-numbers-container">
                     <!-- FILA 1 -->
                     <div class="bg-gray-700/50 p-2 rounded border border-gray-600">
                         <p class="text-[9px] text-green-400 uppercase font-bold mb-1">💰 Total a Cobrar</p>
@@ -379,6 +385,15 @@
                         </div>
                     </div>
                 </div>
+                
+                <h4 class="text-xs font-bold text-gray-400 uppercase mb-2 mt-6 border-t pt-4">Respaldo de Datos (Local)</h4>
+                <div class="flex gap-2 mb-4">
+                    <button id="export-data-btn" class="flex-1 bg-blue-100 text-blue-700 p-2 rounded text-xs font-bold hover:bg-blue-200 shadow-sm transition-colors"><i class="fas fa-download"></i> Exportar Copia</button>
+                    <label class="flex-1 bg-purple-100 text-purple-700 p-2 rounded text-xs font-bold hover:bg-purple-200 text-center cursor-pointer shadow-sm transition-colors">
+                        <i class="fas fa-upload"></i> Importar Copia
+                        <input type="file" id="import-data-file" class="hidden" accept=".json">
+                    </label>
+                </div>
             </div>
             <div class="pt-4 border-t mt-2">
                 <button id="save-prices-btn" class="w-full bg-gray-900 text-white py-3 rounded-lg font-bold">Guardar Todo y Cerrar</button>
@@ -485,10 +500,24 @@ window.switchTab = (tab) => {
     else if(tab === 'history') { document.getElementById('view-history').classList.remove('hidden'); document.querySelectorAll('.bottom-nav-item')[1].classList.add('active'); renderHistory(); }
 };
 
+function updateClientDatalist() {
+    const history = JSON.parse(localStorage.getItem('easycool_history') || '[]');
+    const datalist = document.getElementById('clientes-guardados');
+    const uniqueClients = {};
+    history.forEach(q => {
+        if(!uniqueClients[q.clientName] && q.clientName) {
+            uniqueClients[q.clientName] = { rut: q.clientRut, address: q.clientAddress };
+        }
+    });
+    datalist.innerHTML = Object.keys(uniqueClients).map(name => `<option value="${name}">`).join('');
+    window.clientDatabase = uniqueClients;
+}
+
 function saveToHistory(quoteData) {
     let history = JSON.parse(localStorage.getItem('easycool_history') || '[]');
     history.unshift(quoteData); if(history.length > 20) history.pop();
     localStorage.setItem('easycool_history', JSON.stringify(history));
+    updateClientDatalist();
 }
 
 function renderHistory() {
@@ -596,12 +625,72 @@ document.addEventListener('DOMContentLoaded', () => {
         waBtn: document.getElementById('wa-btn'), modal: document.getElementById('price-editor-modal'),
         openModalBtn: document.getElementById('open-price-editor-btn'), closeModalBtn: document.getElementById('close-modal-btn'),
         savePricesBtn: document.getElementById('save-prices-btn'), addNewEqBtn: document.getElementById('add-new-eq-btn'),
-        backBtn: document.getElementById('back-to-edit-btn'), updateStatsBtn: document.getElementById('update-stats-btn')
+        backBtn: document.getElementById('back-to-edit-btn'), updateStatsBtn: document.getElementById('update-stats-btn'),
+        privacyBtn: document.getElementById('toggle-privacy-btn'), finContainer: document.getElementById('financial-numbers-container'),
+        exportBtn: document.getElementById('export-data-btn'), importFile: document.getElementById('import-data-file'),
+        clientNameInput: document.getElementById('calc-client-name')
     };
 
     loadCustomPrices();
+    updateClientDatalist();
+
+    // CRM - Autocompletar datos del cliente
+    dom.clientNameInput.addEventListener('input', (e) => {
+        const name = e.target.value;
+        if(window.clientDatabase && window.clientDatabase[name]) {
+            document.getElementById('calc-client-rut').value = window.clientDatabase[name].rut || '';
+            document.getElementById('calc-client-address').value = window.clientDatabase[name].address || '';
+        }
+    });
+
+    // Modo Privacidad (Desenfocar Números)
+    let privacyEnabled = false;
+    dom.privacyBtn.addEventListener('click', () => {
+        privacyEnabled = !privacyEnabled;
+        if(privacyEnabled) {
+            dom.finContainer.classList.add('privacy-blur');
+            dom.privacyBtn.innerHTML = '<i class="fas fa-eye"></i>';
+            dom.privacyBtn.classList.replace('text-gray-400', 'text-green-400');
+        } else {
+            dom.finContainer.classList.remove('privacy-blur');
+            dom.privacyBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            dom.privacyBtn.classList.replace('text-green-400', 'text-gray-400');
+        }
+    });
+
+    // Sistema de Respaldo y Exportación
+    dom.exportBtn.addEventListener('click', () => {
+        const backup = {
+            db: localStorage.getItem('easycool_db_v3'),
+            history: localStorage.getItem('easycool_history')
+        };
+        const blob = new Blob([JSON.stringify(backup)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `EasyCool_Respaldo_${new Date().toISOString().split('T')[0]}.json`;
+        a.click(); URL.revokeObjectURL(url);
+    });
+
+    dom.importFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                if(data.db) localStorage.setItem('easycool_db_v3', data.db);
+                if(data.history) localStorage.setItem('easycool_history', data.history);
+                
+                // Usamos un alert temporal aquí porque recargará la página inmediatamente
+                alert('¡Respaldo importado con éxito! La aplicación se actualizará.');
+                location.reload();
+            } catch(err) { 
+                alert('Error al leer el archivo de respaldo. Asegúrate de que es un archivo de EasyCool válido.'); 
+            }
+        };
+        reader.readAsText(file);
+    });
     
-    // --> AQUÍ ESTÁ LA CORRECCIÓN PRINCIPAL: Agregar event listeners a inputs numéricos que no los tenían
     document.getElementById('margen-ganancia').addEventListener('input', calculateFinances);
     document.getElementById('costo-mano-obra').addEventListener('input', calculateFinances);
     dom.updateStatsBtn.addEventListener('click', calculateFinances);
@@ -687,6 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('total').textContent = totalStr;
         lastQuoteData = { equipoNombres: Array.from(specs).map(k=>equiposDB[k].nombre).join(', '), totalFormateado: totalStr, mainEquipment: mainEq };
         saveToHistory({ quoteID, clientName, clientRut, clientAddress: clientAddr, date: dateStr, total: totalStr, subtotal: document.getElementById('subtotal').textContent, iva: document.getElementById('iva').textContent, itemsHtml: tbody.innerHTML, specsHtml, mainEq, meta: lastQuoteData });
+        
         document.getElementById('view-calculator').classList.add('hidden');
         document.getElementById('quote-section').classList.remove('hidden');
         document.getElementById('print-action-bar').classList.remove('hidden');
