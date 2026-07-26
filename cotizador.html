@@ -600,6 +600,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     loadCustomPrices();
+    
+    // --> AQUÍ ESTÁ LA CORRECCIÓN PRINCIPAL: Agregar event listeners a inputs numéricos que no los tenían
+    document.getElementById('margen-ganancia').addEventListener('input', calculateFinances);
+    document.getElementById('costo-mano-obra').addEventListener('input', calculateFinances);
+    dom.updateStatsBtn.addEventListener('click', calculateFinances);
+    
+    document.querySelectorAll('.material-input').forEach(input => {
+        input.addEventListener('input', calculateFinances);
+    });
+
+    // Delegación de eventos para eliminar items dinámicos y actualizar
     document.querySelector('#items-table tbody').addEventListener('click', (e) => {
         const btn = e.target.closest('.delete-row-btn');
         if (btn) { btn.closest('tr').remove(); recalculateQuoteTotals(); }
