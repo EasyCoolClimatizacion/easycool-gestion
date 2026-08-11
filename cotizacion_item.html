@@ -38,10 +38,29 @@
                 max-width: 100% !important;
             }
 
-            /* Evita que el cuadro de totales se corte por la mitad entre 2 hojas */
-            #seccion-totales {
+            /* Evita que el cuadro de totales se corten por la mitad entre 2 hojas */
+            #seccion-inferior {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            
+            #contenedor-totales {
+                order: 1 !important; /* Totales primero */
+                width: 100% !important;
+                margin-bottom: 20px !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
+            }
+
+            #contenedor-observaciones {
+                order: 2 !important; /* Observaciones después */
+                width: 100% !important;
+            }
+            
+            /* Ajuste del cuadro de totales para que ocupe el lado derecho */
+            #contenedor-totales > div {
+                width: 50% !important;
+                margin-left: auto !important;
             }
 
             /* Inputs transparentes al imprimir */
@@ -205,9 +224,9 @@
             </section>
             
             <!-- TOTALES Y NOTAS (Puesto en una caja que evita cortarse al imprimir) -->
-            <section id="seccion-totales" class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2">
+            <section id="seccion-inferior" class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2">
                 <!-- Notas (Izquierda) -->
-                <div class="md:col-span-7">
+                <div id="contenedor-observaciones" class="md:col-span-7">
                     <div class="bg-yellow-50 p-3 rounded border border-yellow-100 h-full">
                         <h4 class="font-bold text-[10px] text-gray-600 mb-1 uppercase">Observaciones Técnicas</h4>
                         <textarea id="notas" spellcheck="true" class="w-full h-20 text-xs bg-transparent border-none p-0 text-gray-700 resize-none focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía..."></textarea>
@@ -215,7 +234,7 @@
                 </div>
 
                 <!-- Cálculos (Derecha) -->
-                <div class="md:col-span-5">
+                <div id="contenedor-totales" class="md:col-span-5">
                     <div class="bg-gray-50 p-3 rounded border border-gray-200">
                         <div class="space-y-1 text-xs">
                             <div class="flex justify-between text-gray-600">
