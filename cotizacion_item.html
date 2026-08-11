@@ -26,6 +26,7 @@
             body { 
                 background-color: white;
                 font-size: 11px;
+                padding: 0 !important;
             }
 
             .no-print { display: none !important; }
@@ -38,29 +39,26 @@
                 max-width: 100% !important;
             }
 
-            /* Evita que el cuadro de totales se corten por la mitad entre 2 hojas */
+            /* ORDENAR TOTALES Y OBSERVACIONES AL IMPRIMIR */
             #seccion-inferior {
                 display: flex !important;
                 flex-direction: column !important;
+                gap: 1.5rem !important;
             }
             
             #contenedor-totales {
-                order: 1 !important; /* Totales primero */
-                width: 100% !important;
-                margin-bottom: 20px !important;
+                order: 1 !important;
+                width: 50% !important;
+                margin-left: auto !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
-
-            #contenedor-observaciones {
-                order: 2 !important; /* Observaciones después */
-                width: 100% !important;
-            }
             
-            /* Ajuste del cuadro de totales para que ocupe el lado derecho */
-            #contenedor-totales > div {
-                width: 50% !important;
-                margin-left: auto !important;
+            #contenedor-observaciones {
+                order: 2 !important;
+                width: 100% !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
 
             /* Inputs transparentes al imprimir */
@@ -134,18 +132,19 @@
         }
     </style>
 </head>
-<body class="p-4 sm:p-8 min-h-screen flex flex-col items-center">
+<body class="p-2 sm:p-8 min-h-screen flex flex-col items-center">
 
     <!-- CONTENEDOR PRINCIPAL (Hoja Carta) -->
-    <div class="w-full max-w-[21.59cm] bg-white p-8 sm:p-10 rounded-xl shadow-2xl min-h-[27.94cm] flex flex-col justify-between relative mx-auto" id="cotizacion-container">
+    <div class="w-full max-w-[21.59cm] bg-white p-4 sm:p-10 rounded-xl shadow-2xl min-h-[27.94cm] flex flex-col justify-between relative mx-auto" id="cotizacion-container">
         
         <!-- CONTENIDO SUPERIOR -->
         <div>
             <!-- ENCABEZADO -->
-            <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-6">
+            <!-- Flex-wrap permite que en celulares el número baje si no hay espacio -->
+            <header class="flex flex-wrap justify-between items-start border-b-2 border-blue-600 pb-4 mb-6 gap-4">
                 <!-- Izquierda: Logo y Empresa -->
-                <div class="flex-1">
-                    <svg viewBox="0 0 250 50" class="h-12 w-auto mb-2"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
+                <div class="flex-1 min-w-[200px]">
+                    <svg viewBox="0 0 250 50" class="h-10 sm:h-12 w-auto mb-2"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
                     <div class="text-[10px] text-gray-500 leading-tight">
                         <p class="font-bold text-gray-700">EasyCool Climatización</p>
                         <p>RUT: 77.448.234-2</p>
@@ -153,7 +152,7 @@
                         <p>📞 +569 5777 6174 | ✉️ ventas@easycoolclimatizacion.com</p>
                     </div>
                 </div>
-                <!-- Derecha: Cotización y Fecha (Tabla para forzar alineación derecha absoluta) -->
+                <!-- Derecha: Cotización y Fecha -->
                 <div class="flex-none text-right flex flex-col items-end">
                     <h1 class="text-xl font-bold text-gray-800 uppercase mb-2">COTIZACIÓN</h1>
                     <table class="w-auto border-collapse">
@@ -204,28 +203,33 @@
 
             <!-- TABLA DE ÍTEMS -->
             <section class="mb-6">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-blue-600 text-white text-[10px] uppercase font-bold tracking-wider">
-                            <th class="p-2 w-12 text-center rounded-tl">Cant.</th>
-                            <th class="p-2">Descripción del Servicio / Producto</th>
-                            <th class="p-2 w-28 text-right">P. Unitario</th>
-                            <th class="p-2 w-28 text-right rounded-tr">Total Neto</th>
-                            <th class="p-2 w-6 no-print bg-white"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="items-body" class="text-xs text-gray-700">
-                        <!-- Filas dinámicas -->
-                    </tbody>
-                </table>
+                <!-- Wrapper para scroll horizontal en celulares -->
+                <div class="overflow-x-auto w-full pb-2 print:overflow-visible">
+                    <!-- min-w-[600px] evita que se aplaste en celulares -->
+                    <table class="w-full text-left border-collapse min-w-[600px] sm:min-w-full print:min-w-full">
+                        <thead>
+                            <tr class="bg-blue-600 text-white text-[10px] uppercase font-bold tracking-wider">
+                                <th class="p-2 w-12 text-center rounded-tl">Cant.</th>
+                                <th class="p-2">Descripción del Servicio / Producto</th>
+                                <th class="p-2 w-28 text-right">P. Unitario</th>
+                                <th class="p-2 w-28 text-right rounded-tr">Total Neto</th>
+                                <th class="p-2 w-6 no-print bg-white"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-body" class="text-xs text-gray-700">
+                            <!-- Filas dinámicas -->
+                        </tbody>
+                    </table>
+                </div>
                 <button id="addRow" class="mt-3 flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold text-xs no-print transition-colors px-2 py-1 rounded hover:bg-blue-50">
                     <span class="text-lg">+</span> Agregar Ítem
                 </button>
             </section>
             
-            <!-- TOTALES Y NOTAS (Puesto en una caja que evita cortarse al imprimir) -->
+            <!-- TOTALES Y NOTAS (Estructura optimizada para pantalla e impresión) -->
             <section id="seccion-inferior" class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2">
-                <!-- Notas (Izquierda) -->
+                
+                <!-- Notas (Izquierda en pantalla, Abajo en impresión) -->
                 <div id="contenedor-observaciones" class="md:col-span-7">
                     <div class="bg-yellow-50 p-3 rounded border border-yellow-100 h-full">
                         <h4 class="font-bold text-[10px] text-gray-600 mb-1 uppercase">Observaciones Técnicas</h4>
@@ -233,7 +237,7 @@
                     </div>
                 </div>
 
-                <!-- Cálculos (Derecha) -->
+                <!-- Cálculos (Derecha en pantalla, Arriba en impresión) -->
                 <div id="contenedor-totales" class="md:col-span-5">
                     <div class="bg-gray-50 p-3 rounded border border-gray-200">
                         <div class="space-y-1 text-xs">
@@ -245,7 +249,7 @@
                             <!-- DESCUENTO DINÁMICO -->
                             <div class="flex justify-between text-gray-600 items-center">
                                 <span>Descuento (-):</span>
-                                <div class="flex items-center gap-1 justify-end w-40">
+                                <div class="flex items-center gap-1 justify-end w-40 no-print">
                                     <select id="tipo_descuento" class="text-[10px] bg-white border border-gray-300 rounded px-1 py-1 h-6 focus:ring-1 focus:ring-blue-500 w-16">
                                         <option value="manual">Monto</option>
                                         <option value="3">3%</option>
@@ -256,6 +260,8 @@
                                     </select>
                                     <input type="text" id="descuento" class="w-20 text-right font-mono bg-white border border-gray-300 rounded px-1 py-1 h-6 text-xs focus:ring-1 focus:ring-blue-500" placeholder="0" spellcheck="false" oninput="this.value = this.value.replace(/[^0-9.]/g, '')">
                                 </div>
+                                <!-- Span para mostrar descuento en impresión de forma más limpia -->
+                                <span id="descuento-print" class="hidden font-mono font-medium">$0</span>
                             </div>
                             
                             <div class="flex justify-between text-gray-600">
@@ -335,6 +341,7 @@
         const itemsBody = document.getElementById('items-body');
         const discountSelect = document.getElementById('tipo_descuento');
         const discountInput = document.getElementById('descuento');
+        const discountPrint = document.getElementById('descuento-print');
 
         document.addEventListener('DOMContentLoaded', () => {
             // --- FOLIO ---
@@ -417,6 +424,11 @@
             document.getElementById('subtotal').textContent = formatCurrency(subtotal);
             document.getElementById('iva').textContent = formatCurrency(iva);
             document.getElementById('total').textContent = formatCurrency(total);
+            
+            // Reflejar descuento en el span de impresión para que se vea bonito
+            if (discountPrint) {
+                discountPrint.textContent = formatCurrency(discountMonto);
+            }
         };
 
         const createRow = (data = null) => {
@@ -565,6 +577,13 @@
         function printCotizacion() {
             saveToHistory(); // Guardar antes de imprimir
             
+            // Mostrar texto simple de descuento y ocultar el select+input para una impresión más limpia
+            if(discountPrint) {
+                discountPrint.classList.remove('hidden');
+                discountPrint.classList.add('inline-block');
+                discountPrint.previousElementSibling.classList.add('print:hidden');
+            }
+
             const numeroInput = document.getElementById('cotizacion_n');
             const cliente = document.getElementById('cliente').value || 'Cliente';
             const safeCliente = cliente.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim();
@@ -583,7 +602,15 @@
                         localStorage.setItem('easycool_cot_num', currentNum + 1);
                     }
                 }
-                setTimeout(() => { document.title = originalTitle; }, 500);
+                setTimeout(() => { 
+                    document.title = originalTitle; 
+                    // Restaurar los elementos del descuento
+                    if(discountPrint) {
+                        discountPrint.classList.add('hidden');
+                        discountPrint.classList.remove('inline-block');
+                        discountPrint.previousElementSibling.classList.remove('print:hidden');
+                    }
+                }, 500);
             }, 100);
         }
     </script>
