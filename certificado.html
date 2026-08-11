@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -107,15 +106,15 @@
         <div>
             <h3 class="text-lg font-bold text-gray-800 mb-2">Checklist de Calidad</h3>
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
-                <label class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                <label class="flex items-center p-2 rounded border border-transparent hover:bg-gray-100 cursor-pointer transition-colors">
                     <input id="cert-check-drain" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                     <span class="ml-3 text-sm text-gray-700 font-medium">Prueba de Drenaje (Bandeja y Manguera) OK</span>
                 </label>
-                <label class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                <label class="flex items-center p-2 rounded border border-transparent hover:bg-gray-100 cursor-pointer transition-colors">
                     <input id="cert-check-briefing" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                     <span class="ml-3 text-sm text-gray-700 font-medium">Instrucción al cliente (Uso, Filtros) OK</span>
                 </label>
-                 <label class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                 <label class="flex items-center p-2 rounded border border-transparent hover:bg-gray-100 cursor-pointer transition-colors">
                     <input id="cert-check-cleaning" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                     <span class="ml-3 text-sm text-gray-700 font-medium">Limpieza y Orden del lugar OK</span>
                 </label>
@@ -154,7 +153,7 @@
 
         <!-- Botón Generar -->
         <div class="mt-10 mb-20">
-            <button id="generate-certificate-btn" class="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <button id="generate-certificate-btn" class="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                 <span class="btn-text text-lg">Guardar y Generar PDF</span>
                 <span class="spinner" style="display: none;"></span>
             </button>
@@ -387,7 +386,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const certNumberInput = document.getElementById('cert-number');
     const clientNameInput = document.getElementById('cert-client-name');
 
-    clientNameInput.addEventListener('input', () => { generateCertificateBtn.disabled = clientNameInput.value.trim() === ''; });
+    // --- MEJORA: Estilos dinámicos para el Checklist ---
+    const checkboxes = document.querySelectorAll('#cert-check-drain, #cert-check-briefing, #cert-check-cleaning');
+    checkboxes.forEach(chk => {
+        chk.addEventListener('change', function() {
+            const label = this.closest('label');
+            if(this.checked) {
+                label.classList.add('bg-green-50', 'border-green-300');
+                label.classList.remove('border-transparent', 'hover:bg-gray-100');
+            } else {
+                label.classList.remove('bg-green-50', 'border-green-300');
+                label.classList.add('border-transparent', 'hover:bg-gray-100');
+            }
+        });
+    });
 
     // --- MANEJO DE EQUIPOS ---
     let equipoCount = 0;
@@ -637,6 +649,28 @@ document.addEventListener('DOMContentLoaded', function() {
         btnSpinner.style.display = 'block';
         generateCertificateBtn.disabled = true;
 
+        // --- MEJORA: Validación de campos obligatorios ---
+        const clientRutInput = document.getElementById('cert-client-rut');
+        const techInput = document.getElementById('cert-technician');
+        let isValid = true;
+        
+        [clientNameInput, clientRutInput, techInput].forEach(el => {
+            if (!el.value.trim()) {
+                el.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+                isValid = false;
+            } else {
+                el.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
+            }
+        });
+
+        if (!isValid) {
+            alert("⚠️ Faltan campos obligatorios. Por favor, complete el Nombre del Cliente, RUT y Nombre del Técnico marcados en rojo.");
+            btnText.style.display = 'block';
+            btnSpinner.style.display = 'none';
+            generateCertificateBtn.disabled = false;
+            return; // Detener la generación
+        }
+
         try {
             // Guardar en Historial
             const formData = getFormData();
@@ -656,8 +690,14 @@ document.addEventListener('DOMContentLoaded', function() {
             setText('print-cert-number', formData.folio);
             setText('print-cert-notes', formData.notes);
             
+            // --- MEJORA: Formato de Fecha sin error de Huso Horario ---
             const rawDate = formData.date;
-            document.getElementById('print-cert-install-date').textContent = rawDate ? new Date(rawDate+'T00:00:00').toLocaleDateString('es-CL') : '---';
+            let formattedDate = '---';
+            if(rawDate) {
+                const parts = rawDate.split('-'); // ej. 2026-08-11
+                if(parts.length === 3) formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            document.getElementById('print-cert-install-date').textContent = formattedDate;
 
             // Firmas
             const sigClient = document.getElementById('print-signature-image-client');
@@ -692,13 +732,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
 
-                // Función para crear bloque de imagen (Simplificada y sin promesas dentro del loop)
+                // --- MEJORA: Función para crear bloque de imagen (Tamaños estrictos para impresión) ---
                 const imgBlock = (b64, label) => b64 ? `
                     <div style="width: 23%; display: inline-block; vertical-align: top; margin: 0 1%;">
-                        <div style="height: 90px; background-color: #f3f4f6; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
-                            <img src="${b64}" width="100%" style="display: block; max-width: 100%; max-height: 100%; object-fit: contain;">
+                        <div style="height: 100px; background-color: #f3f4f6; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
+                            <img src="${b64}" style="display: block; width: auto; height: 100%; max-width: 100%; object-fit: contain;">
                         </div>
-                        <div style="font-size: 9px; text-align: center; color: #4b5563; margin-top: 2px; font-weight: 600;">${label}</div>
+                        <div style="font-size: 10px; text-align: center; color: #374151; margin-top: 4px; font-weight: 700;">${label}</div>
                     </div>` : '';
 
                 const photosHtml = `
@@ -751,7 +791,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkContainer.innerHTML += `<div>${icon} ${label}</div>`;
             });
 
-            document.getElementById('certificate-section').scrollIntoView({behavior:'smooth'});
+            // --- MEJORA: Auto-scroll suave y confiable ---
+            setTimeout(() => {
+                document.getElementById('certificate-section').scrollIntoView({behavior:'smooth', block: 'start'});
+            }, 100);
+            
             document.title = `Certificado_${formData.client.replace(/\s+/g,'_')}`;
 
             // Actualizar Folio Siguiente
