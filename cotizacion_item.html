@@ -61,15 +61,19 @@
                 break-inside: avoid !important;
             }
 
-            /* Inputs transparentes al imprimir */
+            /* Inputs transparentes al imprimir (CORREGIDO PARA EVITAR LÍNEAS) */
             input, textarea, select { 
                 border: none !important; 
                 background-color: transparent !important;
                 padding: 0 !important;
-                resize: none;
+                margin: 0 !important;
+                resize: none !important;
+                box-shadow: none !important;
+                outline: none !important;
                 font-family: 'Inter', sans-serif;
-                appearance: none;
-                -webkit-appearance: none;
+                appearance: none !important;
+                -webkit-appearance: none !important;
+                overflow: hidden !important;
             }
             input::placeholder, textarea::placeholder { color: transparent; }
             
@@ -115,15 +119,17 @@
             text-align: right;
             font-weight: 600;
             cursor: default;
+            box-shadow: none !important;
         }
         
         /* Inputs header "silenciosos" */
         .input-silent {
             background: transparent;
             border: 1px solid transparent;
+            box-shadow: none;
         }
         .input-silent:hover { border-color: #e5e7eb; }
-        .input-silent:focus { background: white; border-color: #3B82F6; }
+        .input-silent:focus { background: white; border-color: #3B82F6; box-shadow: 0 0 0 2px #93C5FD; }
 
         /* Modal Background */
         #history-modal {
@@ -616,3 +622,4 @@
     </script>
 </body>
 </html>
+```
