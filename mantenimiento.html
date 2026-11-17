@@ -3,1049 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- === NÚCLEO PWA === -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#ffffff">
-    <meta name="apple-mobile-web-app-title" content="EasyCool Mantención">
-    <link id="pwa-favicon" rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❄️</text></svg>">
-
-    <title>EasyCool - Informe Multi-Equipo</title>
+    <title>EasyCool Informe Mantenimiento</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
-        
-        /* Edición Visual */
-        [contenteditable="true"]:hover { outline: 2px dashed #a5b4fc; cursor: text; }
-        [contenteditable="true"]:focus { outline: 2px solid #6366f1; background-color: #eef2ff; }
-        
-        /* Canvas corregido visualmente, el tamaño real se setea en JS */
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; -webkit-tap-highlight-color: transparent; padding-bottom: 80px;}
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        [contenteditable="true"]:focus { outline: 2px solid #4981F3; background-color: #F1F6FF; }
         canvas.signature-pad { cursor: crosshair; touch-action: none; width: 100%; height: 100%; display: block; }
-        
-        .file-label { font-size: 0.75rem; color: #4b5563; margin-bottom: 0.25rem; display: block; font-weight: 600; }
-        .equipment-card { border-left: 4px solid #3b82f6; transition: all 0.3s ease; }
-        
-        /* Animaciones IA */
-        .ai-loading { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; opacity: 0.7; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-
-        /* Modal custom */
-        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
-
-        /* === ESTILOS DE IMPRESIÓN PROFESIONAL OPTIMIZADOS === */
         @media print {
-            @page { 
-                size: letter; 
-                margin: 0.6cm 0.8cm 0.6cm 0.8cm; 
-            }
-            
-            body { 
-                background: white !important; 
-                color: #000000 !important;
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
-                font-size: 10px !important; 
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            
+            body { background: white; margin: 0; padding: 0; font-size: 10px; }
             .no-print { display: none !important; }
-            
-            #report-section { 
-                display: block !important; 
-                width: 100% !important; 
-                max-width: 100% !important; 
-                box-shadow: none !important; 
-                border: none !important; 
-                padding: 0 !important; 
-                margin: 0 !important; 
-                min-height: 0 !important;
-                height: auto !important;
-            }
-            
-            .page-break-inside-avoid { 
-                page-break-inside: avoid !important; 
-                break-inside: avoid !important; 
-            }
-            
-            .equipment-section { 
-                page-break-inside: avoid !important; 
-                break-inside: avoid !important; 
-                border: 1px solid #d1d5db !important;
-                margin-bottom: 12px !important; 
-                border-radius: 4px !important;
-                overflow: hidden !important;
-            }
-            
-            h1 { font-size: 16px !important; }
-            h2 { font-size: 12px !important; }
-            p, td, th { font-size: 9px !important; }
-            .bg-blue-600 { background-color: #2563eb !important; color: white !important; }
-            .bg-gray-100 { background-color: #f3f4f6 !important; }
-            .bg-blue-50 { background-color: #eff6ff !important; }
-            .bg-green-50 { background-color: #f0fdf4 !important; border: 1px solid #bbf7d0 !important; }
-            .bg-yellow-50 { background-color: #fefce8 !important; border: 1px solid #fef08a !important; }
-            
-            a { text-decoration: none !important; color: #2563eb !important; }
+            .printable-section { width: 100% !important; max-width: 100% !important; padding: 6mm !important; box-shadow: none !important; }
+            .page-break-inside-avoid { page-break-inside: avoid; }
+            .equipment-section { border: 1px solid #d1d5db !important; margin-bottom: 8px !important; border-radius: 4px !important; overflow: hidden !important; page-break-inside: avoid; }
         }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body class="sm:p-8">
 
-    <!-- CUSTOM MODAL (Actualizado para permitir input de texto) -->
-    <div id="custom-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center modal-overlay no-print">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform transition-all scale-100">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="bg-red-100 p-2 rounded-full text-red-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+    <div id="form-section" class="max-w-4xl mx-auto bg-white p-4 sm:p-8 rounded-xl shadow-lg no-print">
+        <!-- HEADER -->
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <div class="flex flex-row items-center font-montserrat gap-3">
+                <div class="relative w-[40px] h-[40px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[6px] gap-[3px] shadow-sm">
+                    <div class="h-[5px] w-[24px] bg-[#F1F6FF] rounded-full"></div>
+                    <div class="h-[5px] w-[19px] bg-[#E4EEFF] rounded-full"></div>
+                    <div class="h-[5px] w-[14px] bg-[#D2E3FF] rounded-full"></div>
                 </div>
-                <h3 class="text-lg font-bold text-gray-900">Aviso</h3>
+                <div class="flex flex-col items-start leading-none mt-1">
+                    <span class="text-[#212B3B] font-[900] text-[18px] tracking-[-0.01em]">EASYCOOL</span>
+                    <span class="text-[#9FA5B1] font-[500] text-[9px] tracking-[0.01em]">Climatización</span>
+                </div>
             </div>
-            <p id="modal-message" class="text-gray-600 text-sm mb-4"></p>
-            
-            <!-- Input oculto para cuando se requiere texto (ej: API Key) -->
-            <input type="text" id="modal-input" class="hidden w-full mb-6 rounded border border-gray-300 shadow-sm p-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" placeholder="Escribe aquí...">
-            
-            <div class="flex gap-2">
-                <button id="modal-cancel-btn" onclick="closeModal()" class="hidden flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-lg hover:bg-gray-200 transition-colors">Cancelar</button>
-                <button id="modal-confirm-btn" onclick="confirmModal()" class="flex-1 bg-gray-900 text-white font-bold py-2.5 rounded-lg hover:bg-gray-800 transition-colors">Entendido</button>
+            <div class="text-right flex items-center gap-2">
+                <label class="text-[10px] font-bold text-gray-500 uppercase">Inf. Nº</label>
+                <input type="text" id="form-folio-input" class="w-16 border rounded p-1 text-center font-bold text-[#4981F3]" value="2100">
             </div>
         </div>
-    </div>
 
-    <!-- =========== PANTALLA 1: FORMULARIO =========== -->
-    <div id="form-section">
-        <div class="max-w-4xl mx-auto bg-white p-4 sm:p-8 rounded-lg shadow-2xl mb-8 no-print">
-            
-            <!-- CABECERA OFICIAL (CORREGIDA PARA RESPONSIVE) -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b pb-4">
-                <div class="flex-shrink-0">
-                    <svg viewBox="0 0 250 50" class="h-10 sm:h-12 w-auto"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
-                </div>
-                <div class="w-full sm:w-auto text-left sm:text-right">
-                    <div class="flex justify-start sm:justify-end items-center gap-2 mb-1">
-                        <label for="form-folio-input" class="text-sm font-bold text-gray-700 whitespace-nowrap">Informe Nº</label>
-                        <input type="number" id="form-folio-input" class="w-24 text-sm font-bold text-gray-900 border border-gray-300 rounded px-2 py-1 text-right focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm">
-                    </div>
-                    <div class="flex flex-col sm:items-end">
-                        <p class="text-xs text-gray-400" id="current-date-display"></p>
-                        <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10 mt-1">✨ AI Powered</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- BOTÓN HISTORIAL DESTACADO -->
-            <div class="mb-8">
-                <button onclick="loadLastReport()" class="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-3 px-4 rounded-lg border border-blue-200 transition-all shadow-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    RECUPERAR ÚLTIMO INFORME GENERADO
-                </button>
-            </div>
-            
-            <!-- DATOS CLIENTE (Con auto-guardado básico) -->
-            <div class="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h3 class="text-sm font-bold text-gray-700 uppercase mb-3 border-b pb-1">Datos del Cliente</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input id="gen-cliente-nombre" type="text" placeholder="Nombre Completo (Obligatorio)" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm border focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" onchange="saveClientData()">
-                    <input id="gen-cliente-rut" type="text" placeholder="RUT" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm border focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" onchange="saveClientData()">
-                    <input id="gen-cliente-direccion" type="text" placeholder="Dirección" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm md:col-span-2 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" onchange="saveClientData()">
-                </div>
-            </div>
-
-            <!-- CONTENEDOR DE EQUIPOS -->
-            <div id="equipments-container">
-                <!-- Los equipos se agregan aquí dinámicamente -->
-            </div>
-
-            <!-- BOTONES ACCIÓN -->
-            <button onclick="addEquipmentForm()" class="w-full py-3 border-2 border-dashed border-blue-300 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors mb-8 flex justify-center items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                AGREGAR OTRO EQUIPO
-            </button>
-            
-            <button onclick="validateAndGenerateReport()" class="w-full bg-gray-900 text-white font-bold py-4 px-6 rounded-lg hover:bg-black transition-colors shadow-lg flex items-center justify-center gap-2 text-center leading-tight">
-                <span class="text-xl">📄</span> <span class="break-words">GENERAR INFORME CONSOLIDADO</span>
-            </button>
-
-            <div class="mt-8 text-center pt-6 border-t">
-                <button onclick="downloadApp()" class="text-xs text-blue-500 hover:text-blue-700 underline font-medium">📥 Descargar Copia HTML (Uso Offline)</button>
+        <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input id="gen-cliente-nombre" type="text" placeholder="Nombre Cliente" class="border p-2 rounded text-sm w-full outline-none focus:border-[#4981F3]">
+                <input id="gen-cliente-rut" type="text" placeholder="RUT" class="border p-2 rounded text-sm w-full outline-none focus:border-[#4981F3]">
+                <input id="gen-cliente-direccion" type="text" placeholder="Dirección" class="border p-2 rounded text-sm w-full md:col-span-2 outline-none focus:border-[#4981F3]">
             </div>
         </div>
-    </div>
 
-    <!-- =========== PANTALLA 2: INFORME FINAL (CARTA) =========== -->
-    <div id="report-section" class="max-w-[21.5cm] mx-auto bg-white p-4 sm:p-8 shadow-2xl printable-section hidden min-h-0 relative flex flex-col justify-between">
+        <div id="equipments-container" class="space-y-6"></div>
+
+        <button onclick="addEquipmentForm()" class="w-full py-3 border-2 border-dashed border-[#4981F3] text-[#4981F3] font-bold rounded-lg hover:bg-blue-50 transition-colors mb-6">+ Agregar Equipo</button>
         
-        <div>
-            <!-- HEADER INFORME -->
-            <header class="flex flex-col sm:flex-row justify-between items-start gap-4 border-b-2 border-blue-600 pb-4 mb-4">
-                <div class="w-full sm:w-2/3">
-                    <svg viewBox="0 0 250 50" class="h-10 w-auto mb-1"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
-                    <div class="text-[9px] text-gray-500 leading-tight mt-2">
-                        <p class="font-bold text-gray-700">EasyCool Climatización</p>
-                        <p>RUT: 77.448.234-2 | Providencia, Santiago</p>
-                        <p>📞 +569 5777 6174 | ✉️ ventas@easycoolclimatizacion.com</p>
-                    </div>
-                </div>
-                <div class="w-full sm:w-1/3 text-left sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0">
-                    <h1 class="text-lg font-bold text-gray-800 uppercase leading-none">INFORME TÉCNICO</h1>
-                    <div class="mt-1">
-                        <p id="rep-fecha" class="text-[10px] text-gray-600 mb-1"></p>
-                        <p id="rep-folio-numero" class="text-xs font-bold text-red-600 border border-red-200 bg-red-50 px-2 py-0.5 inline-block rounded">Informe Nº 2100</p>
-                    </div>
-                </div>
-            </header>
-
-            <main>
-                <!-- DATOS CLIENTE -->
-                <section class="mb-4 bg-gray-50 border border-gray-200 rounded p-2.5 flex flex-col sm:flex-row justify-between items-start gap-2">
-                    <div class="w-full sm:w-1/2 sm:border-r border-gray-300 sm:pr-4">
-                        <span class="text-[9px] font-bold text-gray-500 uppercase block leading-none mb-1">Cliente</span>
-                        <p id="rep-cliente-nombre" contenteditable="true" class="text-xs font-bold text-gray-900 leading-tight"></p>
-                        <p id="rep-cliente-rut" contenteditable="true" class="text-[10px] text-gray-600"></p>
-                    </div>
-                    <div class="w-full sm:w-1/2 sm:pl-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-200">
-                        <span class="text-[9px] font-bold text-gray-500 uppercase block leading-none mb-1">Dirección</span>
-                        <p id="rep-cliente-direccion" contenteditable="true" class="text-[10px] text-gray-700 leading-tight"></p>
-                    </div>
-                </section>
-
-                <!-- EQUIPOS -->
-                <div id="report-equipments-container" class="space-y-4"></div>
-
-                <!-- FIRMAS -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-6 pt-3 border-t border-gray-300 page-break-inside-avoid">
-                    <div class="text-center flex flex-col items-center">
-                        <p class="text-[9px] font-bold text-gray-400 mb-1 uppercase tracking-widest no-print">Área técnico</p>
-                        <div class="h-24 w-full max-w-[200px] mx-auto mb-1 bg-blue-50/50 border-2 border-dashed border-blue-300 hover:bg-blue-50 transition-colors rounded-lg overflow-hidden print:border-none print:bg-transparent relative">
-                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 no-print">
-                                <span class="text-[10px] font-bold text-blue-500 uppercase tracking-wider">✍️ Dibujar firma</span>
-                            </div>
-                            <canvas id="sig-canvas-mant-tech" class="signature-pad w-full h-full relative z-10 bg-transparent"></canvas>
-                        </div>
-                        <button onclick="clearCanvas('sig-canvas-mant-tech')" class="text-[9px] text-red-500 no-print block mx-auto hover:underline cursor-pointer mb-2">Borrar Firma</button>
-                        
-                        <div class="border-t border-gray-400 pt-1.5 w-44 mx-auto mt-auto">
-                            <p class="text-xs font-bold text-gray-900 leading-tight">José Guerrero</p>
-                            <p class="text-[9px] text-gray-500">Técnico EasyCool | RUT: 15.963.315-2</p>
-                        </div>
-                    </div>
-                    <div class="text-center flex flex-col items-center">
-                        <p class="text-[9px] font-bold text-gray-400 mb-1 uppercase tracking-widest no-print">Área cliente</p>
-                        <div class="h-24 w-full max-w-[200px] mx-auto mb-1 bg-blue-50/50 border-2 border-dashed border-blue-300 hover:bg-blue-50 transition-colors rounded-lg overflow-hidden print:border-none print:bg-transparent relative">
-                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 no-print">
-                                <span class="text-[10px] font-bold text-blue-500 uppercase tracking-wider">✍️ Dibujar firma</span>
-                            </div>
-                            <canvas id="sig-canvas-mant-client" class="signature-pad w-full h-full relative z-10 bg-transparent"></canvas>
-                        </div>
-                        <button onclick="clearCanvas('sig-canvas-mant-client')" class="text-[9px] text-red-500 no-print block mx-auto hover:underline cursor-pointer mb-2">Borrar Firma</button>
-                        
-                        <div class="border-t border-gray-400 pt-1.5 w-44 mx-auto mt-auto">
-                            <p class="text-xs font-bold text-gray-900 leading-tight" id="mant-sig-client-name" contenteditable="true">Firma Cliente</p>
-                            <p class="text-[9px] text-gray-500" id="mant-sig-client-rut"></p>
-                        </div>
-                    </div>
-                </div>
-            </main>
+        <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100 flex justify-between items-center">
+            <span class="text-xs font-bold text-[#212B3B]">Próxima Mantención Sugerida:</span>
+            <select id="gen-prox-mant" class="border border-blue-200 rounded p-2 text-xs font-bold text-[#4981F3] bg-white outline-none">
+                <option value="6 Meses">En 6 Meses</option>
+                <option value="12 Meses" selected>En 12 Meses</option>
+                <option value="3 Meses">En 3 Meses (Uso Comercial)</option>
+            </select>
         </div>
-        
-        <footer class="mt-4 pt-3 border-t-2 border-gray-100 text-center page-break-inside-avoid">
-            <div class="flex flex-col items-center gap-1">
-                <div class="flex flex-wrap justify-center items-center gap-2 sm:gap-4 mb-2">
-                    <p class="text-[9px] font-bold text-gray-600">Síguenos en nuestras redes:</p>
-                    <a href="https://www.instagram.com/easycoolclimatizacion" target="_blank" class="text-[10px] font-bold text-blue-600 flex items-center gap-1 hover:underline">
-                        📸 Instagram: @easycoolclimatizacion
-                    </a>
+
+        <button onclick="validateAndGenerateReport()" class="w-full bg-[#212B3B] text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 hover:bg-black text-lg">📄 Generar Informe Consolidado</button>
+    </div>
+
+    <!-- MODAL FIRMA PANTALLA COMPLETA -->
+    <div id="signature-modal" class="fixed inset-0 z-[100] hidden bg-white flex flex-col no-print">
+        <div class="bg-[#212B3B] text-white p-4 flex justify-between items-center shadow-md">
+            <h2 class="font-bold">Firma del Cliente</h2>
+            <button onclick="document.getElementById('signature-modal').classList.add('hidden')" class="bg-gray-700 px-3 py-1 rounded">Cancelar</button>
+        </div>
+        <div class="flex-1 bg-gray-100 relative p-4 flex flex-col">
+            <div class="flex-1 bg-white border-2 border-dashed border-gray-400 rounded-xl relative shadow-inner overflow-hidden" id="canvas-container">
+                <canvas id="sig-canvas" class="signature-pad"></canvas>
+            </div>
+            <button onclick="clearCanvas('sig-canvas')" class="mt-4 text-sm text-red-500 font-bold uppercase w-full">Borrar Firma</button>
+        </div>
+        <div class="p-4 bg-white border-t">
+            <button onclick="saveSignatureLocally()" class="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg text-lg">Guardar Firma</button>
+        </div>
+    </div>
+
+    <!-- VISTA PDF -->
+    <div id="report-section" class="max-w-[21.5cm] mx-auto bg-white p-4 sm:p-8 shadow-2xl printable-section hidden">
+        <header class="flex justify-between items-start pb-4 border-b-2 border-[#4981F3] mb-4">
+            <div class="flex flex-row items-center font-montserrat gap-3">
+                <div class="relative w-[40px] h-[40px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[6px] gap-[3px]">
+                    <div class="h-[5px] w-[24px] bg-[#F1F6FF] rounded-full"></div><div class="h-[5px] w-[19px] bg-[#E4EEFF] rounded-full"></div><div class="h-[5px] w-[14px] bg-[#D2E3FF] rounded-full"></div>
                 </div>
-                <div class="bg-yellow-50 border border-yellow-200 rounded px-2 sm:px-4 py-1.5 w-full max-w-sm text-center">
-                    <span class="text-[9px] font-bold text-gray-700 block sm:inline">Tu opinión nos ayuda a seguir creciendo</span>
-                    <span class="hidden sm:inline"> — </span>
-                    <a href="https://g.page/r/Ccgzu2uxiaSiEBI/review" target="_blank" class="text-[9px] font-bold text-blue-700 hover:underline block sm:inline mt-1 sm:mt-0">
-                        ⭐⭐⭐⭐⭐ ¡Califícanos en Google!
-                    </a>
+                <div class="flex flex-col items-start leading-none mt-1">
+                    <span class="text-[#212B3B] font-[900] text-[18px] tracking-[-0.01em]">EASYCOOL</span>
+                    <span class="text-[#9FA5B1] font-[500] text-[9px] tracking-[0.01em]">Climatización</span>
                 </div>
             </div>
-            <p class="text-[8px] text-gray-400 mt-2">EasyCool Climatización - Documento generado digitalmente de manera segura.</p>
-        </footer>
-    </div>
+            <div class="text-right">
+                <h1 class="text-sm font-bold text-gray-800 uppercase">INFORME TÉCNICO MANTENIMIENTO</h1>
+                <p id="rep-folio" class="text-xs font-bold text-red-600 border bg-red-50 px-2 rounded inline-block mt-1"></p>
+                <p id="rep-fecha" class="text-[10px] text-gray-500 mt-1"></p>
+            </div>
+        </header>
 
-    <!-- Botones Flotantes -->
-    <div class="fixed bottom-0 left-0 w-full bg-white p-3 sm:p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] no-print z-50 hidden border-t border-gray-200" id="mant-print-actions">
-         <div class="max-w-4xl mx-auto flex gap-2 sm:gap-3">
-             <button onclick="editReport()" class="flex-1 bg-gray-100 text-gray-700 font-bold py-2 sm:py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-all text-xs sm:text-base">✏️ Editar</button>
-             <button onclick="printReport()" class="flex-1 bg-blue-600 text-white font-bold py-2 sm:py-3 rounded-lg shadow-lg hover:bg-blue-700 transition-all text-xs sm:text-base">🖨️ Imprimir PDF</button>
+        <div class="mb-4 bg-gray-50 border rounded p-3 flex justify-between">
+            <div>
+                <span class="text-[9px] font-bold text-gray-400 uppercase block mb-1">Cliente</span>
+                <p id="rep-cliente-nombre" class="text-sm font-bold text-gray-900 leading-tight" contenteditable="true"></p>
+                <p id="rep-cliente-rut" class="text-[10px] text-gray-600" contenteditable="true"></p>
+            </div>
+            <div class="text-right">
+                <span class="text-[9px] font-bold text-gray-400 uppercase block mb-1">Dirección</span>
+                <p id="rep-cliente-direccion" class="text-[10px] text-gray-700" contenteditable="true"></p>
+            </div>
+        </div>
+
+        <div id="report-equipments-container" class="space-y-4"></div>
+
+        <div class="mt-6 pt-4 border-t border-gray-300 page-break-inside-avoid">
+            <p class="text-[10px] text-gray-700 text-justify mb-4">Mediante su firma, el cliente declara tomar conocimiento del estado de los equipos detallados en este informe y de las observaciones o recomendaciones técnicas entregadas por EasyCool Climatización.</p>
+            
+            <div class="flex justify-between items-end">
+                <div class="text-center w-48">
+                    <div class="h-24 bg-gray-50 border border-gray-200 rounded flex items-center justify-center mb-1">
+                        <img id="print-signature-img" src="" class="max-h-full max-w-full object-contain">
+                    </div>
+                    <p id="rep-sig-name" class="text-xs font-bold text-gray-900 border-t pt-1" contenteditable="true"></p>
+                    <p class="text-[9px] text-gray-500">Recepción Conforme</p>
+                </div>
+                
+                <div class="bg-blue-50 border border-[#4981F3] p-3 rounded-lg text-center w-48 shadow-sm">
+                    <p class="text-[9px] font-bold text-[#212B3B] uppercase mb-1">Próxima Mantención Sugerida</p>
+                    <p id="rep-prox-mant" class="text-sm font-bold text-[#4981F3]" contenteditable="true"></p>
+                </div>
+            </div>
         </div>
     </div>
 
-<script>
-    // --- INYECCIÓN DINÁMICA DE MANIFEST PWA ---
-    const pwaManifest = {
-        "name": "EasyCool Reportes Terreno",
-        "short_name": "EasyCool App",
-        "display": "standalone",
-        "background_color": "#ffffff",
-        "theme_color": "#3B82F6",
-        "icons": [{
-            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>",
-            "sizes": "192x192 512x512",
-            "type": "image/svg+xml"
-        }]
-    };
-    const manifestBlob = new Blob([JSON.stringify(pwaManifest)], {type: 'application/json'});
-    const manifestUrl = URL.createObjectURL(manifestBlob);
-    document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`);
+    <!-- BOTONERA PDF -->
+    <div id="print-action-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 hidden flex flex-col gap-2 no-print shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <button onclick="document.getElementById('signature-modal').classList.remove('hidden'); setTimeout(()=>initPad('sig-canvas'), 100);" class="w-full bg-green-100 text-green-700 border border-green-300 font-bold py-3 rounded-xl shadow-sm text-sm"><i class="fas fa-signature"></i> El Cliente Firma Aquí</button>
+        <div class="flex gap-2 mt-1">
+            <button onclick="sendWA()" class="flex-1 bg-green-500 text-white font-bold py-3 rounded-xl shadow text-xs"><i class="fab fa-whatsapp text-lg"></i> Aviso WA</button>
+            <button onclick="window.print()" class="flex-1 bg-[#212B3B] text-white font-bold py-3 rounded-xl shadow text-xs"><i class="fas fa-file-pdf text-lg"></i> Guardar PDF</button>
+        </div>
+        <button onclick="editForm()" class="text-gray-400 text-xs font-bold py-2 uppercase mt-1">Volver a Editar</button>
+    </div>
 
-    // --- UTILS Y ESTADO ---
-    let equipmentCount = 0;
-    const photoStore = {}; // Almacén global para las fotografías (Permite eliminar individuales)
+    <!-- FIREBASE & JS -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    const today = () => {
-        const d = new Date();
-        return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
-    };
-    document.getElementById('current-date-display').innerText = today();
-    document.getElementById('rep-fecha').innerText = today();
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y",
+            authDomain: "easycool-cloud.firebaseapp.com",
+            projectId: "easycool-cloud",
+            storageBucket: "easycool-cloud.firebasestorage.app",
+            messagingSenderId: "1088663353920",
+            appId: "1:1088663353920:web:221585b4896c037dfbfda5"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let cloudReady = false;
+        signInAnonymously(auth).then(()=>cloudReady=true).catch(e=>console.error(e));
 
-    // Auto-restaurar datos del cliente
-    window.onload = () => {
-        if(localStorage.getItem('ec_cliente')) document.getElementById('gen-cliente-nombre').value = localStorage.getItem('ec_cliente');
-        if(localStorage.getItem('ec_rut')) document.getElementById('gen-cliente-rut').value = localStorage.getItem('ec_rut');
-        if(localStorage.getItem('ec_dir')) document.getElementById('gen-cliente-direccion').value = localStorage.getItem('ec_dir');
-        
-        // Mostrar número de informe en el formulario (Editable)
-        const currentFolio = parseInt(localStorage.getItem('ec_fol') || '2100');
-        document.getElementById('form-folio-input').value = currentFolio;
+        // ESTADO
+        window.equipmentCount = 0;
+        window.photoStore = {};
 
-        // Agregar primer equipo si está vacío
-        if(equipmentCount === 0) addEquipmentForm();
-    };
+        window.addEquipmentForm = () => {
+            window.equipmentCount++;
+            const id = window.equipmentCount;
+            const html = `
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative mb-4" id="eq-form-${id}">
+                <div class="flex items-center gap-2 mb-3 bg-[#F1F6FF] p-2 rounded border border-[#D2E3FF]">
+                    <span class="bg-[#4981F3] text-white text-[10px] font-bold px-2 py-1 rounded">EQ #${id}</span>
+                    <input type="text" class="eq-ubicacion flex-1 bg-transparent text-sm font-bold text-[#212B3B] outline-none" placeholder="Ubicación (Ej: Living)">
+                    <select class="eq-estado text-[10px] border rounded bg-white p-1 font-bold text-gray-600 outline-none"><option value="✅ Operativo">✅ Operativo</option><option value="⚠️ Observaciones">⚠️ Observaciones</option><option value="❌ Falla">❌ Falla</option></select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
+                    <input class="eq-marca border rounded p-2 outline-none" placeholder="Marca (Ej: Midea)">
+                    <input class="eq-serie border rounded p-2 outline-none" placeholder="S/N">
+                </div>
 
-    // --- STREAMING_CHUNK:Configurando Lógica de Historial... ---
-    // Funciones de historial
-    function saveLastReportData(folio) {
-        try {
-            const reportData = {
-                folio: folio,
-                equipments: []
-            };
-            for(let i=1; i<=equipmentCount; i++) {
+                <div class="mb-4">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase block mb-1">Mediciones</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <select class="eq-modo border rounded p-1.5 text-xs bg-white outline-none"><option value="frio">❄️ Frío</option><option value="calor" selected>🔥 Calor</option></select>
+                        <input class="eq-p-baja border rounded p-1.5 text-xs outline-none" type="number" placeholder="Baja (PSI)">
+                        <input class="eq-p-alta border rounded p-1.5 text-xs outline-none" type="number" placeholder="Alta (PSI)">
+                        <input class="eq-amp border rounded p-1.5 text-xs outline-none" type="number" placeholder="Amp (A)">
+                        <input class="eq-t-amb border rounded p-1.5 text-xs outline-none" type="number" placeholder="T.Amb °C">
+                        <input class="eq-t-iny border rounded p-1.5 text-xs outline-none" type="number" placeholder="T.Iny °C">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex gap-1 mb-1 overflow-x-auto pb-1">
+                        <button onclick="addQuickText(${id}, 'Filtros saturados de suciedad, se requiere lavado profundo.')" class="text-[9px] bg-gray-100 text-gray-600 px-2 py-1 rounded whitespace-nowrap border border-gray-200">Filtros Sucios</button>
+                        <button onclick="addQuickText(${id}, 'Baja presión de refrigerante detectada. Posible microfuga.')" class="text-[9px] bg-gray-100 text-gray-600 px-2 py-1 rounded whitespace-nowrap border border-gray-200">Baja Presión</button>
+                        <button onclick="addQuickText(${id}, 'Bandeja de drenaje con obstrucción, se realiza destape.')" class="text-[9px] bg-gray-100 text-gray-600 px-2 py-1 rounded whitespace-nowrap border border-gray-200">Drenaje Tapado</button>
+                    </div>
+                    <textarea class="eq-hallazgos w-full rounded border border-gray-300 p-2 text-sm h-16 outline-none resize-none" placeholder="Observaciones técnicas..."></textarea>
+                </div>
+            </div>`;
+            document.getElementById('equipments-container').insertAdjacentHTML('beforeend', html);
+        };
+
+        window.addQuickText = (id, text) => {
+            const box = document.querySelector(`#eq-form-${id} .eq-hallazgos`);
+            box.value = (box.value + " " + text).trim();
+        };
+
+        window.validateAndGenerateReport = async () => {
+            const name = document.getElementById('gen-cliente-nombre').value;
+            const folio = document.getElementById('form-folio-input').value;
+            
+            document.getElementById('rep-cliente-nombre').innerText = name || 'Cliente';
+            document.getElementById('rep-sig-name').innerText = name || 'Cliente';
+            document.getElementById('rep-cliente-rut').innerText = document.getElementById('gen-cliente-rut').value;
+            document.getElementById('rep-cliente-direccion').innerText = document.getElementById('gen-cliente-direccion').value;
+            document.getElementById('rep-folio').innerText = "Inf. Nº " + folio;
+            document.getElementById('rep-fecha').innerText = new Date().toLocaleDateString('es-CL');
+            document.getElementById('rep-prox-mant').innerText = document.getElementById('gen-prox-mant').value;
+
+            const container = document.getElementById('report-equipments-container');
+            container.innerHTML = '';
+            
+            let cloudData = { cliente: name, folio: folio, fecha: new Date().toISOString(), equipos: [] };
+
+            for(let i=1; i<=window.equipmentCount; i++) {
                 const form = document.getElementById(`eq-form-${i}`);
                 if(!form) continue;
                 
-                const checks = Array.from(form.querySelectorAll('.eq-check:checked')).map(c => c.value);
+                const ubi = form.querySelector('.eq-ubicacion').value || 'Equipo General';
+                const est = form.querySelector('.eq-estado').value;
+                const marca = form.querySelector('.eq-marca').value || '-';
+                const ser = form.querySelector('.eq-serie').value || '-';
+                const mod = form.querySelector('.eq-modo').value === 'frio' ? '❄️ Frío' : '🔥 Calor';
+                const pb = form.querySelector('.eq-p-baja').value || '-';
+                const pa = form.querySelector('.eq-p-alta').value || '-';
+                const amp = form.querySelector('.eq-amp').value || '-';
+                const ta = parseFloat(form.querySelector('.eq-t-amb').value);
+                const ti = parseFloat(form.querySelector('.eq-t-iny').value);
+                const obs = form.querySelector('.eq-hallazgos').value;
                 
-                reportData.equipments.push({
-                    marca: form.querySelector('.eq-marca').value,
-                    tipo: form.querySelector('.eq-tipo').value,
-                    serie: form.querySelector('.eq-serie').value,
-                    checks: checks,
-                    modo: form.querySelector('.eq-modo').value,
-                    gas: form.querySelector('.eq-gas').value,
-                    pb: form.querySelector('.eq-p-baja').value,
-                    pa: form.querySelector('.eq-p-alta').value,
-                    amp: form.querySelector('.eq-amp').value,
-                    ta: form.querySelector('.eq-t-amb').value,
-                    ti: form.querySelector('.eq-t-iny').value,
-                    hallazgos: form.querySelector('.eq-hallazgos').value
-                });
-            }
-            localStorage.setItem('ec_last_report', JSON.stringify(reportData));
-        } catch(e) { console.error("Error al guardar historial", e); }
-    }
+                let dt = '-'; if(!isNaN(ta) && !isNaN(ti)) dt = Math.abs(ta - ti).toFixed(1) + '°C';
 
-    function loadLastReport() {
-        const data = localStorage.getItem('ec_last_report');
-        if(!data) {
-            showModal("No hay un informe previo guardado en este dispositivo.");
-            return;
-        }
-        try {
-            const report = JSON.parse(data);
-            
-            // Sugerir el folio anterior guardado
-            if(report.folio) document.getElementById('form-folio-input').value = report.folio;
-            
-            // Limpiar equipos y almacén de fotos actuales
-            document.getElementById('equipments-container').innerHTML = '';
-            equipmentCount = 0;
-            for (let key in photoStore) delete photoStore[key];
-            
-            // Recrear equipos
-            report.equipments.forEach(eq => {
-                addEquipmentForm();
-                const form = document.getElementById(`eq-form-${equipmentCount}`);
-                
-                form.querySelector('.eq-marca').value = eq.marca || '';
-                form.querySelector('.eq-tipo').value = eq.tipo || '';
-                form.querySelector('.eq-serie').value = eq.serie || '';
-                
-                form.querySelectorAll('.eq-check').forEach(c => {
-                    c.checked = eq.checks.includes(c.value);
-                });
-                
-                if(eq.modo) form.querySelector('.eq-modo').value = eq.modo;
-                if(eq.gas) form.querySelector('.eq-gas').value = eq.gas;
-                form.querySelector('.eq-p-baja').value = eq.pb || '';
-                form.querySelector('.eq-p-alta').value = eq.pa || '';
-                form.querySelector('.eq-amp').value = eq.amp || '';
-                form.querySelector('.eq-t-amb').value = eq.ta || '';
-                form.querySelector('.eq-t-iny').value = eq.ti || '';
-                form.querySelector('.eq-hallazgos').value = eq.hallazgos || '';
-            });
-            
-            showModal("✅ Datos técnicos del último informe recuperados exitosamente.\n\nNota: Por motivos de memoria del dispositivo, las fotografías y firmas deben volver a cargarse manualmente.");
-            
-        } catch(e) {
-            showModal("Error al leer el historial del informe.");
-        }
-    }
+                cloudData.equipos.push({ ubicacion: ubi, estado: est, observaciones: obs });
 
-    function saveClientData() {
-        localStorage.setItem('ec_cliente', document.getElementById('gen-cliente-nombre').value);
-        localStorage.setItem('ec_rut', document.getElementById('gen-cliente-rut').value);
-        localStorage.setItem('ec_dir', document.getElementById('gen-cliente-direccion').value);
-    }
-
-    function downloadApp() { 
-        const a = document.createElement('a'); 
-        a.href = URL.createObjectURL(new Blob([document.documentElement.outerHTML], {type:'text/html'})); 
-        a.download='easycool_app_offline.html'; 
-        document.body.appendChild(a); 
-        a.click(); 
-        document.body.removeChild(a); 
-    }
-    
-    // --- STREAMING_CHUNK:Definiendo Funciones UI Auxiliares... ---
-    // Modal UI (Mejorado para permitir callbacks e inputs)
-    let modalConfirmCallback = null;
-
-    function showModal(message, requiresInput = false, callback = null) {
-        document.getElementById('modal-message').innerText = message;
-        const inputEl = document.getElementById('modal-input');
-        const cancelBtn = document.getElementById('modal-cancel-btn');
-        const confirmBtn = document.getElementById('modal-confirm-btn');
-
-        if (requiresInput) {
-            inputEl.classList.remove('hidden');
-            inputEl.value = '';
-            cancelBtn.classList.remove('hidden');
-            confirmBtn.innerText = "Guardar";
-            modalConfirmCallback = callback;
-        } else {
-            inputEl.classList.add('hidden');
-            cancelBtn.classList.add('hidden');
-            confirmBtn.innerText = "Entendido";
-            modalConfirmCallback = null;
-        }
-        document.getElementById('custom-modal').classList.remove('hidden');
-    }
-
-    function confirmModal() {
-        if (modalConfirmCallback) {
-            const inputEl = document.getElementById('modal-input');
-            modalConfirmCallback(inputEl.value);
-        }
-        closeModal();
-    }
-
-    function closeModal() {
-        document.getElementById('custom-modal').classList.add('hidden');
-    }
-
-    // --- SANITIZACIÓN XSS ---
-    function escapeHTML(str) {
-        if (!str) return "";
-        return str.replace(/[&<>'"]/g, 
-            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
-        );
-    }
-
-    // --- STREAMING_CHUNK:Procesando Imágenes... ---
-    // --- COMPRESIÓN Y GESTIÓN INDIVIDUAL DE IMÁGENES ---
-    async function compressImage(file, maxWidth = 800, quality = 0.7) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = event => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > maxWidth) {
-                        height = Math.round((height * maxWidth) / width);
-                        width = maxWidth;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', quality));
-                };
-                img.onerror = error => reject(error);
-            };
-            reader.onerror = error => reject(error);
-        });
-    }
-
-    window.handlePhotos = async function(input, category, id) {
-        const key = `${category}-${id}`;
-        if (!photoStore[key]) photoStore[key] = []; // Inicializar si no existe
-
-        const div = document.getElementById(`prev-${key}`);
-        div.innerHTML = `<div class="flex items-center gap-2 text-[10px] text-blue-600 font-bold col-span-full py-1">
-            <svg class="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            Optimizando fotografías...
-        </div>`;
-        
-        const files = Array.from(input.files);
-        
-        if (files.length > 0) {
-            try {
-                for (let file of files) {
-                    if(file.type.startsWith('image/')) {
-                         await new Promise(r => setTimeout(r, 10));
-                         const compressedBase64 = await compressImage(file, 1024, 0.65);
-                         photoStore[key].push(compressedBase64); // Guardar en estado global
-                    }
-                }
-            } catch (err) {
-                console.error("Error al comprimir imagen:", err);
-                showModal("⚠️ Error procesando imagen. Intente con menos fotos.");
-            }
-        }
-        
-        input.value = ''; // Limpiar input para permitir seleccionar la misma foto si se borró
-        renderPhotos(category, id);
-    }
-
-    window.renderPhotos = function(category, id) {
-        const key = `${category}-${id}`;
-        const div = document.getElementById(`prev-${key}`);
-        
-        if (!photoStore[key] || photoStore[key].length === 0) {
-            div.innerHTML = '';
-            return;
-        }
-
-        let html = '';
-        photoStore[key].forEach((base64, index) => {
-            html += `
-            <div class="relative group">
-                <img src="${base64}" class="w-full aspect-square object-cover border border-gray-300 rounded shadow-sm">
-                <button onclick="removePhoto('${category}', ${id}, ${index})" class="absolute top-1 right-1 bg-red-500 bg-opacity-90 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow hover:bg-red-600 focus:outline-none transition-colors border border-white" title="Eliminar foto">&times;</button>
-            </div>`;
-        });
-        div.innerHTML = html;
-    }
-
-    window.removePhoto = function(category, id, index) {
-        const key = `${category}-${id}`;
-        if (photoStore[key]) {
-            photoStore[key].splice(index, 1);
-            renderPhotos(category, id);
-        }
-    }
-
-    // --- STREAMING_CHUNK:Generando Plantilla de Equipo... ---
-    function addEquipmentForm() {
-        equipmentCount++;
-        const container = document.getElementById('equipments-container');
-        const id = equipmentCount;
-        
-        // Inicializar almacén para este equipo
-        photoStore[`filtros-${id}`] = [];
-        photoStore[`int-${id}`] = [];
-        photoStore[`ext-${id}`] = [];
-        photoStore[`hall-${id}`] = [];
-        
-        const html = `
-        <div class="equipment-card bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6 relative" id="eq-form-${id}">
-            <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">EQ #${id}</div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 mt-4">
-                <input class="eq-marca w-full rounded border-gray-300 p-2 text-sm border focus:border-blue-500 focus:ring-1 outline-none transition-all" placeholder="Marca (Ej: Khone, Midea)">
-                <input class="eq-tipo w-full rounded border-gray-300 p-2 text-sm border focus:border-blue-500 focus:ring-1 outline-none transition-all" placeholder="Tipo (Split Muro/Piso Cielo)">
-                <input class="eq-serie w-full rounded border-gray-300 p-2 text-sm border focus:border-blue-500 focus:ring-1 outline-none transition-all" placeholder="Nº Serie">
-            </div>
-
-            <div class="mb-4 bg-gray-50 p-3 rounded border border-gray-100">
-                <label class="text-xs font-bold text-gray-500 block mb-2">CHECKLIST MANTENCIÓN</label>
-                <div class="grid grid-cols-2 gap-3 text-sm">
-                    ${["Filtros", "U. Interior", "U. Exterior", "Eléctrico", "Drenaje"].map(i => 
-                        `<label class="flex items-center gap-2 cursor-pointer select-none text-gray-700 hover:text-blue-600 transition-colors"><input type="checkbox" checked class="eq-check w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="${i}"> ${i}</label>`
-                    ).join('')}
-                </div>
-            </div>
-
-            <div class="mb-4 border-t pt-3">
-                <label class="text-xs font-bold text-blue-600 mb-2 block">REGISTRO FOTOGRÁFICO EN TERRENO (Optimizadas autómaticamente)</label>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
-                    <div class="bg-gray-50 p-2 rounded border border-gray-100">
-                        <label class="block text-[10px] text-gray-600 font-medium mb-1">1. Filtros / Limpieza</label>
-                        <input type="file" multiple accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" onchange="handlePhotos(this, 'filtros', ${id})">
-                        <div id="prev-filtros-${id}" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 mt-2"></div>
+                container.innerHTML += `
+                <div class="equipment-section bg-white">
+                    <div class="bg-[#212B3B] text-white p-2 flex justify-between items-center text-[10px]">
+                        <div class="font-bold uppercase">EQUIPO #${i} - ${ubi} | ${marca}</div>
+                        <div class="font-bold bg-white text-gray-800 px-1.5 py-0.5 rounded shadow-sm">${est}</div>
                     </div>
-                    <div class="bg-gray-50 p-2 rounded border border-gray-100">
-                        <label class="block text-[10px] text-gray-600 font-medium mb-1">2. U. Interior</label>
-                        <input type="file" multiple accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" onchange="handlePhotos(this, 'int', ${id})">
-                        <div id="prev-int-${id}" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 mt-2"></div>
-                    </div>
-                    <div class="bg-gray-50 p-2 rounded border border-gray-100">
-                        <label class="block text-[10px] text-gray-600 font-medium mb-1">3. U. Exterior</label>
-                        <input type="file" multiple accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" onchange="handlePhotos(this, 'ext', ${id})">
-                        <div id="prev-ext-${id}" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 mt-2"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-4 border-t pt-3">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
-                    <label class="text-xs font-bold text-gray-500">PARÁMETROS DE MEDICIÓN</label>
-                    <button onclick="diagnoseEquipment(${id})" class="text-[10px] bg-purple-100 text-purple-700 px-3 py-1.5 rounded border border-purple-200 font-bold hover:bg-purple-200 transition-colors w-full sm:w-auto text-center">✨ Diagnóstico IA</button>
-                </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    <select class="eq-modo w-full rounded p-1.5 border border-gray-300 text-xs bg-white font-medium focus:border-blue-500 outline-none">
-                        <option value="frio">❄️ Modo Frío</option>
-                        <option value="calor" selected>🔥 Modo Calor</option>
-                    </select>
-                    <select class="eq-gas w-full rounded p-1.5 border border-gray-300 text-xs bg-white focus:border-blue-500 outline-none"><option value="" disabled selected>Gas</option><option value="R410A">R410A</option><option value="R32">R32</option><option value="R22">R22</option><option value="R404A">R404A</option></select>
-                    
-                    <!-- CAMPOS NUMÉRICOS MEJORADOS -->
-                    <input class="eq-p-baja w-full rounded p-1.5 border border-gray-300 text-xs focus:border-blue-500 outline-none" type="number" step="0.1" inputmode="decimal" placeholder="P. Baja (PSI)">
-                    <input class="eq-p-alta w-full rounded p-1.5 border border-gray-300 text-xs focus:border-blue-500 outline-none" type="number" step="0.1" inputmode="decimal" placeholder="P. Alta (PSI)">
-                    <input class="eq-amp w-full rounded p-1.5 border border-gray-300 text-xs focus:border-blue-500 outline-none" type="number" step="0.1" inputmode="decimal" placeholder="Amp (A)">
-                    <input class="eq-t-amb w-full rounded p-1.5 border border-gray-300 text-xs focus:border-blue-500 outline-none" type="number" step="0.1" inputmode="decimal" placeholder="T.Amb (°C)">
-                    <input class="eq-t-iny w-full rounded p-1.5 border border-gray-300 text-xs focus:border-blue-500 outline-none" type="number" step="0.1" inputmode="decimal" placeholder="T.Iny (°C)">
-                </div>
-                <div id="ai-result-${id}" class="hidden mt-3 p-3 bg-purple-50 rounded text-xs border border-purple-100 shadow-inner">
-                    <div id="ai-text-${id}"></div>
-                </div>
-            </div>
-
-            <div class="mt-2 border-t pt-3">
-                <label class="text-xs font-bold text-red-600 mb-1 block">OBSERVACIONES / HALLAZGOS</label>
-                <textarea class="eq-hallazgos w-full rounded border border-red-200 p-2 text-sm h-20 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all resize-none" placeholder="Detalles de lo encontrado o recomendaciones de reparación..."></textarea>
-                <div class="bg-gray-50 p-2 rounded border border-gray-100 mt-2">
-                     <label class="block text-[10px] text-gray-600 font-medium mb-1">Evidencia Hallazgos</label>
-                     <input type="file" multiple accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" onchange="handlePhotos(this, 'hall', ${id})">
-                     <div id="prev-hall-${id}" class="grid grid-cols-4 sm:grid-cols-6 gap-1.5 mt-2"></div>
-                </div>
-            </div>
-        </div>`;
-        container.insertAdjacentHTML('beforeend', html);
-    }
-
-    // --- STREAMING_CHUNK:Configurando Lógica de IA... ---
-    async function fetchWithBackoff(url, options, maxRetries = 3) {
-        let delay = 1000;
-        for (let i = 0; i < maxRetries; i++) {
-            try {
-                const response = await fetch(url, options);
-                if (response.ok) return response;
-                
-                // Si la API key es inválida, abortamos rápido
-                if (response.status === 400 || response.status === 403) {
-                    return response; 
-                }
-            } catch (error) {
-                if (i === maxRetries - 1) throw error;
-            }
-            await new Promise(resolve => setTimeout(resolve, delay));
-            delay *= 2; 
-        }
-        throw new Error('Timeout');
-    }
-
-    async function diagnoseEquipment(id) {
-        // GESTIÓN SEGURA DE API KEY
-        let savedApiKey = localStorage.getItem('ec_api_key');
-        
-        if(!savedApiKey) {
-            showModal("Para usar el Diagnóstico Inteligente, ingresa tu API Key de Google Gemini. Esta se guardará de forma segura en tu dispositivo.", true, (key) => {
-                if(key && key.trim() !== '') {
-                    localStorage.setItem('ec_api_key', key.trim());
-                    diagnoseEquipment(id); // Reintentar con la llave guardada
-                }
-            });
-            return;
-        }
-
-        const resultDiv = document.getElementById(`ai-result-${id}`);
-        const resultText = document.getElementById(`ai-text-${id}`);
-        const hallazgosInput = document.querySelector(`#eq-form-${id} .eq-hallazgos`);
-        
-        const form = document.getElementById(`eq-form-${id}`);
-        const modo = form.querySelector('.eq-modo').value;
-        const gas = form.querySelector('.eq-gas').value;
-        const pBaja = form.querySelector('.eq-p-baja').value;
-        const pAlta = form.querySelector('.eq-p-alta').value;
-        const tAmb = parseFloat(form.querySelector('.eq-t-amb').value);
-        const tIny = parseFloat(form.querySelector('.eq-t-iny').value);
-        const amp = form.querySelector('.eq-amp').value;
-        const obs = hallazgosInput.value;
-        
-        resultDiv.classList.remove('hidden');
-        resultText.innerHTML = '<span class="ai-loading text-purple-700 font-medium">✨ Analizando parámetros termodinámicos...</span>';
-
-        let deltaTxt = "No Calculable";
-        if (!isNaN(tAmb) && !isNaN(tIny)) {
-            deltaTxt = (modo === 'frio' ? (tAmb - tIny) : (tIny - tAmb)).toFixed(1) + '°C';
-        }
-
-        const prompt = `Analiza para un informe técnico de climatización el siguiente equipo en terreno:
-- Modo: ${modo}
-- Gas: ${gas}
-- P. Baja: ${pBaja} PSI
-- P. Alta: ${pAlta} PSI
-- Amp: ${amp} A
-- T.Amb: ${tAmb}°C
-- T.Iny: ${tIny}°C
-- Delta T: ${deltaTxt}
-- Obs: "${obs}"
-
-Entrega una evaluación termodinámica de exactamente 1 línea. Si sugieren problemas, indícalo directamente. Sin markdown.`;
-
-        try {
-            const response = await fetchWithBackoff(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${savedApiKey}`, {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            
-            if (!response.ok) {
-                if(response.status === 400 || response.status === 403) {
-                    localStorage.removeItem('ec_api_key');
-                    resultText.innerHTML = '<span class="text-red-500 font-medium">⚠️ API Key inválida o caducada. Se ha borrado de la memoria. Intenta de nuevo.</span>';
-                    return;
-                }
-                throw new Error("HTTP " + response.status);
-            }
-            
-            const data = await response.json();
-            const aiText = data.candidates[0].content.parts[0].text;
-            
-            resultText.innerHTML = `<div class="font-bold text-purple-800 flex items-center gap-1">✨ Diagnóstico Inteligente EasyCool:</div><div class="text-xs text-gray-800 mt-1">${escapeHTML(aiText)}</div>
-                <button onclick="copyToHallazgos(${id}, this)" data-text="${encodeURIComponent(aiText)}" class="mt-2 text-[9px] bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded transition-all shadow-sm">Copiar a Hallazgos</button>`;
-        } catch (e) { 
-            resultText.innerHTML = '<span class="text-red-500 font-medium">⚠️ Error al conectar con IA. Revise su conexión a internet.</span>'; 
-        }
-    }
-
-    function copyToHallazgos(id, btn) {
-        const text = decodeURIComponent(btn.getAttribute('data-text'));
-        const hallazgosBox = document.querySelector(`#eq-form-${id} .eq-hallazgos`);
-        hallazgosBox.value = (hallazgosBox.value + " " + text.replace(/\*\*/g, '')).trim();
-    }
-
-    // --- STREAMING_CHUNK:Generando Lógica del Reporte Final... ---
-    function validateAndGenerateReport() {
-        const clienteInput = document.getElementById('gen-cliente-nombre').value.trim();
-        if (!clienteInput) {
-            showModal("⚠️ El Nombre del Cliente es obligatorio para generar el informe.");
-            document.getElementById('gen-cliente-nombre').focus();
-            return;
-        }
-
-        // Validate at least one equipment has Marca
-        let hasEquipInfo = false;
-        for(let i=1; i<=equipmentCount; i++) {
-            const form = document.getElementById(`eq-form-${i}`);
-            if(form && form.querySelector('.eq-marca').value.trim() !== '') {
-                hasEquipInfo = true;
-                break;
-            }
-        }
-        
-        if(!hasEquipInfo) {
-             showModal("⚠️ Ingrese al menos la 'Marca' de uno de los equipos para continuar.");
-             return;
-        }
-
-        generateReport();
-    }
-
-    function generateReport() {
-        // Sanitización y Transferencia de datos
-        document.getElementById('rep-cliente-nombre').innerText = escapeHTML(document.getElementById('gen-cliente-nombre').value);
-        document.getElementById('rep-cliente-rut').innerText = escapeHTML(document.getElementById('gen-cliente-rut').value);
-        document.getElementById('rep-cliente-direccion').innerText = escapeHTML(document.getElementById('gen-cliente-direccion').value);
-        
-        // Lógica del Número de Informe (Folio) y Auto-incremento
-        const folioInputVal = parseInt(document.getElementById('form-folio-input').value) || 2100;
-        document.getElementById('rep-folio-numero').innerText = 'Informe Nº ' + folioInputVal;
-        
-        // Solo incrementar el correlativo guardado si se está usando el actual o uno mayor
-        const savedFolio = parseInt(localStorage.getItem('ec_fol') || '2100');
-        if (folioInputVal >= savedFolio) {
-            localStorage.setItem('ec_fol', folioInputVal + 1);
-        }
-
-        // Guardar historial técnico del informe
-        saveLastReportData(folioInputVal);
-        
-        document.getElementById('mant-sig-client-name').innerText = escapeHTML(document.getElementById('gen-cliente-nombre').value) || 'Cliente';
-        document.getElementById('mant-sig-client-rut').innerText = escapeHTML(document.getElementById('gen-cliente-rut').value);
-
-        // Renderizado de Equipos
-        const container = document.getElementById('report-equipments-container');
-        container.innerHTML = '';
-
-        for(let i=1; i<=equipmentCount; i++) {
-            const form = document.getElementById(`eq-form-${i}`);
-            if(!form) continue;
-
-            const marca = escapeHTML(form.querySelector('.eq-marca').value) || '-';
-            const tipo = escapeHTML(form.querySelector('.eq-tipo').value) || '-';
-            const serie = escapeHTML(form.querySelector('.eq-serie').value) || '-';
-            
-            const checks = Array.from(form.querySelectorAll('.eq-check:checked')).map(c => 
-                `<span class="inline-block bg-green-100 text-green-800 text-[9px] px-1.5 py-0.5 rounded mr-1 mb-1 border border-green-200 font-medium">✓ ${c.value}</span>`
-            ).join('');
-
-            const modo = form.querySelector('.eq-modo').value || 'frio';
-            const gas = escapeHTML(form.querySelector('.eq-gas').value) || '-';
-            const pb = escapeHTML(form.querySelector('.eq-p-baja').value) || '-';
-            const pa = escapeHTML(form.querySelector('.eq-p-alta').value) || '-';
-            const amp = escapeHTML(form.querySelector('.eq-amp').value) || '-';
-            const ta = parseFloat(form.querySelector('.eq-t-amb').value);
-            const ti = parseFloat(form.querySelector('.eq-t-iny').value);
-            
-            let dt = '-';
-            let dtColorClass = 'bg-blue-50 text-blue-700 border-blue-200';
-            if (!isNaN(ta) && !isNaN(ti)) {
-                if (modo === 'frio') {
-                    const diff = ta - ti;
-                    dt = diff.toFixed(1) + '°C';
-                    if (diff >= 12 && diff <= 18) {
-                        dtColorClass = 'bg-green-50 text-green-800 border-green-200'; 
-                    } else if (diff < 10) {
-                        dtColorClass = 'bg-yellow-50 text-yellow-800 border-yellow-200'; 
-                    }
-                } else {
-                    const diff = ti - ta;
-                    dt = diff.toFixed(1) + '°C';
-                    if (diff >= 18 && diff <= 32) {
-                        dtColorClass = 'bg-green-50 text-green-800 border-green-200'; 
-                    } else if (diff < 15) {
-                        dtColorClass = 'bg-yellow-50 text-yellow-800 border-yellow-200'; 
-                    }
-                }
-            }
-
-            // Lectura desde el almacén global photoStore
-            const getImgsHtml = (category, id, label) => {
-                const key = `${category}-${id}`;
-                if(!photoStore[key] || photoStore[key].length === 0) return '';
-                
-                let html = `<div class="mb-2 page-break-inside-avoid">
-                                <p class="text-[9px] font-bold text-gray-500 mb-1.5 tracking-wider border-b border-gray-200 pb-0.5">${label}</p>
-                                <div class="grid grid-cols-3 gap-1.5">`;
-                photoStore[key].forEach(base64 => {
-                    html += `<img src="${base64}" class="w-full aspect-square object-cover border border-gray-300 rounded shadow-[0_1px_2px_rgba(0,0,0,0.1)]">`;
-                });
-                html += `</div></div>`;
-                return html;
-            };
-
-            const imgFiltros = getImgsHtml('filtros', i, 'FILTROS / LIMPIEZA');
-            const imgInt = getImgsHtml('int', i, 'UNIDAD INTERIOR');
-            const imgExt = getImgsHtml('ext', i, 'UNIDAD EXTERIOR');
-            const imgHall = getImgsHtml('hall', i, 'EVIDENCIA HALLAZGOS');
-            
-            let photoBlocks = [];
-            if (imgFiltros) photoBlocks.push(`<div>${imgFiltros}</div>`);
-            if (imgInt) photoBlocks.push(`<div>${imgInt}</div>`);
-            if (imgExt) photoBlocks.push(`<div>${imgExt}</div>`);
-            if (imgHall) photoBlocks.push(`<div>${imgHall}</div>`);
-
-            const imagesContainerHtml = photoBlocks.length > 0 ? `
-                <div class="mt-4 pt-3 border-t border-gray-200 page-break-inside-avoid">
-                    <p class="text-[10px] font-bold text-blue-700 mb-3 uppercase tracking-wider flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        Registro Fotográfico del Servicio
-                    </p>
-                    <div class="grid grid-cols-1 print:grid-cols-2 gap-x-4 gap-y-2">
-                        ${photoBlocks.join('')}
-                    </div>
-                </div>
-            ` : '';
-
-            // Sanitizar texto de hallazgos
-            const obs = escapeHTML(form.querySelector('.eq-hallazgos').value);
-
-            const cardHtml = `
-            <div class="equipment-section border border-gray-200 rounded overflow-hidden page-break-inside-avoid shadow-sm bg-white">
-                <div class="bg-blue-600 text-white p-2 flex justify-between items-center text-[10px]">
-                    <div class="font-bold uppercase tracking-wide">EQUIPO #${i} | ${marca}</div>
-                    <div class="opacity-95 font-medium">${tipo} | S/N: ${serie}</div>
-                </div>
-                
-                <div class="p-3">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-[9px] mb-3 border-collapse whitespace-nowrap sm:whitespace-normal">
-                            <thead>
-                                <tr class="bg-gray-100 text-gray-500 border-b border-gray-200 font-semibold">
-                                    <th class="p-1 text-left">MODO</th>
-                                    <th class="p-1 text-left">GAS</th>
-                                    <th class="p-1 text-center">P. BAJA (PSI)</th>
-                                    <th class="p-1 text-center">P. ALTA (PSI)</th>
-                                    <th class="p-1 text-center">CORRIENTE (A)</th>
-                                    <th class="p-1 text-center font-bold text-blue-600">SALTO TÉRMICO (ΔT)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="text-gray-800 font-medium">
-                                    <td class="p-1 border-b text-left">${modo === 'frio' ? '❄️ Frío' : '🔥 Calor'}</td>
-                                    <td class="p-1 border-b text-left">${gas}</td>
-                                    <td class="p-1 border-b text-center">${pb}</td>
-                                    <td class="p-1 border-b text-center">${pa}</td>
-                                    <td class="p-1 border-b text-center">${amp}</td>
-                                    <td class="p-1 border-b text-center border font-bold ${dtColorClass} rounded-sm">${dt}</td>
-                                </tr>
-                            </tbody>
+                    <div class="p-2 border-x border-b border-gray-200">
+                        <table class="w-full text-[9px] mb-2 text-center">
+                            <tr class="text-gray-400 border-b"><th>MODO</th><th>P. BAJA</th><th>P. ALTA</th><th>AMP</th><th class="text-[#4981F3]">ΔT</th></tr>
+                            <tr class="font-medium text-gray-800"><td class="py-1">${mod}</td><td>${pb}</td><td>${pa}</td><td>${amp}</td><td class="font-bold border border-blue-100 bg-blue-50 text-blue-700 rounded">${dt}</td></tr>
                         </table>
+                        ${obs ? `<div class="bg-red-50 p-2 border border-red-100 rounded text-[9px]"><p class="font-bold text-red-600 uppercase mb-0.5">Observaciones</p><p class="text-gray-800 italic">${obs}</p></div>` : ''}
                     </div>
+                </div>`;
+            }
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-gray-100 pb-2 mb-2">
-                        <div>
-                            <p class="text-[9px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Mantenimiento Realizado</p>
-                            <div class="leading-tight">${checks}</div>
-                        </div>
-                        <div>
-                             ${obs ? `
-                             <div class="bg-red-50 p-2 rounded border border-red-100 h-full">
-                                <p class="text-[9px] font-bold text-red-600 mb-0.5 tracking-wider uppercase">Observaciones y Hallazgos</p>
-                                <p class="text-[10px] text-gray-800 italic leading-snug break-words">${obs}</p>
-                             </div>` : '<div class="bg-gray-50 p-2 rounded border border-gray-100 h-full flex items-center justify-center"><p class="text-[9px] text-gray-400 italic">Sin observaciones reportadas en este equipo.</p></div>'}
-                        </div>
-                    </div>
+            if(cloudReady && name) { try { await addDoc(collection(db, "mantenimientos"), cloudData); document.getElementById('form-folio-input').value = parseInt(folio)+1; } catch(e){} }
 
-                    ${imagesContainerHtml}
-                </div>
-            </div>`;
+            document.getElementById('form-section').classList.add('hidden');
+            document.getElementById('report-section').classList.remove('hidden');
+            document.getElementById('print-action-bar').classList.remove('hidden');
+            window.scrollTo(0,0);
+        };
 
-            container.insertAdjacentHTML('beforeend', cardHtml);
-        }
-
-        // Transiciones UI
-        document.getElementById('form-section').classList.add('hidden');
-        document.getElementById('report-section').classList.remove('hidden');
-        document.getElementById('mant-print-actions').classList.remove('hidden');
+        // CANVAS Y BOTONES
+        let isDrawing = false;
+        window.initPad = (id) => {
+            const c = document.getElementById(id); const p = c.parentElement;
+            c.width = p.offsetWidth; c.height = p.offsetHeight;
+            const ctx = c.getContext('2d'); ctx.lineWidth = 4; ctx.lineCap = 'round';
+            const pos = e => { const r=c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:t.clientX-r.left,y:t.clientY-r.top}; };
+            const start = e => { e.preventDefault(); isDrawing = true; const p=pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+            const move = e => { if(!isDrawing) return; e.preventDefault(); const p=pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+            const end = () => isDrawing = false;
+            c.addEventListener('mousedown',start); c.addEventListener('mousemove',move); c.addEventListener('mouseup',end);
+            c.addEventListener('touchstart',start,{passive:false}); c.addEventListener('touchmove',move,{passive:false}); c.addEventListener('touchend',end);
+        };
+        window.clearCanvas = (id) => { const c = document.getElementById(id); c.getContext('2d').clearRect(0,0,c.width,c.height); };
+        window.saveSignatureLocally = () => { document.getElementById('print-signature-img').src = document.getElementById('sig-canvas').toDataURL('image/png'); document.getElementById('signature-modal').classList.add('hidden'); };
+        window.editForm = () => { document.getElementById('report-section').classList.add('hidden'); document.getElementById('print-action-bar').classList.add('hidden'); document.getElementById('form-section').classList.remove('hidden'); };
+        window.sendWA = () => { const n=document.getElementById('rep-cliente-nombre').innerText; const f=document.getElementById('form-folio-input').value; window.open(`https://wa.me/?text=Hola ${n}, hemos finalizado con éxito la inspección de tus equipos (Inf. Nº ${f}). En un momento te enviaré el documento PDF con todos los detalles. Saludos, Equipo EasyCool ❄️`, '_blank'); };
         
-        // Inicializar o Redibujar Firmas
-        initPad('sig-canvas-mant-tech'); 
-        initPad('sig-canvas-mant-client');
-        
-        window.scrollTo(0,0);
-    }
-
-    function editReport() {
-        document.getElementById('report-section').classList.add('hidden');
-        document.getElementById('mant-print-actions').classList.add('hidden');
-        document.getElementById('form-section').classList.remove('hidden');
-        window.scrollTo(0,0);
-    }
-
-    function printReport() {
-        const folioElement = document.getElementById('rep-folio-numero');
-        const clienteElement = document.getElementById('rep-cliente-nombre');
-        
-        let folioText = folioElement ? folioElement.innerText : "0000";
-        let clienteText = clienteElement ? clienteElement.innerText : "Cliente";
-
-        let folio = folioText.replace(/[^0-9]/g, ''); 
-        if (!folio) folio = "0000";
-
-        let safeCliente = clienteText.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim();
-        if (!safeCliente) safeCliente = "Cliente";
-
-        const filename = `INFORME MANTENCION Nº${folio} - ${safeCliente}`;
-        const originalTitle = document.title;
-        document.title = filename;
-
-        setTimeout(() => {
-            window.print();
-            setTimeout(() => {
-                document.title = originalTitle;
-            }, 500);
-        }, 100);
-    }
-
-    // --- STREAMING_CHUNK:Inicializando Lógica de Firmas... ---
-    // --- LÓGICA DE CANVAS CORREGIDA ---
-    function initPad(id) {
-        const c = document.getElementById(id); 
-        
-        const rect = c.parentElement.getBoundingClientRect();
-        if(c.width !== Math.round(rect.width) || c.height !== Math.round(rect.height)) {
-            c.width = rect.width;
-            c.height = rect.height;
-        }
-
-        if(c.getAttribute('init') === 'true') return;
-        
-        const ctx = c.getContext('2d'); 
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = '#000000';
-        
-        let p = false;
-        
-        const pos = (e) => {
-            const r = c.getBoundingClientRect();
-            const t = e.touches ? e.touches[0] : e;
-            return { x: t.clientX - r.left, y: t.clientY - r.top };
-        }
-        
-        const start = (e) => {
-            if(e.cancelable && e.type.includes('touch')) e.preventDefault();
-            p = true;
-            const position = pos(e);
-            ctx.beginPath();
-            ctx.moveTo(position.x, position.y);
-            ctx.lineTo(position.x, position.y);
-            ctx.stroke();
-        }
-        
-        const move = (e) => {
-            if(!p) return;
-            if(e.cancelable && e.type.includes('touch')) e.preventDefault();
-            const position = pos(e);
-            ctx.lineTo(position.x, position.y);
-            ctx.stroke();
-        }
-        
-        const end = (e) => {
-            if(e.cancelable && e.type.includes('touch')) e.preventDefault();
-            p = false;
-        }
-        
-        c.addEventListener('mousedown', start);
-        c.addEventListener('mousemove', move);
-        c.addEventListener('mouseup', end);
-        c.addEventListener('mouseleave', end);
-        
-        c.addEventListener('touchstart', start, {passive: false});
-        c.addEventListener('touchmove', move, {passive: false});
-        c.addEventListener('touchend', end, {passive: false});
-        
-        c.setAttribute('init', 'true');
-    }
-    
-    function clearCanvas(id) { 
-        const c = document.getElementById(id); 
-        const ctx = c.getContext('2d');
-        ctx.clearRect(0, 0, c.width, c.height); 
-    }
-</script>
+        window.addEquipmentForm();
+    </script>
 </body>
 </html>
