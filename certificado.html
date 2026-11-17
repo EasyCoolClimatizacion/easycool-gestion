@@ -12,7 +12,10 @@
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
         [contenteditable="true"]:focus { outline: 2px solid #4981F3; background-color: #F1F6FF; }
         canvas.signature-pad { cursor: crosshair; touch-action: none; width: 100%; height: 100%; display: block; }
+        
+        /* FIX DE COLOR PARA PDF */
         @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { background: white; margin: 0; padding: 0; font-size: 11px; }
             .no-print { display: none !important; }
             .printable-section { width: 100% !important; max-width: 100% !important; padding: 10mm !important; box-shadow: none !important; }
@@ -22,8 +25,8 @@
 </head>
 <body class="sm:p-8">
 
+    <!-- FORMULARIO -->
     <div id="form-section" class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-lg no-print">
-        <!-- HEADER FORMULARIO -->
         <div class="flex justify-between items-center mb-6 border-b pb-4">
             <div class="flex flex-row items-center justify-start font-montserrat gap-3">
                 <div class="relative w-[40px] h-[40px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[6px] gap-[3px] shadow-sm">
@@ -61,12 +64,9 @@
         <button onclick="openSignatureModal()" class="w-full bg-[#212B3B] text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 hover:bg-black transition-colors mb-4">
             <i class="fas fa-signature"></i> Tocar para Firmar Conformidad
         </button>
-
-        <!-- CANVAS OCULTO PARA ALMACENAR LA FIRMA -->
-        <canvas id="hidden-signature-data" style="display:none;"></canvas>
     </div>
 
-    <!-- MODAL FIRMA PANTALLA COMPLETA -->
+    <!-- MODAL FIRMA -->
     <div id="signature-modal" class="fixed inset-0 z-[100] hidden bg-white flex flex-col no-print">
         <div class="bg-[#212B3B] text-white p-4 flex justify-between items-center shadow-md">
             <h2 class="font-bold">Firma del Cliente</h2>
@@ -138,69 +138,44 @@
         </div>
     </div>
 
-    <!-- BOTONERA INFERIOR PDF -->
-    <div id="print-action-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 hidden flex flex-col gap-2 no-print">
+    <!-- BOTONES -->
+    <div id="print-action-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 hidden flex flex-col gap-2 no-print shadow-lg">
         <button onclick="window.print()" class="w-full bg-[#212B3B] text-white font-bold py-3 rounded-xl shadow flex items-center justify-center gap-2"><i class="fas fa-file-pdf"></i> Imprimir / Guardar PDF</button>
-        <button onclick="editForm()" class="text-gray-400 text-xs font-bold py-2 uppercase">Volver</button>
+        <button onclick="editForm()" class="text-gray-400 text-xs font-bold py-2 uppercase">Volver a Editar</button>
     </div>
 
-    <!-- LOGICA FIREBASE Y CANVAS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y",
-            authDomain: "easycool-cloud.firebaseapp.com",
-            projectId: "easycool-cloud",
-            storageBucket: "easycool-cloud.firebasestorage.app",
-            messagingSenderId: "1088663353920",
-            appId: "1:1088663353920:web:221585b4896c037dfbfda5"
+            apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y", authDomain: "easycool-cloud.firebaseapp.com", projectId: "easycool-cloud",
+            storageBucket: "easycool-cloud.firebasestorage.app", messagingSenderId: "1088663353920", appId: "1:1088663353920:web:221585b4896c037dfbfda5"
         };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
+        let cloudReady = false; signInAnonymously(auth).then(() => { cloudReady = true; }).catch(e => console.error(e));
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        let cloudReady = false;
-
-        signInAnonymously(auth).then(() => { cloudReady = true; }).catch(e => console.error(e));
-
-        // LOGICA CANVAS
         let isDrawing = false;
         const initPad = (id) => {
-            const c = document.getElementById(id);
-            const container = c.parentElement;
+            const c = document.getElementById(id); const container = c.parentElement;
             c.width = container.offsetWidth; c.height = container.offsetHeight;
-            const ctx = c.getContext('2d');
-            ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#212B3B';
-
-            const pos = e => {
-                const r = c.getBoundingClientRect();
-                const t = e.touches ? e.touches[0] : e;
-                return { x: t.clientX - r.left, y: t.clientY - r.top };
-            };
-
+            const ctx = c.getContext('2d'); ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#212B3B';
+            const pos = e => { const r = c.getBoundingClientRect(); const t = e.touches ? e.touches[0] : e; return { x: t.clientX - r.left, y: t.clientY - r.top }; };
             const start = e => { e.preventDefault(); isDrawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
             const move = e => { if(!isDrawing) return; e.preventDefault(); const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
             const end = () => { isDrawing = false; };
-
             c.addEventListener('mousedown', start); c.addEventListener('mousemove', move); c.addEventListener('mouseup', end);
             c.addEventListener('touchstart', start, {passive: false}); c.addEventListener('touchmove', move, {passive: false}); c.addEventListener('touchend', end);
         };
 
-        window.openSignatureModal = () => {
-            document.getElementById('signature-modal').classList.remove('hidden');
-            setTimeout(() => initPad('sig-canvas'), 100); // Dar tiempo a que el div tome tamaño
-        };
-
+        window.openSignatureModal = () => { document.getElementById('signature-modal').classList.remove('hidden'); setTimeout(() => initPad('sig-canvas'), 100); };
         window.closeSignatureModal = () => document.getElementById('signature-modal').classList.add('hidden');
         window.clearCanvas = (id) => { const c = document.getElementById(id); c.getContext('2d').clearRect(0,0,c.width,c.height); };
 
         window.saveSignatureAndGenerate = async () => {
             const canvas = document.getElementById('sig-canvas');
-            const dataUrl = canvas.toDataURL('image/png');
-            document.getElementById('print-signature-img').src = dataUrl;
+            document.getElementById('print-signature-img').src = canvas.toDataURL('image/png');
             
             const name = document.getElementById('cert-client-name').value;
             const folio = document.getElementById('cert-number').value;
@@ -213,15 +188,7 @@
             document.getElementById('print-folio').innerText = "Nº " + folio;
             document.getElementById('print-date').innerText = new Date().toLocaleDateString('es-CL');
 
-            // Subir a Nube (Solo datos texto)
-            if(cloudReady && name) {
-                try {
-                    await addDoc(collection(db, "certificados"), {
-                        cliente: name, folio: folio, fecha: new Date().toISOString(),
-                        equipos: document.getElementById('cert-equipment').value
-                    });
-                } catch(e) {}
-            }
+            if(cloudReady && name) { try { await addDoc(collection(db, "certificados"), { cliente: name, folio: folio, fecha: new Date().toISOString(), equipos: document.getElementById('cert-equipment').value }); } catch(e) {} }
 
             document.getElementById('signature-modal').classList.add('hidden');
             document.getElementById('form-section').classList.add('hidden');
