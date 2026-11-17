@@ -18,8 +18,10 @@
         .bottom-nav-item { flex: 1; text-align: center; padding: 10px; color: #9ca3af; transition: all 0.2s; }
         .bottom-nav-item.active { color: #4981F3; border-top: 3px solid #4981F3; }
         
+        /* FIX DE COLOR PARA PDF */
         @media print {
-            body { background: white; padding: 0; margin: 0; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { background: white; padding: 0; margin: 0; font-size: 11px;}
             .no-print { display: none !important; }
             .printable-section { width: 100% !important; max-width: 100% !important; box-shadow: none !important; padding: 10mm !important; }
             #bottom-nav, #print-action-bar { display: none !important; }
@@ -28,12 +30,9 @@
 </head>
 <body class="sm:p-8">
 
-    <!-- VISTA 1: CALCULADORA -->
     <div id="view-calculator" class="view-section max-w-4xl mx-auto bg-white p-4 sm:p-6 rounded-xl shadow-lg no-print calculator-section min-h-screen sm:min-h-0 relative">
-        <!-- Indicador Nube -->
         <div id="cloud-status" class="absolute top-2 right-4 text-[9px] font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-200">⏳ Conectando...</div>
 
-        <!-- HEADER APP -->
         <div class="flex justify-between items-center mb-6 pt-2">
             <div class="flex flex-row items-center justify-start font-montserrat select-none gap-3">
                 <div class="relative w-[40px] h-[40px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[6px] gap-[3px] shadow-sm">
@@ -50,7 +49,6 @@
         </div>
         
         <div class="grid gap-4">
-            <!-- Cliente + Folio -->
             <div class="bg-white p-4 rounded-xl border border-gray-200">
                 <div class="flex justify-between items-start gap-2 mb-3">
                     <input type="text" id="calc-client-name" placeholder="Nombre Cliente" class="input-mobile border-b border-gray-300 p-2 w-full focus:border-blue-600 outline-none font-bold text-lg">
@@ -65,14 +63,12 @@
                 </div>
             </div>
 
-            <!-- Equipos -->
             <div class="bg-white p-4 rounded-xl border border-gray-200">
                 <h3 class="text-sm font-bold text-gray-700 mb-2">Equipos a Instalar</h3>
                 <div id="equipos-container" class="space-y-3 mb-3"></div>
                 <button id="add-equipo-btn" class="w-full py-2 rounded-lg border-2 border-dashed border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50">+ Agregar Equipo</button>
             </div>
 
-            <!-- MATERIALES -->
             <div class="bg-white p-4 rounded-xl border border-gray-200">
                 <h3 class="text-sm font-bold text-gray-700 mb-3"><i class="fas fa-tools text-gray-400"></i> Materiales</h3>
                 <div class="grid grid-cols-3 gap-3 text-sm">
@@ -83,14 +79,11 @@
                     <div><label class="block text-[10px] text-blue-600 font-bold">Tubería Extra</label><input type="number" id="qty-tuberia" class="material-input input-mobile border-blue-200 bg-blue-50 rounded p-1.5 w-full text-center text-blue-700" value="0"></div>
                     <div><label class="block text-[10px] text-blue-600 font-bold">Bomba Cond.</label><input type="number" id="qty-bomba" class="material-input input-mobile border-blue-200 bg-blue-50 rounded p-1.5 w-full text-center text-blue-700" value="0"></div>
                 </div>
-                <!-- Costos Ocultos -->
                 <div class="hidden">
-                    <input id="costo-soporte" value="7500"><input id="costo-canaleta-1" value="5950"><input id="costo-canaleta-2" value="1210">
-                    <input id="costo-cordon" value="917"><input id="costo-bomba" value="45000"><input id="costo-tuberia" value="15000">
+                    <input id="costo-soporte" value="7500"><input id="costo-canaleta-1" value="5950"><input id="costo-canaleta-2" value="1210"><input id="costo-cordon" value="917"><input id="costo-bomba" value="45000"><input id="costo-tuberia" value="15000">
                 </div>
             </div>
 
-            <!-- Costos y Margen -->
             <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                 <div class="flex justify-between items-center mb-3">
                     <label class="text-xs font-bold text-[#212B3B]">Mano Obra (x Equipo)</label>
@@ -106,17 +99,15 @@
                 </div>
             </div>
 
-            <!-- Desglose Financiero -->
             <div class="bg-[#212B3B] p-4 rounded-xl shadow-lg border border-gray-700 text-white mb-2">
                 <div class="flex justify-between items-center mb-3 border-b border-gray-700 pb-1">
                     <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Desglose Financiero (Privado)</h3>
-                    <button id="toggle-privacy-btn" class="text-gray-400 hover:text-white"><i class="fas fa-eye-slash"></i></button>
                 </div>
                 <div class="grid grid-cols-2 gap-3" id="financial-numbers-container">
-                    <div class="bg-gray-800 p-2 rounded"><p class="text-[9px] text-gray-400 uppercase font-bold">💰 Cobrar a Cliente</p><p id="live-total-cobrar" class="text-base font-mono font-bold">$ 0</p></div>
-                    <div class="bg-gray-800 p-2 rounded"><p class="text-[9px] text-gray-400 uppercase font-bold">🛒 Pagar Proveedores</p><p id="live-pago-proveedores" class="text-base font-mono font-bold">$ 0</p></div>
-                    <div class="bg-gray-800 p-2 rounded"><p class="text-[9px] text-gray-400 uppercase font-bold">🏛️ Pago IVA</p><p id="live-pago-iva" class="text-base font-mono font-bold text-yellow-400">$ 0</p></div>
-                    <div class="bg-green-900/40 p-2 rounded border border-green-600"><p class="text-[9px] text-green-300 uppercase font-bold">💵 Tu Utilidad Libre</p><p id="live-utilidad" class="text-lg font-mono font-bold text-green-400">$ 0</p></div>
+                    <div class="bg-gray-800 p-2 rounded border border-gray-600"><p class="text-[9px] text-gray-300 uppercase font-bold">💰 Cobrar a Cliente</p><p id="live-total-cobrar" class="text-base font-mono font-bold">$ 0</p></div>
+                    <div class="bg-gray-800 p-2 rounded border border-gray-600"><p class="text-[9px] text-gray-300 uppercase font-bold">🛒 Pagar Proveedores</p><p id="live-pago-proveedores" class="text-base font-mono font-bold">$ 0</p></div>
+                    <div class="bg-gray-800 p-2 rounded border border-gray-600"><p class="text-[9px] text-gray-300 uppercase font-bold">🏛️ Pago IVA</p><p id="live-pago-iva" class="text-base font-mono font-bold text-yellow-400">$ 0</p></div>
+                    <div class="bg-green-900/50 p-2 rounded border border-green-500"><p class="text-[9px] text-green-300 uppercase font-bold">💵 Tu Utilidad Libre</p><p id="live-utilidad" class="text-lg font-mono font-bold text-green-400">$ 0</p></div>
                 </div>
             </div>
         </div>
@@ -127,7 +118,6 @@
         </div>
     </div>
 
-    <!-- VISTA 2: HISTORIAL CLOUD -->
     <div id="view-history" class="view-section max-w-4xl mx-auto bg-white p-4 rounded-xl shadow-lg no-print min-h-screen hidden">
         <div class="flex justify-between items-center mb-4 border-b pb-2">
             <h2 class="text-xl font-bold text-gray-900"><i class="fas fa-cloud text-blue-500 mr-2"></i>Historial Cloud</h2>
@@ -138,13 +128,12 @@
         </div>
     </div>
 
-    <!-- NAVBAR INFERIOR -->
     <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around z-50 no-print pb-safe">
         <div class="bottom-nav-item active cursor-pointer" onclick="switchTab('calculator')"><i class="fas fa-calculator text-xl mb-1 block"></i><span class="text-[10px] font-bold uppercase">Cotizar</span></div>
         <div class="bottom-nav-item cursor-pointer" onclick="switchTab('history')"><i class="fas fa-cloud text-xl mb-1 block"></i><span class="text-[10px] font-bold uppercase">La Nube</span></div>
     </div>
 
-    <!-- VISTA 3: PDF FINAL -->
+    <!-- VISTA PDF -->
     <div id="quote-section" class="max-w-4xl mx-auto bg-white p-8 shadow-2xl printable-section hidden min-h-screen">
         <header class="flex justify-between items-start pb-4 border-b border-gray-200 mb-6">
             <div class="flex flex-row items-center font-montserrat gap-3">
@@ -166,7 +155,7 @@
             </div>
         </header>
         
-        <div class="bg-gray-50 p-4 rounded-lg mb-6 flex justify-between">
+        <div class="bg-gray-50 p-4 rounded-lg mb-6 flex justify-between border border-gray-200">
             <div class="w-2/3">
                 <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">CLIENTE</p>
                 <p class="text-base font-bold text-gray-900" id="client-name" contenteditable="true"></p>
@@ -175,7 +164,7 @@
             </div>
             <div class="w-1/3 text-right">
                 <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">DETALLES</p>
-                <p class="text-sm font-bold text-gray-900" id="quote-number" contenteditable="true"></p>
+                <p class="text-sm font-bold text-[#4981F3]" id="quote-number" contenteditable="true"></p>
                 <p class="text-xs text-gray-600" id="current-date" contenteditable="true"></p>
             </div>
         </div>
@@ -211,12 +200,12 @@
     </div>
 
     <!-- ACCIONES PDF -->
-    <div id="print-action-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 hidden flex flex-col gap-2 no-print shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <button id="print-btn" class="w-full bg-[#212B3B] text-white font-bold py-3 rounded-xl shadow text-sm flex items-center justify-center gap-2"><i class="fas fa-file-pdf"></i> Guardar PDF</button>
+    <div id="print-action-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 hidden flex flex-col gap-2 no-print shadow-lg">
+        <button id="print-btn" class="w-full bg-[#212B3B] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2"><i class="fas fa-file-pdf"></i> Imprimir / Guardar PDF</button>
         <button id="back-to-edit-btn" class="text-gray-400 text-xs font-bold py-2 uppercase">Volver a Editar</button>
     </div>
 
-    <!-- MODAL GESTIÓN -->
+    <!-- MODAL PRECIOS -->
     <div id="price-editor-modal" class="fixed inset-0 z-50 flex items-end justify-center bg-black bg-opacity-50 hidden no-print">
         <div class="bg-white w-full rounded-t-2xl p-6 h-[70vh] flex flex-col">
             <div class="flex justify-between border-b pb-2 mb-4"><h3 class="font-bold">Ajustes & Costos</h3><button id="close-modal-btn" class="text-xl">&times;</button></div>
@@ -242,233 +231,121 @@
         </div>
     </div>
 
-    <!-- FIREBASE Y LÓGICA -->
+    <!-- SCRIPT FIREBASE -->
     <script type="module">
-        // 1. IMPORTAR FIREBASE
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-        // 2. TUS LLAVES FIREBASE
-        const firebaseConfig = {
-            apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y",
-            authDomain: "easycool-cloud.firebaseapp.com",
-            projectId: "easycool-cloud",
-            storageBucket: "easycool-cloud.firebasestorage.app",
-            messagingSenderId: "1088663353920",
-            appId: "1:1088663353920:web:221585b4896c037dfbfda5"
-        };
-
-        // 3. INICIALIZAR NUBE
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+        const firebaseConfig = { apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y", authDomain: "easycool-cloud.firebaseapp.com", projectId: "easycool-cloud", storageBucket: "easycool-cloud.firebasestorage.app", messagingSenderId: "1088663353920", appId: "1:1088663353920:web:221585b4896c037dfbfda5" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
         let isCloudConnected = false;
 
         signInAnonymously(auth).then(() => {
             isCloudConnected = true;
             document.getElementById('cloud-status').className = "absolute top-2 right-4 text-[9px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200";
             document.getElementById('cloud-status').innerText = "✅ Nube Activa";
-        }).catch((error) => {
-            document.getElementById('cloud-status').innerText = "❌ Nube Offline (Local)";
-            console.error("Firebase Auth Error:", error);
+        }).catch(() => {
+            document.getElementById('cloud-status').innerText = "❌ Nube Offline";
         });
 
-        // 4. LÓGICA DE COTIZADOR
-        let equiposDB = JSON.parse(localStorage.getItem('ec_db_equipos')) || {
-            'eq-9k': { nombre: 'Midea Xtreme Save 9.000', costo: 220000 },
-            'eq-12k': { nombre: 'Midea Xtreme Save 12.000', costo: 240000 },
-            'otro': { nombre: 'Otro (Ingresar manual)', costo: 0 }
-        };
-        const MATERIAL_KEYS = ['soporte','canaleta-1','canaleta-2','cordon','bomba','tuberia'];
-
+        let equiposDB = JSON.parse(localStorage.getItem('ec_db_equipos')) || { 'eq-9k': { nombre: 'Midea Xtreme Save 9.000', costo: 220000 }, 'eq-12k': { nombre: 'Midea Xtreme Save 12.000', costo: 240000 }, 'otro': { nombre: 'Otro (Ingresar manual)', costo: 0 } };
         function saveLocalDB() { localStorage.setItem('ec_db_equipos', JSON.stringify(equiposDB)); }
-        
         function formatCurrency(val) { return "$ " + Math.round(val).toLocaleString('es-CL'); }
 
         function calculateFinances() {
             let totalEq = 0, totalQty = 0;
             document.querySelectorAll('.equipo-item').forEach(row => {
-                const k = row.querySelector('.eq-sel').value;
-                const q = parseFloat(row.querySelector('.eq-qty').value)||0;
-                const c = (k==='otro') ? parseFloat(row.querySelector('.eq-cost').value)||0 : equiposDB[k].costo;
+                const k = row.querySelector('.eq-sel').value; const q = parseFloat(row.querySelector('.eq-qty').value)||0; const c = (k==='otro') ? parseFloat(row.querySelector('.eq-cost').value)||0 : equiposDB[k].costo;
                 totalEq += q*c; totalQty += q;
             });
-            
             const getVal = id => parseFloat(document.getElementById(id).value)||0;
             const totalMat = (getVal('qty-soporte')*getVal('costo-soporte')) + (getVal('qty-canaleta-1')*getVal('costo-canaleta-1')) + (getVal('qty-canaleta-2')*getVal('costo-canaleta-2')) + (getVal('qty-cordon')*getVal('costo-cordon'));
             const extraBomba = getVal('qty-bomba')*getVal('costo-bomba'), extraTuberia = getVal('qty-tuberia')*getVal('costo-tuberia');
-            
             const margen = getVal('margen-ganancia')/100;
             const netoVenta = (totalEq + totalMat + extraBomba + extraTuberia) * (1 + margen);
             const totalMO = getVal('costo-mano-obra') * totalQty;
-            
-            let extraCosto = 0;
-            document.querySelectorAll('.extra-cost').forEach(i => extraCosto += parseFloat(i.value)||0);
-            
+            let extraCosto = 0; document.querySelectorAll('.extra-cost').forEach(i => extraCosto += parseFloat(i.value)||0);
             const netoTotal = netoVenta + totalMO + extraCosto;
-            const iva = netoTotal * 0.19;
-            const cobrar = netoTotal + iva;
-            
+            const iva = netoTotal * 0.19; const cobrar = netoTotal + iva;
             const costoReal = totalEq + totalMat + extraBomba + extraTuberia + extraCosto;
-            const ivaCompra = costoReal * 0.19;
-            const utilidad = netoTotal - costoReal;
+            const ivaCompra = costoReal * 0.19; const utilidad = netoTotal - costoReal;
 
-            document.getElementById('live-total-cobrar').innerText = formatCurrency(cobrar);
-            document.getElementById('live-pago-proveedores').innerText = formatCurrency(costoReal * 1.19);
-            document.getElementById('live-pago-iva').innerText = formatCurrency(iva - ivaCompra);
-            document.getElementById('live-utilidad').innerText = formatCurrency(utilidad);
-            
+            document.getElementById('live-total-cobrar').innerText = formatCurrency(cobrar); document.getElementById('live-pago-proveedores').innerText = formatCurrency(costoReal * 1.19);
+            document.getElementById('live-pago-iva').innerText = formatCurrency(iva - ivaCompra); document.getElementById('live-utilidad').innerText = formatCurrency(utilidad);
             return { netoTotal, iva, cobrar, extraBomba, extraTuberia, totalMO };
         }
 
         function addRow() {
-            const div = document.createElement('div');
-            div.className = 'equipo-item flex gap-2 items-center bg-gray-50 p-2 rounded border border-gray-200';
+            const div = document.createElement('div'); div.className = 'equipo-item flex gap-2 items-center bg-gray-50 p-2 rounded border border-gray-200';
             div.innerHTML = `<select class="eq-sel border rounded p-1.5 text-xs flex-1 bg-white outline-none">${Object.keys(equiposDB).map(k=>`<option value="${k}">${equiposDB[k].nombre}</option>`).join('')}</select><input type="number" class="eq-qty border rounded p-1.5 text-xs w-12 text-center bg-white outline-none" value="1"><input type="number" class="eq-cost border rounded p-1.5 text-xs flex-1 bg-white hidden outline-none" placeholder="Costo"><button class="rm-btn text-red-400 px-2">&times;</button>`;
             document.getElementById('equipos-container').appendChild(div);
-            
             const sel = div.querySelector('.eq-sel'), cost = div.querySelector('.eq-cost');
             sel.onchange = () => { cost.classList.toggle('hidden', sel.value !== 'otro'); if(equiposDB[sel.value]) cost.value = equiposDB[sel.value].costo; calculateFinances(); };
-            cost.oninput = calculateFinances; div.querySelector('.eq-qty').oninput = calculateFinances;
-            div.querySelector('.rm-btn').onclick = () => { div.remove(); calculateFinances(); };
+            cost.oninput = calculateFinances; div.querySelector('.eq-qty').oninput = calculateFinances; div.querySelector('.rm-btn').onclick = () => { div.remove(); calculateFinances(); };
             sel.value = Object.keys(equiposDB)[0]; sel.onchange();
         }
 
         document.getElementById('add-equipo-btn').onclick = addRow;
         document.getElementById('add-extra-btn').onclick = () => {
-            const div = document.createElement('div');
-            div.className = 'flex gap-2 mb-1';
+            const div = document.createElement('div'); div.className = 'flex gap-2 mb-1';
             div.innerHTML = `<input type="text" class="extra-desc border rounded p-1 text-xs flex-1" placeholder="Descripción"><input type="number" class="extra-cost border rounded p-1 text-xs w-20 text-right" value="0"><button class="rm-ex text-red-400 px-1">&times;</button>`;
             document.getElementById('extras-container').appendChild(div);
-            div.querySelectorAll('input').forEach(i => i.oninput = calculateFinances);
-            div.querySelector('.rm-ex').onclick = () => { div.remove(); calculateFinances(); };
+            div.querySelectorAll('input').forEach(i => i.oninput = calculateFinances); div.querySelector('.rm-ex').onclick = () => { div.remove(); calculateFinances(); };
         };
-
         document.querySelectorAll('.material-input, #costo-mano-obra, #margen-ganancia').forEach(el => el.oninput = calculateFinances);
 
-        // NUBE: Guardar en Firestore
         document.getElementById('generate-quote-btn').onclick = async () => {
-            const name = document.getElementById('calc-client-name').value || 'Cliente';
-            const folio = document.getElementById('calc-folio-number').value || '100';
-            const fin = calculateFinances();
+            const name = document.getElementById('calc-client-name').value || 'Cliente'; const folio = document.getElementById('calc-folio-number').value || '100'; const fin = calculateFinances();
             
-            // Llenar PDF visualmente
-            document.getElementById('client-name').innerText = name;
-            document.getElementById('client-rut').innerText = document.getElementById('calc-client-rut').value;
-            document.getElementById('client-address').innerText = document.getElementById('calc-client-address').value;
-            document.getElementById('quote-number').innerText = 'Cotización Nº ' + folio;
+            document.getElementById('client-name').innerText = name; document.getElementById('client-rut').innerText = document.getElementById('calc-client-rut').value;
+            document.getElementById('client-address').innerText = document.getElementById('calc-client-address').value; document.getElementById('quote-number').innerText = 'Cotización Nº ' + folio;
             document.getElementById('current-date').innerText = new Date().toLocaleDateString('es-CL');
             
             let tbody = '';
-            document.querySelectorAll('.equipo-item').forEach(row => {
-                const k = row.querySelector('.eq-sel').value;
-                const q = row.querySelector('.eq-qty').value;
-                const nom = k === 'otro' ? 'Equipo Personalizado' : equiposDB[k].nombre;
-                tbody += `<tr><td class="py-2 border-b border-gray-100">Suministro: ${q}x ${nom}<br><span class="text-[10px] text-gray-500">+ Kit de Materiales Básicos</span></td><td class="py-2 text-right border-b border-gray-100 font-medium">Incluido</td></tr>`;
-            });
+            document.querySelectorAll('.equipo-item').forEach(row => { const k = row.querySelector('.eq-sel').value; const q = row.querySelector('.eq-qty').value; const nom = k === 'otro' ? 'Equipo Personalizado' : equiposDB[k].nombre; tbody += `<tr class="border-b border-gray-100"><td class="py-2">Suministro: ${q}x ${nom}<br><span class="text-[10px] text-gray-500">+ Kit de Materiales Básicos</span></td><td class="py-2 text-right font-medium">Incluido</td></tr>`; });
             
-            if(parseFloat(document.getElementById('qty-bomba').value)>0) tbody += `<tr><td class="py-2 border-b border-gray-100">Adicional: Bomba de Condensado</td><td class="py-2 text-right border-b border-gray-100 font-medium">Incluido</td></tr>`;
-            if(parseFloat(document.getElementById('qty-tuberia').value)>0) tbody += `<tr><td class="py-2 border-b border-gray-100">Adicional: Metros Tubería Extra</td><td class="py-2 text-right border-b border-gray-100 font-medium">Incluido</td></tr>`;
+            if(parseFloat(document.getElementById('qty-bomba').value)>0) tbody += `<tr class="border-b border-gray-100"><td class="py-2">Adicional: Bomba de Condensado</td><td class="py-2 text-right font-medium">Incluido</td></tr>`;
+            if(parseFloat(document.getElementById('qty-tuberia').value)>0) tbody += `<tr class="border-b border-gray-100"><td class="py-2">Adicional: Metros Tubería Extra</td><td class="py-2 text-right font-medium">Incluido</td></tr>`;
             
-            document.querySelectorAll('.extra-desc').forEach((el, i) => {
-                const cost = document.querySelectorAll('.extra-cost')[i].value;
-                if(el.value) tbody += `<tr><td class="py-2 border-b border-gray-100">${el.value}</td><td class="py-2 text-right border-b border-gray-100 font-medium">${formatCurrency(cost)}</td></tr>`;
-            });
+            document.querySelectorAll('.extra-desc').forEach((el, i) => { const cost = document.querySelectorAll('.extra-cost')[i].value; if(el.value) tbody += `<tr class="border-b border-gray-100"><td class="py-2">${el.value}</td><td class="py-2 text-right font-medium">${formatCurrency(cost)}</td></tr>`; });
             
-            tbody += `<tr><td class="py-2 border-b border-gray-100">Servicio de Instalación y Puesta en Marcha</td><td class="py-2 text-right border-b border-gray-100 font-medium">${formatCurrency(fin.netoTotal)}</td></tr>`;
+            tbody += `<tr class="border-b border-gray-100"><td class="py-2">Servicio de Instalación y Puesta en Marcha</td><td class="py-2 text-right font-medium">${formatCurrency(fin.netoTotal)}</td></tr>`;
             
-            document.querySelector('#items-table tbody').innerHTML = tbody;
-            document.getElementById('subtotal').innerText = formatCurrency(fin.netoTotal);
-            document.getElementById('iva').innerText = formatCurrency(fin.iva);
-            document.getElementById('total').innerText = formatCurrency(fin.cobrar);
+            document.querySelector('#items-table tbody').innerHTML = tbody; document.getElementById('subtotal').innerText = formatCurrency(fin.netoTotal);
+            document.getElementById('iva').innerText = formatCurrency(fin.iva); document.getElementById('total').innerText = formatCurrency(fin.cobrar);
             
-            // Subir a Firebase
-            if (isCloudConnected) {
-                try {
-                    await addDoc(collection(db, "cotizaciones"), {
-                        cliente: name,
-                        folio: folio,
-                        total: formatCurrency(fin.cobrar),
-                        fecha: new Date().toISOString(),
-                        timestamp: new Date()
-                    });
-                    document.getElementById('calc-folio-number').value = parseInt(folio) + 1; // Auto-incrementar
-                } catch(e) { console.error("Error guardando en nube", e); }
-            }
+            if (isCloudConnected) { try { await addDoc(collection(db, "cotizaciones"), { cliente: name, folio: folio, total: formatCurrency(fin.cobrar), fecha: new Date().toISOString(), timestamp: new Date() }); document.getElementById('calc-folio-number').value = parseInt(folio) + 1; } catch(e) {} }
 
-            document.getElementById('view-calculator').classList.add('hidden');
-            document.getElementById('bottom-nav').classList.add('hidden');
-            document.getElementById('quote-section').classList.remove('hidden');
-            document.getElementById('print-action-bar').classList.remove('hidden');
-            window.scrollTo(0,0);
+            document.getElementById('view-calculator').classList.add('hidden'); document.getElementById('bottom-nav').classList.add('hidden');
+            document.getElementById('quote-section').classList.remove('hidden'); document.getElementById('print-action-bar').classList.remove('hidden'); window.scrollTo(0,0);
         };
 
-        // NUBE: Leer Historial
         window.loadHistoryFromCloud = async () => {
-            const list = document.getElementById('history-list');
-            if(!isCloudConnected) { list.innerHTML = `<div class="text-center text-red-500 mt-10">Conexión a la nube no disponible.</div>`; return; }
-            
+            const list = document.getElementById('history-list'); if(!isCloudConnected) { list.innerHTML = `<div class="text-center text-red-500 mt-10">Conexión a la nube no disponible.</div>`; return; }
             list.innerHTML = `<div class="text-center text-blue-500 mt-10"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><p>Sincronizando...</p></div>`;
             try {
-                const q = query(collection(db, "cotizaciones"), orderBy("timestamp", "desc"), limit(20));
-                const snapshot = await getDocs(q);
+                const q = query(collection(db, "cotizaciones"), orderBy("timestamp", "desc"), limit(20)); const snapshot = await getDocs(q);
                 if(snapshot.empty) { list.innerHTML = `<div class="text-center text-gray-400 mt-10">No hay cotizaciones en la nube.</div>`; return; }
-                
-                let html = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const d = new Date(data.fecha).toLocaleDateString('es-CL');
-                    html += `<div class="bg-gray-50 p-3 rounded-lg border flex justify-between items-center"><div class="leading-tight"><p class="font-bold text-gray-800">${data.cliente}</p><p class="text-[10px] text-gray-500">Folio: ${data.folio} | ${d}</p></div><div class="font-bold text-blue-600">${data.total}</div></div>`;
-                });
+                let html = ''; snapshot.forEach(doc => { const data = doc.data(); const d = new Date(data.fecha).toLocaleDateString('es-CL'); html += `<div class="bg-gray-50 p-3 rounded-lg border flex justify-between items-center"><div class="leading-tight"><p class="font-bold text-gray-800">${data.cliente}</p><p class="text-[10px] text-gray-500">Folio: ${data.folio} | ${d}</p></div><div class="font-bold text-blue-600">${data.total}</div></div>`; });
                 list.innerHTML = html;
-            } catch(e) {
-                console.error(e);
-                list.innerHTML = `<div class="text-center text-red-500 mt-10">Error al leer la nube.</div>`;
-            }
+            } catch(e) { list.innerHTML = `<div class="text-center text-red-500 mt-10">Error al leer la nube.</div>`; }
         };
 
-        // UI Tabs & Modals
         window.switchTab = (tab) => {
-            document.getElementById('view-calculator').classList.toggle('hidden', tab !== 'calculator');
-            document.getElementById('view-history').classList.toggle('hidden', tab !== 'history');
-            document.querySelectorAll('.bottom-nav-item')[0].classList.toggle('active', tab === 'calculator');
-            document.querySelectorAll('.bottom-nav-item')[1].classList.toggle('active', tab === 'history');
+            document.getElementById('view-calculator').classList.toggle('hidden', tab !== 'calculator'); document.getElementById('view-history').classList.toggle('hidden', tab !== 'history');
+            document.querySelectorAll('.bottom-nav-item')[0].classList.toggle('active', tab === 'calculator'); document.querySelectorAll('.bottom-nav-item')[1].classList.toggle('active', tab === 'history');
             if(tab === 'history') loadHistoryFromCloud();
         };
 
-        document.getElementById('back-to-edit-btn').onclick = () => {
-            document.getElementById('quote-section').classList.add('hidden');
-            document.getElementById('print-action-bar').classList.add('hidden');
-            document.getElementById('view-calculator').classList.remove('hidden');
-            document.getElementById('bottom-nav').classList.remove('hidden');
-        };
-
-        document.getElementById('print-btn').onclick = () => {
-            const name = document.getElementById('client-name').innerText.trim() || 'Cliente';
-            document.title = `Cotización ${document.getElementById('quote-number').innerText} - ${name}`;
-            window.print();
-            setTimeout(() => document.title = 'EasyCool Cotizador Cloud', 1000);
-        };
-
-        // Modal Settings
+        document.getElementById('back-to-edit-btn').onclick = () => { document.getElementById('quote-section').classList.add('hidden'); document.getElementById('print-action-bar').classList.add('hidden'); document.getElementById('view-calculator').classList.remove('hidden'); document.getElementById('bottom-nav').classList.remove('hidden'); };
+        document.getElementById('print-btn').onclick = () => { const name = document.getElementById('client-name').innerText.trim() || 'Cliente'; document.title = `Cotización ${document.getElementById('quote-number').innerText} - ${name}`; window.print(); setTimeout(() => document.title = 'EasyCool Cotizador Cloud', 1000); };
+        
         document.getElementById('open-price-editor-btn').onclick = () => document.getElementById('price-editor-modal').classList.remove('hidden');
         document.getElementById('close-modal-btn').onclick = () => document.getElementById('price-editor-modal').classList.add('hidden');
-        
-        document.getElementById('add-new-eq-btn').onclick = () => {
-            const n = document.getElementById('new-eq-name').value, p = parseFloat(document.getElementById('new-eq-price').value);
-            if(n && p) { equiposDB['eq-'+Date.now()] = {nombre: n, costo: p}; saveLocalDB(); renderModalEqs(); }
-        };
-
-        function renderModalEqs() {
-            const c = document.getElementById('equipment-price-editor'); c.innerHTML = '';
-            Object.keys(equiposDB).forEach(k => {
-                if(k!=='otro') c.innerHTML += `<div class="flex justify-between items-center bg-gray-50 p-1 border rounded"><span class="truncate w-3/5">${equiposDB[k].nombre}</span><input type="number" class="w-16 border text-right p-0.5" value="${equiposDB[k].costo}" onchange="equiposDB['${k}'].costo = parseFloat(this.value); saveLocalDB();"></div>`;
-            });
-        }
         document.getElementById('save-prices-btn').onclick = () => { document.getElementById('price-editor-modal').classList.add('hidden'); calculateFinances(); };
         
-        addRow(); renderModalEqs();
+        addRow();
     </script>
 </body>
 </html>
