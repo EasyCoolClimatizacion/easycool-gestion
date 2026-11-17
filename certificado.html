@@ -3,833 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Certificado de Instalación v7.5 - EasyCool</title>
-    
-    <!-- CONFIGURACIÓN DE ICONO (APP NATIVA) -->
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1830/1830182.png">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1830/1830182.png">
-    
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#3b82f6">
-
+    <title>Certificado de Instalación - EasyCool</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
-        .calculator-section { background: #ffffff; }
-        [contenteditable="true"]:hover { outline: 2px dashed #a5b4fc; }
-        [contenteditable="true"]:focus { outline: 2px solid #3b82f6; background-color: #eff6ff; }
-        .spinner { border: 2px solid #f3f3f3; border-top: 2px solid #ffffff; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; margin-right: 8px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .custom-file-input::file-selector-button {
-            font-size: 0.75rem; font-weight: 600; color: #1d4ed8; background-color: #eff6ff; 
-            border: 1px solid #dbeafe; border-radius: 0.375rem; padding: 0.4rem 0.8rem; margin-right: 0.5rem; cursor: pointer;
-        }
-        .equipo-item-form { transition: all 0.3s ease-in-out; }
-        canvas.signature-pad { touch-action: none; cursor: crosshair; }
-
-        /* NAVEGACIÓN INFERIOR */
-        .bottom-nav-item { flex: 1; text-align: center; padding: 10px; color: #9ca3af; transition: all 0.2s; cursor: pointer; }
-        .bottom-nav-item.active { color: #3b82f6; border-top: 3px solid #3b82f6; background: #eff6ff; }
-
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; padding-bottom: 80px; -webkit-tap-highlight-color: transparent;}
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        [contenteditable="true"]:focus { outline: 2px solid #4981F3; background-color: #F1F6FF; }
+        canvas.signature-pad { cursor: crosshair; touch-action: none; width: 100%; height: 100%; display: block; }
         @media print {
-            @page { size: letter; margin: 0.5cm; }
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background-color: #ffffff; margin: 0; padding: 0; font-size: 11px; }
+            body { background: white; margin: 0; padding: 0; font-size: 11px; }
             .no-print { display: none !important; }
-            #bottom-nav { display: none !important; }
-            .printable-section { max-width: 100% !important; width: 100% !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; display: block !important;}
-            h1 { font-size: 18px !important; margin-bottom: 0.5rem !important; }
-            h2 { font-size: 14px !important; margin-top: 1rem !important; margin-bottom: 0.25rem !important; padding-bottom: 0.1rem !important; }
-            .equipo-item-print { page-break-inside: avoid; margin-bottom: 0.5rem !important; border: 1px solid #e5e7eb !important; padding: 0.5rem !important; }
-            img { display: block !important; max-width: 100% !important; }
-            .print-photo-container { height: 90px !important; display: flex !important; align-items: center !important; justify-content: center !important; background-color: #f3f4f6 !important; border: 1px solid #e5e7eb !important; overflow: hidden !important; }
+            .printable-section { width: 100% !important; max-width: 100% !important; padding: 10mm !important; box-shadow: none !important; }
+            .page-break-inside-avoid { page-break-inside: avoid; }
         }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body class="sm:p-8">
 
-    <!-- VISTA 1: GENERADOR -->
-    <div id="view-generator" class="view-section max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-xl mb-8 no-print calculator-section border-t-4 border-blue-600">
-        
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900">Generar Certificado</h2>
-                <p class="text-xs text-green-600 font-bold mt-1" id="auto-save-status"><i class="fas fa-check-circle"></i> Sistema listo</p>
+    <div id="form-section" class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-lg no-print">
+        <!-- HEADER FORMULARIO -->
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <div class="flex flex-row items-center justify-start font-montserrat gap-3">
+                <div class="relative w-[40px] h-[40px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[6px] gap-[3px] shadow-sm">
+                    <div class="h-[5px] w-[24px] bg-[#F1F6FF] rounded-full"></div>
+                    <div class="h-[5px] w-[19px] bg-[#E4EEFF] rounded-full"></div>
+                    <div class="h-[5px] w-[14px] bg-[#D2E3FF] rounded-full"></div>
+                </div>
+                <div class="flex flex-col items-start leading-none mt-1">
+                    <span class="text-[#212B3B] font-[900] text-[18px] tracking-[-0.01em]">EASYCOOL</span>
+                    <span class="text-[#9FA5B1] font-[500] text-[9px] tracking-[0.01em]">Climatización</span>
+                </div>
             </div>
-            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">v7.5 DeltaT</span>
-        </div>
-        
-        <!-- Datos Cliente -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b pb-6 mb-6">
-            <input type="text" id="cert-client-name" placeholder="Nombre del Cliente" class="save-input block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
-            <input type="text" id="cert-client-rut" placeholder="RUT del Cliente" class="save-input block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
-            <input type="text" id="cert-client-address" placeholder="Dirección del Cliente" class="save-input md:col-span-2 block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
-            
-            <div class="relative">
-                <label class="absolute top-1 left-2 text-[10px] text-blue-600 font-bold">Folio (Editable)</label>
-                <input type="text" id="cert-number" class="save-input block w-full rounded-lg border-gray-300 bg-white p-2.5 pt-5 text-sm font-mono font-bold text-gray-800 focus:border-blue-500 focus:ring-blue-500 shadow-sm">
-            </div>
-            
-            <div class="relative">
-                <label class="absolute top-1 left-2 text-[10px] text-gray-500">Fecha Instalación</label>
-                <input type="date" id="cert-install-date" class="save-input block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 pt-5 text-sm text-gray-800 focus:border-blue-500 focus:ring-blue-500">
-            </div>
-
-            <input type="text" id="cert-technician" value="Jose Guerrero" placeholder="Nombre del Técnico" class="save-input md:col-span-2 block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
-            
-            <div class="md:col-span-2">
-                <label for="cert-supply" class="block text-xs font-medium text-gray-500 mb-1">Suministro de Equipo</label>
-                <select id="cert-supply" class="save-input block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="Suministrado por EasyCool Climatización">Suministrado por EasyCool Climatización</option>
-                    <option value="Suministrado por el Cliente">Suministrado por el Cliente</option>
-                </select>
+            <div class="text-right">
+                <label class="text-[10px] font-bold text-gray-500 uppercase block">Folio Certificado</label>
+                <input type="text" id="cert-number" class="w-24 border border-gray-300 rounded p-1 text-center font-bold text-[#4981F3] outline-none" value="C-1001">
             </div>
         </div>
 
-        <!-- Equipos -->
-        <div class="border-b pb-4 mb-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-server text-blue-600"></i> Equipos Instalados
-            </h3>
-            <div id="equipos-container" class="space-y-6"></div>
-            <button id="add-equipo-btn" class="mt-4 w-full py-3 px-4 rounded-lg border-2 border-dashed border-blue-300 text-blue-700 font-bold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
-                <i class="fas fa-plus"></i> Añadir otro equipo
-            </button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <input type="text" id="cert-client-name" placeholder="Nombre del Cliente" class="border p-2 rounded text-sm w-full outline-none focus:border-blue-500">
+            <input type="text" id="cert-client-rut" placeholder="RUT del Cliente" class="border p-2 rounded text-sm w-full outline-none focus:border-blue-500">
+            <input type="text" id="cert-address" placeholder="Dirección de Instalación" class="border p-2 rounded text-sm w-full md:col-span-2 outline-none focus:border-blue-500">
+            <input type="text" id="cert-equipment" placeholder="Equipos Instalados (Ej: 2x Midea 12K)" class="border p-2 rounded text-sm w-full md:col-span-2 outline-none focus:border-blue-500">
         </div>
 
-        <!-- Checklist -->
+        <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+            <h3 class="text-xs font-bold text-[#212B3B] mb-2 uppercase">Checklist de Conformidad</h3>
+            <div class="grid grid-cols-1 gap-2 text-sm text-gray-700">
+                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 text-[#4981F3] rounded" checked> Prueba de presiones e inyección térmica correcta.</label>
+                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 text-[#4981F3] rounded" checked> Prueba de hermeticidad y drenaje sin fugas.</label>
+                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 text-[#4981F3] rounded" checked> Explicación de uso de control remoto y filtros al cliente.</label>
+            </div>
+        </div>
+
+        <button onclick="openSignatureModal()" class="w-full bg-[#212B3B] text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 hover:bg-black transition-colors mb-4">
+            <i class="fas fa-signature"></i> Tocar para Firmar Conformidad
+        </button>
+
+        <!-- CANVAS OCULTO PARA ALMACENAR LA FIRMA -->
+        <canvas id="hidden-signature-data" style="display:none;"></canvas>
+    </div>
+
+    <!-- MODAL FIRMA PANTALLA COMPLETA -->
+    <div id="signature-modal" class="fixed inset-0 z-[100] hidden bg-white flex flex-col no-print">
+        <div class="bg-[#212B3B] text-white p-4 flex justify-between items-center shadow-md">
+            <h2 class="font-bold">Firma del Cliente</h2>
+            <button onclick="closeSignatureModal()" class="text-white bg-gray-700 px-3 py-1 rounded">Cancelar</button>
+        </div>
+        <div class="flex-1 bg-gray-100 relative p-4 flex flex-col">
+            <p class="text-xs text-center text-gray-500 mb-2">Por favor firme dentro del recuadro blanco usando su dedo.</p>
+            <div class="flex-1 bg-white border-2 border-dashed border-gray-400 rounded-xl relative shadow-inner overflow-hidden" id="canvas-container">
+                <canvas id="sig-canvas" class="signature-pad"></canvas>
+            </div>
+            <button onclick="clearCanvas('sig-canvas')" class="mt-4 text-sm text-red-500 font-bold uppercase tracking-wider text-center w-full">Borrar y firmar de nuevo</button>
+        </div>
+        <div class="p-4 bg-white border-t">
+            <button onclick="saveSignatureAndGenerate()" class="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg text-lg">Guardar Firma y Generar PDF</button>
+        </div>
+    </div>
+
+    <!-- VISTA PDF -->
+    <div id="print-section" class="max-w-[21.5cm] mx-auto bg-white p-8 shadow-2xl printable-section hidden min-h-[27.9cm] flex flex-col justify-between">
         <div>
-            <h3 class="text-lg font-bold text-gray-800 mb-2">Checklist de Calidad</h3>
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
-                <label class="flex items-center p-2 rounded border border-transparent hover:bg-gray-100 cursor-pointer transition-colors">
-                    <input id="cert-check-drain" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                    <span class="ml-3 text-sm text-gray-700 font-medium">Prueba de Drenaje (Bandeja y Manguera) OK</span>
-                </label>
-                <label class="flex items-center p-2 rounded border border-transparent hover:bg-gray-100 cursor-pointer transition-colors">
-                    <input id="cert-check-briefing" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                    <span class="ml-3 text-sm text-gray-700 font-medium">Instrucción al cliente (Uso, Filtros) OK</span>
-                </label>
-                 <label class="flex items-center p-2 rounded border border-transparent hover:bg-gray-100 cursor-pointer transition-colors">
-                    <input id="cert-check-cleaning" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                    <span class="ml-3 text-sm text-gray-700 font-medium">Limpieza y Orden del lugar OK</span>
-                </label>
-            </div>
-            
-            <div class="mt-6">
-                <label class="block text-sm font-bold text-gray-700 mb-1">Notas Adicionales</label>
-                <textarea id="cert-notes" rows="3" class="save-input block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Detalles de la instalación..."></textarea>
-            </div>
-        </div>
-
-        <!-- Firmas -->
-        <div class="mt-8 border-t pt-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Firmas de Aceptación</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <p class="text-xs font-bold text-blue-800 uppercase mb-2">Firma Técnico</p>
-                    <div class="border-2 border-dashed border-blue-300 rounded-xl bg-blue-50 relative overflow-hidden">
-                        <canvas id="signature-pad-tech" class="signature-pad w-full h-40 bg-transparent"></canvas>
-                        <div class="absolute bottom-2 right-2">
-                            <button type="button" id="clear-signature-tech" class="text-xs bg-white text-red-600 px-2 py-1 rounded shadow border border-gray-200 font-bold">Borrar</button>
-                        </div>
+            <header class="flex justify-between items-start pb-6 border-b border-gray-200 mb-6">
+                <div class="flex flex-row items-center font-montserrat gap-3">
+                    <div class="relative w-[50px] h-[50px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[8px] gap-[4px]">
+                        <div class="h-[6px] w-[30px] bg-[#F1F6FF] rounded-full"></div>
+                        <div class="h-[6px] w-[24px] bg-[#E4EEFF] rounded-full"></div>
+                        <div class="h-[6px] w-[18px] bg-[#D2E3FF] rounded-full"></div>
+                    </div>
+                    <div class="flex flex-col items-start leading-none mt-1">
+                        <span class="text-[#212B3B] font-[900] text-[22px] tracking-[-0.01em]">EASYCOOL</span>
+                        <span class="text-[#9FA5B1] font-[500] text-[11px] tracking-[0.01em]">Climatización</span>
                     </div>
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-gray-600 uppercase mb-2">Firma Cliente</p>
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 relative overflow-hidden">
-                        <canvas id="signature-pad-client" class="signature-pad w-full h-40 bg-transparent"></canvas>
-                        <div class="absolute bottom-2 right-2">
-                            <button type="button" id="clear-signature-client" class="text-xs bg-white text-red-600 px-2 py-1 rounded shadow border border-gray-200 font-bold">Borrar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Botón Generar -->
-        <div class="mt-10 mb-20">
-            <button id="generate-certificate-btn" class="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                <span class="btn-text text-lg">Guardar y Generar PDF</span>
-                <span class="spinner" style="display: none;"></span>
-            </button>
-        </div>
-    </div>
-
-    <!-- VISTA 2: HISTORIAL -->
-    <div id="view-history" class="view-section max-w-4xl mx-auto bg-white p-4 rounded-xl shadow-lg no-print min-h-screen hidden">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Historial</h2>
-            <button onclick="clearHistory()" class="text-xs text-red-500 underline">Borrar Todo</button>
-        </div>
-        <div id="history-list" class="space-y-3 pb-20">
-            <!-- Items de historial -->
-        </div>
-    </div>
-
-    <!-- NAVBAR INFERIOR -->
-    <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around z-50 no-print pb-safe">
-        <div class="bottom-nav-item active" onclick="switchTab('generator')">
-            <i class="fas fa-file-signature text-xl mb-1 block"></i>
-            <span class="text-[10px] font-bold uppercase">Generador</span>
-        </div>
-        <div class="bottom-nav-item" onclick="switchTab('history')">
-            <i class="fas fa-history text-xl mb-1 block"></i>
-            <span class="text-[10px] font-bold uppercase">Historial</span>
-        </div>
-    </div>
-
-    <!-- PLANTILLA IMPRIMIBLE -->
-    <div id="printable-area" class="max-w-4xl mx-auto">
-        <div id="certificate-section" class="printable-section bg-white p-6 sm:p-10 rounded-lg" style="display:none;">
-            <header class="flex justify-between items-start pb-4 border-b-2 border-gray-800 mb-4">
-                <div class="w-1/2">
-                      <svg viewBox="0 0 250 50" class="h-12 w-auto" aria-label="Logo de EasyCool">
-                          <g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text>
-                      </svg>
-                </div>
-                <div class="w-1/2 text-right text-xs text-gray-600 space-y-0.5">
-                    <p class="font-bold text-gray-900 text-sm">EasyCool Climatización</p>
-                    <p>RUT: 77.448.234-2</p>
-                    <p>ventas@easycoolclimatizacion.com</p>
-                    <p>+569 5777 6174</p>
+                <div class="text-right text-[10px] text-gray-500">
+                    <h1 class="text-sm font-bold text-gray-900 uppercase">Certificado Puesta en Marcha</h1>
+                    <p id="print-folio" class="font-bold text-[#4981F3] mt-1"></p>
+                    <p id="print-date"></p>
                 </div>
             </header>
-            
-            <main>
-                <div class="text-center mb-6">
-                    <h1 class="text-xl font-black text-gray-900 uppercase tracking-wide">Certificado de Puesta en Marcha</h1>
-                    <p class="text-sm text-gray-600">Folio: <strong id="print-cert-number" class="text-blue-800"></strong></p>
-                </div>
 
-                <section class="mb-6 border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <h2 class="text-xs font-bold text-blue-800 uppercase mb-2 border-b border-gray-300 pb-1">Información del Cliente</h2>
-                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                        <div><span class="text-gray-500">Cliente:</span> <span id="print-cert-client-name" class="font-bold"></span></div>
-                        <div><span class="text-gray-500">RUT:</span> <span id="print-cert-client-rut"></span></div>
-                        <div class="col-span-2"><span class="text-gray-500">Dirección:</span> <span id="print-cert-client-address"></span></div>
-                        <div><span class="text-gray-500">Fecha Instalación:</span> <span id="print-cert-install-date"></span></div>
-                        <div><span class="text-gray-500">Técnico Resp:</span> <span id="print-cert-technician"></span></div>
-                        <div class="col-span-2"><span class="text-gray-500">Suministro:</span> <span id="print-cert-supply" class="font-medium"></span></div>
+            <div class="bg-gray-50 p-4 rounded border border-gray-200 mb-6">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 border-b pb-1">Datos del Cliente e Instalación</p>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div><span class="text-gray-500 block text-[10px]">Nombre:</span><span id="print-client-name" class="font-bold text-gray-900" contenteditable="true"></span></div>
+                    <div><span class="text-gray-500 block text-[10px]">RUT:</span><span id="print-client-rut" class="text-gray-900" contenteditable="true"></span></div>
+                    <div class="col-span-2"><span class="text-gray-500 block text-[10px]">Dirección:</span><span id="print-client-address" class="text-gray-900" contenteditable="true"></span></div>
+                    <div class="col-span-2"><span class="text-gray-500 block text-[10px]">Equipos Instalados:</span><span id="print-equipment" class="font-medium text-[#4981F3]" contenteditable="true"></span></div>
+                </div>
+            </div>
+
+            <div class="mb-6 text-sm text-gray-700 text-justify leading-relaxed">
+                <p>Mediante el presente documento, el cliente declara recibir conforme la instalación de los equipos detallados anteriormente por parte del equipo técnico de <strong>EasyCool Climatización</strong>.</p><br>
+                <p>Se certifica que los equipos fueron probados en todas sus funciones, verificando correctas presiones de trabajo, salto térmico adecuado y drenaje fluido sin presentar filtraciones hacia el interior.</p>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-300 page-break-inside-avoid">
+            <div class="flex justify-center">
+                <div class="text-center w-64">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Recepción Conforme</p>
+                    <div class="h-32 bg-gray-50 border border-gray-200 rounded flex items-center justify-center mb-2">
+                        <img id="print-signature-img" src="" class="max-h-full max-w-full object-contain">
                     </div>
-                </section>
-                
-                <section class="mb-6" id="certificate-equipos-section">
-                    <h2 class="text-xs font-bold text-blue-800 uppercase mb-2 border-b border-gray-300 pb-1">Detalle Técnico & Evidencia</h2>
-                    <div id="print-equipos-container" class="space-y-4"></div>
-                </section>
-                
-                <section class="mb-8">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <h2 class="text-xs font-bold text-gray-700 uppercase mb-2">Checklist Procedimientos</h2>
-                            <div id="print-cert-checklist" class="text-xs space-y-1"></div>
-                        </div>
-                        <div class="bg-gray-50 p-2 rounded border border-gray-200">
-                            <h3 class="text-xs font-bold text-gray-800 mb-1">Notas / Observaciones:</h3>
-                            <p id="print-cert-notes" class="text-[10px] text-gray-700 whitespace-pre-wrap"></p>
-                        </div>
+                    <div class="border-t border-gray-400 pt-1">
+                        <p id="print-sig-name" class="text-xs font-bold text-gray-900" contenteditable="true"></p>
+                        <p class="text-[10px] text-gray-500">Firma del Cliente</p>
                     </div>
-                </section>
-                
-                <section class="mt-8 pt-8 border-t-2 border-gray-100 flex justify-between text-center break-inside-avoid">
-                    <div class="w-1/3 flex flex-col items-center">
-                        <div class="h-20 w-32 mb-1 flex items-end justify-center relative">
-                            <img id="print-signature-image-tech" class="max-h-full max-w-full object-contain" style="display:none;">
-                        </div>
-                        <div class="border-t border-gray-400 w-full pt-1">
-                            <p class="text-xs font-bold" id="print-cert-footer-tecnico"></p>
-                            <p class="text-[9px] text-gray-500 uppercase">Técnico Certificado</p>
-                        </div>
-                    </div>
-                    <div class="w-1/3 flex flex-col items-center">
-                        <div class="h-20 w-32 mb-1 flex items-end justify-center relative">
-                             <img id="print-signature-image-client" class="max-h-full max-w-full object-contain" style="display:none;">
-                         </div>
-                        <div class="border-t border-gray-400 w-full pt-1">
-                            <p class="text-xs font-bold" id="print-cert-footer-cliente">Firma del Cliente</p>
-                            <p class="text-[9px] text-gray-500 uppercase">Recibí Conforme</p>
-                        </div>
-                    </div>
-                </section>
-            </main>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <div class="max-w-4xl mx-auto text-center mt-6 mb-12 no-print">
-        <button id="print-button" onclick="window.print()" class="bg-gray-800 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-black transition-colors hidden">
-            🖨️ Imprimir Documento
-        </button>
+
+    <!-- BOTONERA INFERIOR PDF -->
+    <div id="print-action-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 hidden flex flex-col gap-2 no-print">
+        <button onclick="window.print()" class="w-full bg-[#212B3B] text-white font-bold py-3 rounded-xl shadow flex items-center justify-center gap-2"><i class="fas fa-file-pdf"></i> Imprimir / Guardar PDF</button>
+        <button onclick="editForm()" class="text-gray-400 text-xs font-bold py-2 uppercase">Volver</button>
     </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // ==========================================
-    // 1. UTILIDADES Y COMPRESIÓN DE IMÁGENES (OPTIMIZADA)
-    // ==========================================
-    
-    async function compressImage(file, maxWidth = 500, quality = 0.5) { // Agresiva para estabilidad
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    
-                    if (width > maxWidth) {
-                        height *= maxWidth / width;
-                        width = maxWidth;
-                    }
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', quality));
-                };
-            };
-        });
-    }
+    <!-- LOGICA FIREBASE Y CANVAS -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    // ==========================================
-    // 2. CANVAS FIRMAS
-    // ==========================================
-    const signatures = { client: null, tech: null }; 
-
-    function initSignaturePad(canvasId, clearBtnId, type) {
-        const canvas = document.getElementById(canvasId);
-        const ctx = canvas.getContext('2d');
-        const clearBtn = document.getElementById(clearBtnId);
-        let isDrawing = false;
-        let lastX = 0, lastY = 0;
-
-        function resizeCanvas() {
-            const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            if(canvas.offsetWidth > 0) {
-                const oldContent = signatures[type]; 
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                ctx.scale(ratio, ratio);
-                if (oldContent) {
-                    const img = new Image();
-                    img.src = oldContent;
-                    img.onload = () => ctx.drawImage(img, 0, 0, canvas.offsetWidth, canvas.offsetHeight);
-                }
-            }
-        }
-        window.addEventListener('resize', resizeCanvas);
-        setTimeout(resizeCanvas, 500); 
-
-        function getPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            let clientX = e.clientX, clientY = e.clientY;
-            if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
-            }
-            return { x: clientX - rect.left, y: clientY - rect.top };
-        }
-
-        function startDrawing(e) { isDrawing = true; const pos = getPos(e); lastX = pos.x; lastY = pos.y; }
-        
-        function draw(e) {
-            if (!isDrawing) return;
-            if(e.type !== 'mousemove') e.preventDefault(); 
-            const pos = getPos(e);
-            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y);
-            ctx.strokeStyle = canvasId.includes('tech') ? '#1e40af' : '#000'; 
-            ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
-            lastX = pos.x; lastY = pos.y;
-        }
-
-        function stopDrawing() { 
-            if(isDrawing) {
-                isDrawing = false; 
-                signatures[type] = canvas.toDataURL(); 
-            }
-        }
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width / (window.devicePixelRatio||1), canvas.height / (window.devicePixelRatio||1));
-            signatures[type] = null;
-        }
-
-        canvas.addEventListener('mousedown', startDrawing); canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing); canvas.addEventListener('mouseout', stopDrawing);
-        canvas.addEventListener('touchstart', startDrawing, {passive: false});
-        canvas.addEventListener('touchmove', draw, {passive: false});
-        canvas.addEventListener('touchend', stopDrawing);
-        clearBtn.addEventListener('click', clearCanvas);
-        
-        return { canvas, ctx };
-    }
-
-    const clientPad = initSignaturePad('signature-pad-client', 'clear-signature-client', 'client');
-    const techPad = initSignaturePad('signature-pad-tech', 'clear-signature-tech', 'tech');
-
-    // ==========================================
-    // 3. LOGICA PRINCIPAL
-    // ==========================================
-    const generateCertificateBtn = document.getElementById('generate-certificate-btn');
-    const printButton = document.getElementById('print-button');
-    const btnText = generateCertificateBtn.querySelector('.btn-text');
-    const btnSpinner = generateCertificateBtn.querySelector('.spinner');
-    const addEquipoBtn = document.getElementById('add-equipo-btn');
-    const equiposContainer = document.getElementById('equipos-container');
-    const certNumberInput = document.getElementById('cert-number');
-    const clientNameInput = document.getElementById('cert-client-name');
-
-    // --- MEJORA: Estilos dinámicos para el Checklist ---
-    const checkboxes = document.querySelectorAll('#cert-check-drain, #cert-check-briefing, #cert-check-cleaning');
-    checkboxes.forEach(chk => {
-        chk.addEventListener('change', function() {
-            const label = this.closest('label');
-            if(this.checked) {
-                label.classList.add('bg-green-50', 'border-green-300');
-                label.classList.remove('border-transparent', 'hover:bg-gray-100');
-            } else {
-                label.classList.remove('bg-green-50', 'border-green-300');
-                label.classList.add('border-transparent', 'hover:bg-gray-100');
-            }
-        });
-    });
-
-    // --- MANEJO DE EQUIPOS ---
-    let equipoCount = 0;
-    
-    function createFileBlock(label, className) {
-        return `
-            <div class="border border-dashed border-blue-300 p-2 rounded bg-blue-50 relative">
-                <label class="text-[10px] text-blue-600 block mb-1">${label}</label>
-                <input type="file" class="${className} custom-file-input w-full text-[10px]" accept="image/*">
-                <!-- Input oculto para guardar base64 comprimido -->
-                <input type="hidden" class="${className}-base64"> 
-                <p class="mt-1 text-[9px] text-green-700 font-bold truncate hidden file-status"></p>
-                <div class="preview-img-mini mt-1 hidden"><img src="" class="h-8 object-contain"></div>
-            </div>
-        `;
-    }
-
-    function createEquipoRow(data = null) {
-        equipoCount++;
-        const div = document.createElement('div');
-        div.className = 'equipo-item-form grid grid-cols-1 md:grid-cols-12 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm relative'; 
-        div.innerHTML = `
-            <div class="md:col-span-12 flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
-                <div class="flex items-center gap-2 w-full">
-                    <span class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">#${equipoCount}</span>
-                    <input type="text" class="cert-equipo-location save-input flex-1 rounded border-gray-300 text-sm py-1" placeholder="Ubicación (Ej: Living)" value="${data?.location || ''}">
-                </div>
-                <button class="remove-equipo-btn text-red-500 hover:text-red-700 p-1"><i class="fas fa-trash"></i></button>
-            </div>
-            <div class="md:col-span-4"><input type="text" class="cert-ui-brand save-input w-full rounded border-gray-300 text-xs" placeholder="Marca UI" value="${data?.ui_brand || ''}"></div>
-            <div class="md:col-span-4"><input type="text" class="cert-ui-model save-input w-full rounded border-gray-300 text-xs" placeholder="Modelo UI" value="${data?.ui_model || ''}"></div>
-            <div class="md:col-span-4"><input type="text" class="cert-ui-serial save-input w-full rounded border-gray-300 text-xs" placeholder="Serie UI" value="${data?.ui_serial || ''}"></div>
-            <div class="md:col-span-4"><input type="text" class="cert-ue-brand save-input w-full rounded border-gray-300 text-xs" placeholder="Marca UE" value="${data?.ue_brand || ''}"></div>
-            <div class="md:col-span-4"><input type="text" class="cert-ue-model save-input w-full rounded border-gray-300 text-xs" placeholder="Modelo UE" value="${data?.ue_model || ''}"></div>
-            <div class="md:col-span-4"><input type="text" class="cert-ue-serial save-input w-full rounded border-gray-300 text-xs" placeholder="Serie UE" value="${data?.ue_serial || ''}"></div>
-            
-            <div class="md:col-span-12 bg-white p-3 rounded border border-blue-100 mt-2">
-                <h5 class="text-xs font-bold text-blue-800 uppercase mb-2">Parámetros</h5>
-                <div class="grid grid-cols-3 gap-2">
-                    <div><label class="text-[10px] text-gray-500">Gas</label><select class="cert-refrigerant save-input w-full rounded border-gray-300 text-xs"><option>R410A</option><option>R32</option><option>R22</option></select></div>
-                    <div><label class="text-[10px] text-gray-500">Vacío</label><input type="number" class="cert-vacuum save-input w-full rounded border-gray-300 text-xs" value="${data?.vacuum || ''}"></div>
-                    <div><label class="text-[10px] text-gray-500">P.Baja</label><input type="number" class="cert-pressure-low save-input w-full rounded border-gray-300 text-xs" value="${data?.p_low || ''}"></div>
-                    <div><label class="text-[10px] text-gray-500">P.Alta</label><input type="number" class="cert-pressure-high save-input w-full rounded border-gray-300 text-xs" value="${data?.p_high || ''}"></div>
-                    <div><label class="text-[10px] text-gray-500">T° Iny</label><input type="number" class="cert-temp-in save-input w-full rounded border-gray-300 text-xs" value="${data?.t_in || ''}"></div>
-                    <div><label class="text-[10px] text-gray-500">T° Ret</label><input type="number" class="cert-temp-out save-input w-full rounded border-gray-300 text-xs" value="${data?.t_out || ''}"></div>
-                </div>
-            </div>
-            
-            <div class="md:col-span-12 mt-2">
-               <h5 class="text-xs font-bold text-gray-700 mb-1">Evidencia (Se comprime auto.)</h5>
-               <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                   ${createFileBlock('Vacuómetro', 'cert-photo-vacuum')}
-                   ${createFileBlock('Manómetros', 'cert-photo-pressure')}
-                   ${createFileBlock('T° Iny', 'cert-photo-temp-in')}
-                   ${createFileBlock('T° Ret', 'cert-photo-temp-out')}
-               </div>
-            </div>
-        `;
-        
-        // LOGICA DE COMPRESIÓN AL SELECCIONAR
-        const inputs = div.querySelectorAll('input[type="file"]');
-        inputs.forEach(input => {
-            input.addEventListener('change', async function() {
-                const parent = this.parentElement;
-                const hiddenInput = parent.querySelector('input[type="hidden"]');
-                const statusP = parent.querySelector('.file-status');
-                
-                if (this.files && this.files[0]) {
-                    statusP.textContent = '⏳ Comprimiendo...';
-                    statusP.classList.remove('hidden');
-                    
-                    try {
-                        const compressedBase64 = await compressImage(this.files[0]);
-                        hiddenInput.value = compressedBase64; // Guardar en input oculto
-                        statusP.textContent = '✅ ' + this.files[0].name;
-                        statusP.classList.add('text-green-700');
-                    } catch (e) {
-                        statusP.textContent = '❌ Error';
-                    }
-                }
-            });
-        });
-
-        // RELLENAR IMÁGENES SI VIENEN DEL HISTORIAL
-        if (data) {
-            const selGas = div.querySelector('.cert-refrigerant');
-            if(data.gas) selGas.value = data.gas;
-
-            const restoreImg = (cls, b64) => {
-                if (b64) {
-                    const parent = div.querySelector(`.${cls}`).parentElement;
-                    parent.querySelector(`.${cls}-base64`).value = b64;
-                    const status = parent.querySelector('.file-status');
-                    status.textContent = '✅ Cargada de memoria';
-                    status.classList.remove('hidden');
-                }
-            };
-            restoreImg('cert-photo-vacuum', data.img_vacuum);
-            restoreImg('cert-photo-pressure', data.img_pressure);
-            restoreImg('cert-photo-temp-in', data.img_temp_in);
-            restoreImg('cert-photo-temp-out', data.img_temp_out);
-        }
-
-        equiposContainer.appendChild(div);
-        updateRemoveButtons();
-    }
-
-    function updateRemoveButtons() {
-        const removeButtons = equiposContainer.querySelectorAll('.remove-equipo-btn');
-        removeButtons.forEach(btn => btn.style.display = removeButtons.length <= 1 ? 'none' : 'block');
-    }
-
-    addEquipoBtn.addEventListener('click', () => createEquipoRow());
-    equiposContainer.addEventListener('click', (e) => {
-        if (e.target.closest('.remove-equipo-btn')) {
-            e.target.closest('.equipo-item-form').remove();
-            updateRemoveButtons();
-        }
-    });
-
-    // ==========================================
-    // 4. HISTORIAL Y GUARDADO
-    // ==========================================
-    
-    function getFormData() {
-        const equipos = [];
-        document.querySelectorAll('.equipo-item-form').forEach(row => {
-            equipos.push({
-                location: row.querySelector('.cert-equipo-location').value,
-                ui_brand: row.querySelector('.cert-ui-brand').value,
-                ui_model: row.querySelector('.cert-ui-model').value,
-                ui_serial: row.querySelector('.cert-ui-serial').value,
-                ue_brand: row.querySelector('.cert-ue-brand').value,
-                ue_model: row.querySelector('.cert-ue-model').value,
-                ue_serial: row.querySelector('.cert-ue-serial').value,
-                gas: row.querySelector('.cert-refrigerant').value,
-                vacuum: row.querySelector('.cert-vacuum').value,
-                p_low: row.querySelector('.cert-pressure-low').value,
-                p_high: row.querySelector('.cert-pressure-high').value,
-                t_in: row.querySelector('.cert-temp-in').value,
-                t_out: row.querySelector('.cert-temp-out').value,
-                img_vacuum: row.querySelector('.cert-photo-vacuum-base64').value,
-                img_pressure: row.querySelector('.cert-photo-pressure-base64').value,
-                img_temp_in: row.querySelector('.cert-photo-temp-in-base64').value,
-                img_temp_out: row.querySelector('.cert-photo-temp-out-base64').value
-            });
-        });
-
-        return {
-            folio: document.getElementById('cert-number').value,
-            client: document.getElementById('cert-client-name').value,
-            rut: document.getElementById('cert-client-rut').value,
-            address: document.getElementById('cert-client-address').value,
-            date: document.getElementById('cert-install-date').value,
-            tech: document.getElementById('cert-technician').value,
-            supply: document.getElementById('cert-supply').value,
-            notes: document.getElementById('cert-notes').value,
-            equipos: equipos,
-            timestamp: new Date().toISOString()
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y",
+            authDomain: "easycool-cloud.firebaseapp.com",
+            projectId: "easycool-cloud",
+            storageBucket: "easycool-cloud.firebasestorage.app",
+            messagingSenderId: "1088663353920",
+            appId: "1:1088663353920:web:221585b4896c037dfbfda5"
         };
-    }
 
-    function saveToHistory(data) {
-        let history = JSON.parse(localStorage.getItem('easycool_history_v2') || '[]');
-        history.unshift(data);
-        if (history.length > 10) history.pop(); // Guardar solo últimos 10
-        localStorage.setItem('easycool_history_v2', JSON.stringify(history));
-        renderHistory();
-    }
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let cloudReady = false;
 
-    function renderHistory() {
-        const container = document.getElementById('history-list');
-        const history = JSON.parse(localStorage.getItem('easycool_history_v2') || '[]');
-        container.innerHTML = '';
-        
-        if(history.length === 0) {
-            container.innerHTML = '<p class="text-center text-gray-400 mt-10">Sin historial.</p>';
-            return;
-        }
+        signInAnonymously(auth).then(() => { cloudReady = true; }).catch(e => console.error(e));
 
-        history.forEach((item, idx) => {
-            const date = new Date(item.timestamp).toLocaleDateString('es-CL');
-            const div = document.createElement('div');
-            div.className = "bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center shadow-sm";
-            div.innerHTML = `
-                <div>
-                    <p class="font-bold text-gray-800">${item.client}</p>
-                    <p class="text-xs text-gray-500">${item.folio} • ${date}</p>
-                </div>
-                <button onclick="loadFromHistory(${idx})" class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-bold">Cargar</button>
-            `;
-            container.appendChild(div);
-        });
-    }
+        // LOGICA CANVAS
+        let isDrawing = false;
+        const initPad = (id) => {
+            const c = document.getElementById(id);
+            const container = c.parentElement;
+            c.width = container.offsetWidth; c.height = container.offsetHeight;
+            const ctx = c.getContext('2d');
+            ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#212B3B';
 
-    window.loadFromHistory = (idx) => {
-        const history = JSON.parse(localStorage.getItem('easycool_history_v2') || '[]');
-        const item = history[idx];
-        if(!item) return;
+            const pos = e => {
+                const r = c.getBoundingClientRect();
+                const t = e.touches ? e.touches[0] : e;
+                return { x: t.clientX - r.left, y: t.clientY - r.top };
+            };
 
-        if(!confirm("¿Cargar este certificado? Se perderán los cambios actuales no guardados.")) return;
+            const start = e => { e.preventDefault(); isDrawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+            const move = e => { if(!isDrawing) return; e.preventDefault(); const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+            const end = () => { isDrawing = false; };
 
-        document.getElementById('cert-number').value = item.folio;
-        document.getElementById('cert-client-name').value = item.client;
-        document.getElementById('cert-client-rut').value = item.rut;
-        document.getElementById('cert-client-address').value = item.address;
-        document.getElementById('cert-install-date').value = item.date;
-        document.getElementById('cert-technician').value = item.tech;
-        document.getElementById('cert-supply').value = item.supply;
-        document.getElementById('cert-notes').value = item.notes;
+            c.addEventListener('mousedown', start); c.addEventListener('mousemove', move); c.addEventListener('mouseup', end);
+            c.addEventListener('touchstart', start, {passive: false}); c.addEventListener('touchmove', move, {passive: false}); c.addEventListener('touchend', end);
+        };
 
-        // Reconstruir Equipos
-        equiposContainer.innerHTML = '';
-        equipoCount = 0;
-        item.equipos.forEach(eqData => createEquipoRow(eqData));
+        window.openSignatureModal = () => {
+            document.getElementById('signature-modal').classList.remove('hidden');
+            setTimeout(() => initPad('sig-canvas'), 100); // Dar tiempo a que el div tome tamaño
+        };
 
-        window.switchTab('generator');
-        generateCertificateBtn.disabled = false;
-    };
+        window.closeSignatureModal = () => document.getElementById('signature-modal').classList.add('hidden');
+        window.clearCanvas = (id) => { const c = document.getElementById(id); c.getContext('2d').clearRect(0,0,c.width,c.height); };
 
-    window.clearHistory = () => {
-        if(confirm("¿Borrar todo el historial?")) {
-            localStorage.removeItem('easycool_history_v2');
-            renderHistory();
-        }
-    };
-
-    window.switchTab = (tab) => {
-        document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-        document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
-        
-        if (tab === 'generator') {
-            document.getElementById('view-generator').classList.remove('hidden');
-            document.querySelectorAll('.bottom-nav-item')[0].classList.add('active');
-        } else {
-            document.getElementById('view-history').classList.remove('hidden');
-            document.querySelectorAll('.bottom-nav-item')[1].classList.add('active');
-            renderHistory();
-        }
-    };
-
-    // ==========================================
-    // 5. GENERAR PDF (ESTABILIDAD MEJORADA)
-    // ==========================================
-    generateCertificateBtn.addEventListener('click', async () => {
-        btnText.style.display = 'none';
-        btnSpinner.style.display = 'block';
-        generateCertificateBtn.disabled = true;
-
-        // --- MEJORA: Validación de campos obligatorios ---
-        const clientRutInput = document.getElementById('cert-client-rut');
-        const techInput = document.getElementById('cert-technician');
-        let isValid = true;
-        
-        [clientNameInput, clientRutInput, techInput].forEach(el => {
-            if (!el.value.trim()) {
-                el.classList.add('border-red-500', 'ring-2', 'ring-red-200');
-                isValid = false;
-            } else {
-                el.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
-            }
-        });
-
-        if (!isValid) {
-            alert("⚠️ Faltan campos obligatorios. Por favor, complete el Nombre del Cliente, RUT y Nombre del Técnico marcados en rojo.");
-            btnText.style.display = 'block';
-            btnSpinner.style.display = 'none';
-            generateCertificateBtn.disabled = false;
-            return; // Detener la generación
-        }
-
-        try {
-            // Guardar en Historial
-            const formData = getFormData();
-            saveToHistory(formData);
-
-            document.getElementById('certificate-section').style.display = 'block';
-            printButton.style.display = 'inline-block';
-
-            // Llenar datos simples
-            const setText = (id, val) => document.getElementById(id).textContent = val || '---';
-            setText('print-cert-client-name', formData.client);
-            setText('print-cert-client-rut', formData.rut);
-            setText('print-cert-client-address', formData.address);
-            setText('print-cert-technician', formData.tech);
-            setText('print-cert-footer-tecnico', formData.tech);
-            setText('print-cert-supply', formData.supply);
-            setText('print-cert-number', formData.folio);
-            setText('print-cert-notes', formData.notes);
+        window.saveSignatureAndGenerate = async () => {
+            const canvas = document.getElementById('sig-canvas');
+            const dataUrl = canvas.toDataURL('image/png');
+            document.getElementById('print-signature-img').src = dataUrl;
             
-            // --- MEJORA: Formato de Fecha sin error de Huso Horario ---
-            const rawDate = formData.date;
-            let formattedDate = '---';
-            if(rawDate) {
-                const parts = rawDate.split('-'); // ej. 2026-08-11
-                if(parts.length === 3) formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-            }
-            document.getElementById('print-cert-install-date').textContent = formattedDate;
-
-            // Firmas
-            const sigClient = document.getElementById('print-signature-image-client');
-            const sigTech = document.getElementById('print-signature-image-tech');
-            sigClient.src = clientPad.canvas.toDataURL();
-            sigTech.src = techPad.canvas.toDataURL();
-            sigClient.style.display = 'block';
-            sigTech.style.display = 'block';
-
-            // Renderizar Equipos
-            const printContainer = document.getElementById('print-equipos-container');
-            printContainer.innerHTML = '';
-
-            let allEquiposHtml = '';
-
-            for (const [idx, eq] of formData.equipos.entries()) {
-                // CALCULAR DELTA T
-                const tIn = parseFloat(eq.t_in);
-                const tOut = parseFloat(eq.t_out);
-                let deltaT = "N/A";
-                let deltaTStyle = "bg-gray-100 text-gray-800"; // Color por defecto
-
-                if(!isNaN(tIn) && !isNaN(tOut)){
-                    const diff = Math.abs(tOut - tIn);
-                    deltaT = diff.toFixed(1) + "°C";
-                    
-                    // Semáforo Delta T
-                    if (diff >= 8 && diff <= 14) {
-                        deltaTStyle = "bg-green-100 text-green-700"; // Rango OK
-                    } else {
-                        deltaTStyle = "bg-red-100 text-red-700"; // Fuera de rango
-                    }
-                }
-
-                // --- MEJORA: Función para crear bloque de imagen (Tamaños estrictos para impresión) ---
-                const imgBlock = (b64, label) => b64 ? `
-                    <div style="width: 23%; display: inline-block; vertical-align: top; margin: 0 1%;">
-                        <div style="height: 100px; background-color: #f3f4f6; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
-                            <img src="${b64}" style="display: block; width: auto; height: 100%; max-width: 100%; object-fit: contain;">
-                        </div>
-                        <div style="font-size: 10px; text-align: center; color: #374151; margin-top: 4px; font-weight: 700;">${label}</div>
-                    </div>` : '';
-
-                const photosHtml = `
-                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #f3f4f6; text-align: center; font-size: 0;">
-                        ${imgBlock(eq.img_vacuum, 'Vacuómetro')}
-                        ${imgBlock(eq.img_pressure, 'Manómetros')}
-                        ${imgBlock(eq.img_temp_in, 'T° Iny')}
-                        ${imgBlock(eq.img_temp_out, 'T° Ret')}
-                    </div>
-                `;
-
-                allEquiposHtml += `
-                    <div class="equipo-item-print bg-white rounded border border-gray-300 p-2 mb-2 text-[10px] break-inside-avoid">
-                        <div class="font-bold text-blue-800 border-b border-gray-200 mb-1 pb-1">Equipo #${idx+1} - ${eq.location}</div>
-                        <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-                            <div><strong>UI:</strong> ${eq.ui_brand} / ${eq.ui_model}</div>
-                            <div><strong>UE:</strong> ${eq.ue_brand} / ${eq.ue_model}</div>
-                            <div><strong>S/N UI:</strong> ${eq.ui_serial}</div>
-                            <div><strong>S/N UE:</strong> ${eq.ue_serial}</div>
-                            <div class="col-span-2 mt-1 pt-1 border-t border-gray-100 grid grid-cols-7 gap-1 text-center bg-gray-50 rounded font-mono text-[9px]">
-                                <span><strong>Gas:</strong> ${eq.gas}</span>
-                                <span><strong>Vac:</strong> ${eq.vacuum}</span>
-                                <span><strong>Baja:</strong> ${eq.p_low}</span>
-                                <span><strong>Alta:</strong> ${eq.p_high}</span>
-                                <span class="text-blue-700"><strong>Iny:</strong> ${eq.t_in}°</span>
-                                <span class="text-red-700"><strong>Ret:</strong> ${eq.t_out}°</span>
-                                <span class="${deltaTStyle} rounded px-1"><strong>ΔT:</strong> ${deltaT}</span>
-                            </div>
-                        </div>
-                        ${photosHtml}
-                    </div>
-                `;
-                
-                // Pequeña pausa para no bloquear la UI si hay muchos equipos
-                await new Promise(r => setTimeout(r, 10)); 
-            }
+            const name = document.getElementById('cert-client-name').value;
+            const folio = document.getElementById('cert-number').value;
             
-            printContainer.innerHTML = allEquiposHtml;
+            document.getElementById('print-client-name').innerText = name;
+            document.getElementById('print-sig-name').innerText = name;
+            document.getElementById('print-client-rut').innerText = document.getElementById('cert-client-rut').value;
+            document.getElementById('print-client-address').innerText = document.getElementById('cert-address').value;
+            document.getElementById('print-equipment').innerText = document.getElementById('cert-equipment').value;
+            document.getElementById('print-folio').innerText = "Nº " + folio;
+            document.getElementById('print-date').innerText = new Date().toLocaleDateString('es-CL');
 
-            // Esperar renderizado de imágenes
-            await new Promise(r => setTimeout(r, 800));
-
-            // Checklist Visual
-            const checkContainer = document.getElementById('print-cert-checklist');
-            checkContainer.innerHTML = '';
-            ['cert-check-drain', 'cert-check-briefing', 'cert-check-cleaning'].forEach(id => {
-                const el = document.getElementById(id);
-                const label = el.parentElement.querySelector('span').innerText;
-                const icon = el.checked ? '<span class="text-green-600 font-bold">✓</span>' : '<span class="text-red-400">✗</span>';
-                checkContainer.innerHTML += `<div>${icon} ${label}</div>`;
-            });
-
-            // --- MEJORA: Auto-scroll suave y confiable ---
-            setTimeout(() => {
-                document.getElementById('certificate-section').scrollIntoView({behavior:'smooth', block: 'start'});
-            }, 100);
-            
-            document.title = `Certificado_${formData.client.replace(/\s+/g,'_')}`;
-
-            // Actualizar Folio Siguiente
-            const parts = formData.folio.split('.'); 
-            if (parts.length === 2) {
-                const currentSeq = parseInt(parts[1]);
-                const year = new Date().getFullYear();
-                if (!isNaN(currentSeq)) {
-                    localStorage.setItem(`easycool_cert_seq_${year}`, currentSeq + 1);
-                }
+            // Subir a Nube (Solo datos texto)
+            if(cloudReady && name) {
+                try {
+                    await addDoc(collection(db, "certificados"), {
+                        cliente: name, folio: folio, fecha: new Date().toISOString(),
+                        equipos: document.getElementById('cert-equipment').value
+                    });
+                } catch(e) {}
             }
 
-        } catch (e) {
-            console.error(e);
-            alert("Error: " + e.message);
-        } finally {
-            btnText.style.display = 'block';
-            btnSpinner.style.display = 'none';
-            generateCertificateBtn.disabled = false;
-        }
-    });
+            document.getElementById('signature-modal').classList.add('hidden');
+            document.getElementById('form-section').classList.add('hidden');
+            document.getElementById('print-section').classList.remove('hidden');
+            document.getElementById('print-action-bar').classList.remove('hidden');
+            window.scrollTo(0,0);
+        };
 
-    // INIT
-    const currentYear = new Date().getFullYear();
-    let sequence = localStorage.getItem(`easycool_cert_seq_${currentYear}`);
-    if (!sequence) sequence = 48;
-    certNumberInput.value = `EC-CERT-${currentYear}.${sequence}`;
-    document.getElementById('cert-install-date').valueAsDate = new Date();
-    
-    // Crear primer equipo vacío
-    createEquipoRow();
-    
-    renderHistory();
-});
-</script>
+        window.editForm = () => {
+            document.getElementById('print-section').classList.add('hidden');
+            document.getElementById('print-action-bar').classList.add('hidden');
+            document.getElementById('form-section').classList.remove('hidden');
+        };
+    </script>
 </body>
 </html>
