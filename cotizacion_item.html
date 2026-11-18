@@ -2,219 +2,116 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cotizador por Ítem - EasyCool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotización Simple - EasyCool</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@500;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; padding-bottom: 80px; -webkit-tap-highlight-color: transparent;}
-        .font-montserrat { font-family: 'Montserrat', sans-serif; }
-        [contenteditable="true"]:focus { outline: 2px solid #4981F3; background-color: #F1F6FF; }
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         @media print {
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body { background: white; margin: 0; padding: 0; font-size: 11px; }
+            body { background: white; margin:0; padding:0; }
             .no-print { display: none !important; }
-            .printable-section { width: 100% !important; max-width: 100% !important; padding: 10mm !important; box-shadow: none !important; }
+            .printable { box-shadow: none !important; width: 100% !important; margin:0; }
+            input, textarea { border:none!important; resize:none; font-family: 'Inter', sans-serif;}
         }
     </style>
 </head>
-<body class="sm:p-8">
+<body class="p-4 sm:p-8 flex flex-col items-center">
 
-    <!-- FORMULARIO -->
-    <div id="form-section" class="max-w-4xl mx-auto bg-white p-4 sm:p-8 rounded-xl shadow-lg no-print">
-        <div class="flex justify-between items-center mb-6 border-b pb-4">
-            <div class="flex flex-row items-center font-montserrat gap-3">
-                <div class="relative w-[40px] h-[40px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[6px] gap-[3px] shadow-sm">
-                    <div class="h-[5px] w-[24px] bg-[#F1F6FF] rounded-full"></div>
-                    <div class="h-[5px] w-[19px] bg-[#E4EEFF] rounded-full"></div>
-                    <div class="h-[5px] w-[14px] bg-[#D2E3FF] rounded-full"></div>
+    <div class="w-full max-w-[21.59cm] bg-white p-8 rounded-xl shadow-2xl printable relative mx-auto">
+        <header class="flex justify-between items-start border-b-2 border-[#212B3B] pb-4 mb-6">
+            <div class="flex flex-row items-center font-montserrat gap-4">
+                <div class="relative w-[70px] h-[70px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[12px] gap-[5px]">
+                    <div class="h-[8px] w-[45px] bg-[#F1F6FF] rounded-full"></div>
+                    <div class="h-[8px] w-[35px] bg-[#E4EEFF] rounded-full"></div>
+                    <div class="h-[8px] w-[25px] bg-[#D2E3FF] rounded-full"></div>
                 </div>
-                <div class="flex flex-col items-start leading-none mt-1">
-                    <span class="text-[#212B3B] font-[900] text-[18px] tracking-[-0.01em]">EASYCOOL</span>
-                    <span class="text-[#9FA5B1] font-[500] text-[9px] tracking-[0.01em]">Cotización por Ítem</span>
-                </div>
-            </div>
-            <div class="text-right">
-                <label class="text-[10px] font-bold text-gray-500 uppercase">Folio</label>
-                <input type="number" id="form-folio" class="w-20 border rounded p-1 text-center font-bold text-[#4981F3] outline-none" value="1000">
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-lg border">
-            <input type="text" id="form-cliente" placeholder="Nombre del Cliente" class="border p-2 rounded text-sm outline-none focus:border-blue-500">
-            <input type="text" id="form-rut" placeholder="RUT del Cliente" class="border p-2 rounded text-sm outline-none focus:border-blue-500">
-            <input type="text" id="form-direccion" placeholder="Dirección / Obra" class="border p-2 rounded text-sm md:col-span-2 outline-none focus:border-blue-500">
-        </div>
-
-        <div class="mb-4">
-            <h3 class="font-bold text-[#212B3B] mb-2 uppercase text-xs">Detalle de Ítems</h3>
-            <div id="items-container" class="space-y-2 mb-4"></div>
-            <button onclick="addItemRow()" class="w-full py-2 border-2 border-dashed border-gray-300 text-gray-500 font-bold rounded-lg hover:bg-gray-50">+ Agregar Ítem</button>
-        </div>
-
-        <div class="bg-blue-50 p-4 rounded-lg flex flex-col items-end gap-2 border border-blue-100 mb-6">
-            <div class="text-sm">Subtotal Neto: <span id="live-subtotal" class="font-bold">$0</span></div>
-            <div class="text-sm">IVA (19%): <span id="live-iva" class="font-bold text-yellow-600">$0</span></div>
-            <div class="text-xl font-bold text-[#212B3B]">TOTAL: <span id="live-total">$0</span></div>
-        </div>
-
-        <button onclick="generateItemQuote()" class="w-full bg-[#4981F3] text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-lg">📄 Generar Cotización</button>
-    </div>
-
-    <!-- PDF VIEW -->
-    <div id="print-section" class="max-w-4xl mx-auto bg-white p-8 shadow-2xl printable-section hidden min-h-screen">
-        <header class="flex justify-between items-start pb-4 border-b border-gray-200 mb-6">
-            <div class="flex flex-row items-center font-montserrat gap-3">
-                <div class="relative w-[50px] h-[50px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[8px] gap-[4px]">
-                    <div class="h-[6px] w-[30px] bg-[#F1F6FF] rounded-full"></div>
-                    <div class="h-[6px] w-[24px] bg-[#E4EEFF] rounded-full"></div>
-                    <div class="h-[6px] w-[18px] bg-[#D2E3FF] rounded-full"></div>
-                </div>
-                <div class="flex flex-col items-start leading-none mt-1">
-                    <span class="text-[#212B3B] font-[900] text-[22px] tracking-[-0.01em]">EASYCOOL</span>
-                    <span class="text-[#9FA5B1] font-[500] text-[11px] tracking-[0.01em]">Climatización</span>
+                <div class="flex flex-col">
+                    <h1 class="text-[#212B3B] font-[900] text-[24px] leading-none mb-1">EASYCOOL</h1>
+                    <p class="text-[#9FA5B1] font-[500] text-[12px] leading-none">Climatización</p>
                 </div>
             </div>
-            <div class="text-right text-[10px] text-gray-500 leading-snug">
-                <h1 class="text-sm font-bold text-gray-800">COTIZACIÓN DE SERVICIOS</h1>
-                <p>RUT: 77.448.234-2 | Providencia, Stgo</p>
-                <p>ventas@easycoolclimatizacion.com</p>
-                <p>+569 5777 6174</p>
+            <div class="text-right text-[#212B3B]">
+                <h1 class="text-sm font-bold mb-1">EasyCool Climatización</h1>
+                <p class="text-xs">RUT: 77.448.234-2</p>
+                <p class="text-xs">ventas@easycoolclimatizacion.com</p>
+                <p class="text-xs">+569 5777 6174</p>
             </div>
         </header>
 
-        <div class="bg-gray-50 p-4 rounded-lg mb-6 flex justify-between border border-gray-200">
-            <div class="w-2/3">
-                <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">CLIENTE</p>
-                <p class="text-sm font-bold text-gray-900" id="print-cliente" contenteditable="true"></p>
-                <p class="text-[10px] text-gray-600" id="print-rut" contenteditable="true"></p>
-                <p class="text-[10px] text-gray-600" id="print-direccion" contenteditable="true"></p>
+        <div class="flex justify-between items-end mb-6">
+            <div class="w-1/2">
+                <input type="text" id="c-nombre" placeholder="Nombre Cliente" class="font-bold text-lg border-b w-full mb-1">
+                <input type="text" id="c-rut" placeholder="RUT" class="text-sm text-gray-600 border-b w-full">
             </div>
-            <div class="w-1/3 text-right">
-                <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">DETALLES</p>
-                <p class="text-sm font-bold text-[#4981F3]" id="print-folio" contenteditable="true"></p>
-                <p class="text-[10px] text-gray-600" id="print-fecha" contenteditable="true"></p>
+            <div class="text-right">
+                <p class="text-xs font-bold text-gray-500">COTIZACIÓN Nº</p>
+                <input type="text" id="c-folio" value="EC-2026-01" class="text-right font-bold text-red-600 border w-24">
             </div>
         </div>
 
-        <table class="w-full text-left border-collapse mb-6" id="pdf-items-table">
-            <thead>
-                <tr class="border-b-2 border-gray-800 text-xs font-bold text-gray-600 uppercase">
-                    <th class="py-2">Descripción</th>
-                    <th class="py-2 text-center w-16">Cant.</th>
-                    <th class="py-2 text-right w-24">V. Unit.</th>
-                    <th class="py-2 text-right w-28">Total Neto</th>
+        <table class="w-full text-left border-collapse mb-4">
+            <thead><tr class="bg-gray-200 text-xs uppercase"><th class="p-2">Descripción</th><th class="p-2 w-32 text-right">Monto Neto</th></tr></thead>
+            <tbody id="items-body">
+                <tr>
+                    <td class="p-2 border-b"><input type="text" class="w-full border-none" value="Instalación Equipo Split"></td>
+                    <td class="p-2 border-b"><input type="number" class="val-input w-full text-right border-none font-bold" value="120000" oninput="calc()"></td>
                 </tr>
-            </thead>
-            <tbody class="text-sm text-gray-800"></tbody>
+            </tbody>
         </table>
+        <button onclick="addRow()" class="text-blue-500 text-xs font-bold no-print mb-6">+ Agregar Ítem</button>
 
-        <div class="flex justify-end pt-4 mt-4 border-t border-gray-200">
-            <div class="w-1/2 md:w-1/3 space-y-1 text-right">
-                <div class="flex justify-between text-xs text-gray-500"><span>Subtotal Neto:</span><span id="print-subtotal" contenteditable="true"></span></div>
-                <div class="flex justify-between text-xs text-gray-500"><span>IVA (19%):</span><span id="print-iva" contenteditable="true"></span></div>
-                <div class="flex justify-between items-center text-lg font-bold text-[#212B3B] mt-2 pt-2 border-t-2 border-gray-800">
-                    <span>TOTAL:</span><span id="print-total" contenteditable="true"></span>
-                </div>
+        <div class="flex justify-end mb-6">
+            <div class="w-1/3 text-right text-sm space-y-1">
+                <p>Subtotal: <span id="t-sub" class="font-bold">$0</span></p>
+                <p>IVA (19%): <span id="t-iva" class="font-bold">$0</span></p>
+                <p class="text-lg font-bold text-blue-600 border-t pt-2">TOTAL: <span id="t-total">$0</span></p>
             </div>
         </div>
-        
-        <div class="mt-8 pt-4 border-t border-gray-200 text-[10px] text-gray-500">
-            <p class="font-bold text-gray-700 mb-1 uppercase">Condiciones Comerciales</p>
-            <ul class="list-disc pl-4 space-y-0.5" contenteditable="true">
-                <li>Validez de la cotización: 10 días hábiles.</li>
-                <li>Condición de pago: 50% anticipo, 50% al finalizar trabajos.</li>
-            </ul>
+
+        <div class="mt-8 text-center no-print flex justify-center gap-4">
+            <button id="save-print-btn" class="bg-gray-900 text-white font-bold py-2 px-6 rounded shadow-lg">Guardar en Nube & Imprimir</button>
         </div>
     </div>
 
-    <!-- BOTONES PDF -->
-    <div id="print-action-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 hidden flex flex-col gap-2 no-print shadow-lg">
-        <button onclick="window.print()" class="w-full bg-[#212B3B] text-white font-bold py-3 rounded-xl flex justify-center gap-2"><i class="fas fa-file-pdf"></i> Imprimir / Guardar PDF</button>
-        <button onclick="editForm()" class="text-gray-400 text-xs font-bold py-2 uppercase">Volver a Editar</button>
-    </div>
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y", authDomain: "easycool-cloud.firebaseapp.com", projectId: "easycool-cloud", storageBucket: "easycool-cloud.firebasestorage.app", messagingSenderId: "1088663353920", appId: "1:1088663353920:web:221585b4896c037dfbfda5" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    firebase.auth().signInAnonymously();
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    function addRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="p-2 border-b"><input type="text" class="w-full border-none" placeholder="Item"></td><td class="p-2 border-b"><input type="number" class="val-input w-full text-right border-none font-bold" value="0" oninput="calc()"></td>`;
+        document.getElementById('items-body').appendChild(tr);
+    }
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y", authDomain: "easycool-cloud.firebaseapp.com", projectId: "easycool-cloud",
-            storageBucket: "easycool-cloud.firebasestorage.app", messagingSenderId: "1088663353920", appId: "1:1088663353920:web:221585b4896c037dfbfda5"
-        };
-        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
-        let cloudReady = false; signInAnonymously(auth).then(()=>cloudReady=true).catch(e=>console.error(e));
+    function calc() {
+        let sub = 0;
+        document.querySelectorAll('.val-input').forEach(i => sub += (parseFloat(i.value)||0));
+        let iva = Math.round(sub * 0.19);
+        let total = sub + iva;
+        document.getElementById('t-sub').innerText = "$" + sub.toLocaleString('es-CL');
+        document.getElementById('t-iva').innerText = "$" + iva.toLocaleString('es-CL');
+        document.getElementById('t-total').innerText = "$" + total.toLocaleString('es-CL');
+        return total;
+    }
+    calc();
 
-        const formatCurrency = (val) => "$ " + Math.round(val).toLocaleString('es-CL');
-
-        window.calcTotals = () => {
-            let subtotal = 0;
-            document.querySelectorAll('.item-row').forEach(row => {
-                const qty = parseFloat(row.querySelector('.i-qty').value) || 0;
-                const price = parseFloat(row.querySelector('.i-price').value) || 0;
-                const total = qty * price;
-                row.querySelector('.i-total').innerText = formatCurrency(total);
-                subtotal += total;
+    document.getElementById('save-print-btn').addEventListener('click', async () => {
+        try {
+            await db.collection('cotizaciones').add({
+                cliente: document.getElementById('c-nombre').value,
+                rut: document.getElementById('c-rut').value,
+                folio: document.getElementById('c-folio').value,
+                tipo: 'Simple', total: calc(), date: new Date().toISOString()
             });
-            const iva = subtotal * 0.19; const total = subtotal + iva;
-            document.getElementById('live-subtotal').innerText = formatCurrency(subtotal);
-            document.getElementById('live-iva').innerText = formatCurrency(iva);
-            document.getElementById('live-total').innerText = formatCurrency(total);
-            return { subtotal, iva, total };
-        };
-
-        window.addItemRow = () => {
-            const div = document.createElement('div'); div.className = 'item-row flex flex-wrap gap-2 items-center bg-white p-2 rounded border border-gray-200 shadow-sm';
-            div.innerHTML = `
-                <input type="text" class="i-desc flex-1 border rounded p-2 text-sm outline-none focus:border-[#4981F3]" placeholder="Descripción del servicio o repuesto">
-                <input type="number" class="i-qty w-16 border rounded p-2 text-sm outline-none text-center" placeholder="Cant." value="1" oninput="calcTotals()">
-                <input type="number" class="i-price w-24 border rounded p-2 text-sm outline-none text-right" placeholder="Precio U." oninput="calcTotals()">
-                <div class="w-24 text-right font-bold text-gray-700 text-sm i-total">$ 0</div>
-                <button class="text-red-400 px-2" onclick="this.parentElement.remove(); calcTotals();"><i class="fas fa-trash"></i></button>
-            `;
-            document.getElementById('items-container').appendChild(div);
-        };
-
-        window.generateItemQuote = async () => {
-            const cliente = document.getElementById('form-cliente').value || 'Cliente';
-            const folio = document.getElementById('form-folio').value;
-            const t = window.calcTotals();
-
-            document.getElementById('print-cliente').innerText = cliente;
-            document.getElementById('print-rut').innerText = document.getElementById('form-rut').value;
-            document.getElementById('print-direccion').innerText = document.getElementById('form-direccion').value;
-            document.getElementById('print-folio').innerText = "Cotización Nº " + folio;
-            document.getElementById('print-fecha').innerText = new Date().toLocaleDateString('es-CL');
-
-            let tbody = '';
-            document.querySelectorAll('.item-row').forEach(row => {
-                const desc = row.querySelector('.i-desc').value;
-                const qty = row.querySelector('.i-qty').value;
-                const price = parseFloat(row.querySelector('.i-price').value) || 0;
-                if(desc && price > 0) {
-                    tbody += `<tr class="border-b border-gray-100"><td class="py-2">${desc}</td><td class="py-2 text-center">${qty}</td><td class="py-2 text-right">${formatCurrency(price)}</td><td class="py-2 text-right font-medium">${formatCurrency(qty*price)}</td></tr>`;
-                }
-            });
-            document.querySelector('#pdf-items-table tbody').innerHTML = tbody;
-            document.getElementById('print-subtotal').innerText = formatCurrency(t.subtotal);
-            document.getElementById('print-iva').innerText = formatCurrency(t.iva);
-            document.getElementById('print-total').innerText = formatCurrency(t.total);
-
-            if(cloudReady) { try { await addDoc(collection(db, "cotizaciones_item"), { cliente: cliente, folio: folio, total: formatCurrency(t.total), fecha: new Date().toISOString()}); document.getElementById('form-folio').value = parseInt(folio)+1; } catch(e){} }
-
-            document.getElementById('form-section').classList.add('hidden');
-            document.getElementById('print-section').classList.remove('hidden');
-            document.getElementById('print-action-bar').classList.remove('hidden');
-        };
-
-        window.editForm = () => {
-            document.getElementById('print-section').classList.add('hidden');
-            document.getElementById('print-action-bar').classList.add('hidden');
-            document.getElementById('form-section').classList.remove('hidden');
-        };
-        window.addItemRow();
-    </script>
+        } catch(e) {}
+        window.print();
+    });
+</script>
 </body>
 </html>
