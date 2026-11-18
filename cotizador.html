@@ -3,349 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EasyCool Cotizador Cloud</title>
+    <title>Cotizador PRO - EasyCool</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1830/1830182.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@500;900&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; padding-bottom: 80px; }
-        .header-logo-font { font-family: 'Montserrat', sans-serif; }
-        .calculator-section { background: #ffffff; }
-        [contenteditable="true"]:focus { outline: 2px solid #4981F3; background-color: #F1F6FF; border-radius: 4px; padding: 4px; }
-        .input-mobile { font-size: 16px; }
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 2px; }
-        .bottom-nav-item { flex: 1; text-align: center; padding: 10px; color: #9ca3af; transition: all 0.2s; }
-        .bottom-nav-item.active { color: #4981F3; border-top: 3px solid #4981F3; }
-        
-        /* FIX DE COLOR PARA PDF */
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; }
         @media print {
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body { background: white; padding: 0; margin: 0; font-size: 11px;}
+            body { background: white; padding: 0; }
             .no-print { display: none !important; }
-            .printable-section { width: 100% !important; max-width: 100% !important; box-shadow: none !important; padding: 10mm !important; }
-            #bottom-nav, #print-action-bar { display: none !important; }
+            .printable-section { width: 100% !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; }
         }
     </style>
 </head>
-<body class="sm:p-8">
+<body class="p-4 sm:p-8">
 
-    <div id="view-calculator" class="view-section max-w-4xl mx-auto bg-white p-4 sm:p-6 rounded-xl shadow-lg no-print calculator-section min-h-screen sm:min-h-0 relative">
-        <div id="cloud-status" class="absolute top-2 right-4 text-[9px] font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-200">⏳ Conectando...</div>
-
-        <div class="flex justify-between items-center mb-6 pt-2">
-            <div class="flex flex-row items-center justify-start font-montserrat select-none gap-3">
-                <div class="relative w-[40px] h-[40px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[6px] gap-[3px] shadow-sm">
-                    <div class="h-[5px] w-[24px] bg-[#F1F6FF] rounded-full"></div>
-                    <div class="h-[5px] w-[19px] bg-[#E4EEFF] rounded-full"></div>
-                    <div class="h-[5px] w-[14px] bg-[#D2E3FF] rounded-full"></div>
-                </div>
-                <div class="flex flex-col items-start leading-none mt-1">
-                    <span class="text-[#212B3B] font-[900] text-[18px] tracking-[-0.01em]">EASYCOOL</span>
-                    <span class="text-[#9FA5B1] font-[500] text-[9px] tracking-[0.01em]">Climatización</span>
-                </div>
-            </div>
-            <button id="open-price-editor-btn" class="text-gray-500 hover:text-blue-600 p-2"><i class="fas fa-cog text-xl"></i></button>
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg no-print mb-8 border-t-4 border-indigo-600">
+        <h2 class="text-2xl font-bold mb-4">Cotizador Manager PRO <span id="fb-status" class="text-xs text-green-500 float-right mt-2">Conectando...</span></h2>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <input type="text" id="cot-cliente" placeholder="Cliente" class="border p-2 rounded">
+            <input type="text" id="cot-rut" placeholder="RUT" class="border p-2 rounded">
+            <input type="text" id="cot-dir" placeholder="Dirección" class="border p-2 rounded col-span-2">
+            <input type="number" id="cot-costo-eq" placeholder="Costo Equipo ($)" class="border p-2 rounded" value="200000" oninput="calc()">
+            <input type="number" id="cot-margen" placeholder="Margen %" class="border p-2 rounded" value="30" oninput="calc()">
         </div>
-        
-        <div class="grid gap-4">
-            <div class="bg-white p-4 rounded-xl border border-gray-200">
-                <div class="flex justify-between items-start gap-2 mb-3">
-                    <input type="text" id="calc-client-name" placeholder="Nombre Cliente" class="input-mobile border-b border-gray-300 p-2 w-full focus:border-blue-600 outline-none font-bold text-lg">
-                    <div class="w-24 text-center">
-                        <label class="block text-[9px] text-gray-500 font-bold uppercase">Folio</label>
-                        <input type="number" id="calc-folio-number" class="input-mobile bg-gray-50 w-full text-center font-bold text-blue-600 rounded p-1" value="100">
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <input type="text" id="calc-client-rut" placeholder="RUT" class="input-mobile border border-gray-200 p-2 rounded w-1/3 text-sm">
-                    <input type="text" id="calc-client-address" placeholder="Dirección" class="input-mobile border border-gray-200 p-2 rounded w-2/3 text-sm">
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-xl border border-gray-200">
-                <h3 class="text-sm font-bold text-gray-700 mb-2">Equipos a Instalar</h3>
-                <div id="equipos-container" class="space-y-3 mb-3"></div>
-                <button id="add-equipo-btn" class="w-full py-2 rounded-lg border-2 border-dashed border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50">+ Agregar Equipo</button>
-            </div>
-
-            <div class="bg-white p-4 rounded-xl border border-gray-200">
-                <h3 class="text-sm font-bold text-gray-700 mb-3"><i class="fas fa-tools text-gray-400"></i> Materiales</h3>
-                <div class="grid grid-cols-3 gap-3 text-sm">
-                    <div><label class="block text-[10px] text-gray-500">Soportes</label><input type="number" id="qty-soporte" class="material-input input-mobile border rounded p-1.5 w-full text-center" value="1"></div>
-                    <div><label class="block text-[10px] text-gray-500">Cordón (m)</label><input type="number" id="qty-cordon" class="material-input input-mobile border rounded p-1.5 w-full text-center" value="3"></div>
-                    <div><label class="block text-[10px] text-gray-500">Canaleta 100</label><input type="number" id="qty-canaleta-1" class="material-input input-mobile border rounded p-1.5 w-full text-center" value="1"></div>
-                    <div><label class="block text-[10px] text-gray-500">Canaleta 20</label><input type="number" id="qty-canaleta-2" class="material-input input-mobile border rounded p-1.5 w-full text-center" value="1"></div>
-                    <div><label class="block text-[10px] text-blue-600 font-bold">Tubería Extra</label><input type="number" id="qty-tuberia" class="material-input input-mobile border-blue-200 bg-blue-50 rounded p-1.5 w-full text-center text-blue-700" value="0"></div>
-                    <div><label class="block text-[10px] text-blue-600 font-bold">Bomba Cond.</label><input type="number" id="qty-bomba" class="material-input input-mobile border-blue-200 bg-blue-50 rounded p-1.5 w-full text-center text-blue-700" value="0"></div>
-                </div>
-                <div class="hidden">
-                    <input id="costo-soporte" value="7500"><input id="costo-canaleta-1" value="5950"><input id="costo-canaleta-2" value="1210"><input id="costo-cordon" value="917"><input id="costo-bomba" value="45000"><input id="costo-tuberia" value="15000">
-                </div>
-            </div>
-
-            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                <div class="flex justify-between items-center mb-3">
-                    <label class="text-xs font-bold text-[#212B3B]">Mano Obra (x Equipo)</label>
-                    <input type="number" id="costo-mano-obra" class="input-mobile w-24 text-right p-1.5 rounded border border-gray-300 font-bold" value="120000">
-                </div>
-                <div class="mb-3">
-                    <div class="flex justify-between items-center mb-1"><label class="text-xs font-bold text-gray-600">Extras / Viáticos</label><button id="add-extra-btn" class="text-[10px] bg-blue-200 px-2 py-1 rounded font-bold">+ Agregar</button></div>
-                    <div id="extras-container" class="space-y-2"></div>
-                </div>
-                <div class="flex justify-between items-center bg-white p-2 rounded border border-gray-300">
-                    <label class="text-xs font-bold text-gray-700">Margen Materiales %</label>
-                    <input type="number" id="margen-ganancia" class="input-mobile w-16 text-center font-bold text-green-600 border-b" value="30">
-                </div>
-            </div>
-
-            <div class="bg-[#212B3B] p-4 rounded-xl shadow-lg border border-gray-700 text-white mb-2">
-                <div class="flex justify-between items-center mb-3 border-b border-gray-700 pb-1">
-                    <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Desglose Financiero (Privado)</h3>
-                </div>
-                <div class="grid grid-cols-2 gap-3" id="financial-numbers-container">
-                    <div class="bg-gray-800 p-2 rounded border border-gray-600"><p class="text-[9px] text-gray-300 uppercase font-bold">💰 Cobrar a Cliente</p><p id="live-total-cobrar" class="text-base font-mono font-bold">$ 0</p></div>
-                    <div class="bg-gray-800 p-2 rounded border border-gray-600"><p class="text-[9px] text-gray-300 uppercase font-bold">🛒 Pagar Proveedores</p><p id="live-pago-proveedores" class="text-base font-mono font-bold">$ 0</p></div>
-                    <div class="bg-gray-800 p-2 rounded border border-gray-600"><p class="text-[9px] text-gray-300 uppercase font-bold">🏛️ Pago IVA</p><p id="live-pago-iva" class="text-base font-mono font-bold text-yellow-400">$ 0</p></div>
-                    <div class="bg-green-900/50 p-2 rounded border border-green-500"><p class="text-[9px] text-green-300 uppercase font-bold">💵 Tu Utilidad Libre</p><p id="live-utilidad" class="text-lg font-mono font-bold text-green-400">$ 0</p></div>
-                </div>
-            </div>
+        <div class="bg-gray-100 p-4 rounded mb-4">
+            <h3 class="font-bold mb-2">Simulación Financiera</h3>
+            <p>Venta Neta Sugerida: <span id="sim-venta" class="font-bold text-green-600">$0</span></p>
+            <p>Total a Cobrar (con IVA): <span id="sim-total" class="font-bold text-blue-600">$0</span></p>
         </div>
-        
-        <div class="h-24"></div>
-        <div class="fixed bottom-[60px] left-0 right-0 p-4 z-40 bg-gradient-to-t from-white via-white to-transparent">
-            <button id="generate-quote-btn" class="w-full bg-[#4981F3] text-white font-bold py-3.5 rounded-xl shadow-lg text-lg flex items-center justify-center gap-2">Generar PDF Cotización <i class="fas fa-file-pdf"></i></button>
-        </div>
+        <button id="generar-cot" class="w-full bg-indigo-600 text-white font-bold py-3 rounded">Generar Cotización PDF</button>
     </div>
 
-    <div id="view-history" class="view-section max-w-4xl mx-auto bg-white p-4 rounded-xl shadow-lg no-print min-h-screen hidden">
-        <div class="flex justify-between items-center mb-4 border-b pb-2">
-            <h2 class="text-xl font-bold text-gray-900"><i class="fas fa-cloud text-blue-500 mr-2"></i>Historial Cloud</h2>
-            <button onclick="loadHistoryFromCloud()" class="text-xs bg-gray-100 px-3 py-1 rounded hover:bg-gray-200"><i class="fas fa-sync-alt"></i> Actualizar</button>
-        </div>
-        <div id="history-list" class="space-y-3 pb-20 text-sm">
-            <div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><p>Cargando desde Firebase...</p></div>
-        </div>
-    </div>
-
-    <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around z-50 no-print pb-safe">
-        <div class="bottom-nav-item active cursor-pointer" onclick="switchTab('calculator')"><i class="fas fa-calculator text-xl mb-1 block"></i><span class="text-[10px] font-bold uppercase">Cotizar</span></div>
-        <div class="bottom-nav-item cursor-pointer" onclick="switchTab('history')"><i class="fas fa-cloud text-xl mb-1 block"></i><span class="text-[10px] font-bold uppercase">La Nube</span></div>
-    </div>
-
-    <!-- VISTA PDF -->
-    <div id="quote-section" class="max-w-4xl mx-auto bg-white p-8 shadow-2xl printable-section hidden min-h-screen">
-        <header class="flex justify-between items-start pb-4 border-b border-gray-200 mb-6">
-            <div class="flex flex-row items-center font-montserrat gap-3">
-                <div class="relative w-[50px] h-[50px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[8px] gap-[4px]">
-                    <div class="h-[6px] w-[30px] bg-[#F1F6FF] rounded-full"></div>
-                    <div class="h-[6px] w-[24px] bg-[#E4EEFF] rounded-full"></div>
-                    <div class="h-[6px] w-[18px] bg-[#D2E3FF] rounded-full"></div>
+    <!-- PDF SECTION -->
+    <div id="pdf-section" class="max-w-4xl mx-auto bg-white p-10 shadow-2xl printable-section hidden">
+        <header class="flex justify-between items-start pb-4 border-b-2 border-[#212B3B] mb-6">
+            <div class="flex flex-row items-center font-montserrat gap-4">
+                <div class="relative w-[70px] h-[70px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[12px] gap-[5px]">
+                    <div class="h-[8px] w-[45px] bg-[#F1F6FF] rounded-full"></div>
+                    <div class="h-[8px] w-[35px] bg-[#E4EEFF] rounded-full"></div>
+                    <div class="h-[8px] w-[25px] bg-[#D2E3FF] rounded-full"></div>
                 </div>
-                <div class="flex flex-col items-start leading-none mt-1">
-                    <span class="text-[#212B3B] font-[900] text-[22px] tracking-[-0.01em]">EASYCOOL</span>
-                    <span class="text-[#9FA5B1] font-[500] text-[11px] tracking-[0.01em]">Climatización</span>
+                <div class="flex flex-col">
+                    <h1 class="text-[#212B3B] font-[900] text-[24px] leading-none mb-1">EASYCOOL</h1>
+                    <p class="text-[#9FA5B1] font-[500] text-[12px] leading-none">Climatización</p>
                 </div>
             </div>
-            <div class="text-right text-[10px] text-gray-500 leading-snug">
-                <h1 class="text-sm font-bold text-gray-800">COTIZACIÓN COMERCIAL</h1>
-                <p>RUT: 77.448.234-2 | Providencia, Stgo</p>
-                <p>ventas@easycoolclimatizacion.com</p>
-                <p>+569 5777 6174</p>
+            <div class="text-right text-[#212B3B]">
+                <h1 class="text-sm font-bold mb-1">EasyCool Climatización</h1>
+                <p class="text-xs">RUT: 77.448.234-2</p>
+                <p class="text-xs">ventas@easycoolclimatizacion.com</p>
+                <p class="text-xs">+569 5777 6174</p>
             </div>
         </header>
-        
-        <div class="bg-gray-50 p-4 rounded-lg mb-6 flex justify-between border border-gray-200">
-            <div class="w-2/3">
-                <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">CLIENTE</p>
-                <p class="text-base font-bold text-gray-900" id="client-name" contenteditable="true"></p>
-                <p class="text-xs text-gray-600" id="client-rut" contenteditable="true"></p>
-                <p class="text-xs text-gray-600" id="client-address" contenteditable="true"></p>
-            </div>
-            <div class="w-1/3 text-right">
-                <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">DETALLES</p>
-                <p class="text-sm font-bold text-[#4981F3]" id="quote-number" contenteditable="true"></p>
-                <p class="text-xs text-gray-600" id="current-date" contenteditable="true"></p>
-            </div>
+
+        <h2 class="text-xl font-bold uppercase mb-4 text-center">Cotización de Servicios</h2>
+        <div class="bg-gray-50 p-4 rounded mb-6 border">
+            <p class="text-sm"><strong>Cliente:</strong> <span id="pdf-cliente"></span></p>
+            <p class="text-sm"><strong>RUT:</strong> <span id="pdf-rut"></span></p>
+            <p class="text-sm"><strong>Dirección:</strong> <span id="pdf-dir"></span></p>
         </div>
 
-        <table class="w-full text-left border-collapse" id="items-table">
-            <thead>
-                <tr class="border-b-2 border-gray-800 text-xs font-bold text-gray-600 uppercase">
-                    <th class="py-2 pl-2">Descripción del Servicio / Producto</th>
-                    <th class="py-2 pr-2 text-right w-32">Total Neto</th>
-                </tr>
-            </thead>
-            <tbody class="text-sm text-gray-800"></tbody>
+        <table class="w-full text-left border-collapse mb-6">
+            <tr class="bg-gray-200"><th class="p-2">Descripción</th><th class="p-2 text-right">Total Neto</th></tr>
+            <tr><td class="p-2 border-b">Suministro e Instalación de Equipo Climatización</td><td class="p-2 border-b text-right font-bold" id="pdf-neto"></td></tr>
         </table>
-
-        <div class="flex justify-end pt-4 mt-4 border-t border-gray-200">
-            <div class="w-1/2 md:w-1/3 space-y-1 text-right">
-                <div class="flex justify-between text-xs text-gray-500"><span>Subtotal Neto:</span><span id="subtotal" contenteditable="true"></span></div>
-                <div class="flex justify-between text-xs text-gray-500"><span>IVA (19%):</span><span id="iva" contenteditable="true"></span></div>
-                <div class="flex justify-between items-center text-lg font-bold text-[#212B3B] mt-2 pt-2 border-t-2 border-gray-800">
-                    <span>TOTAL:</span><span id="total" contenteditable="true"></span>
-                </div>
-            </div>
+        
+        <div class="text-right space-y-1">
+            <p class="text-sm">Subtotal Neto: <span id="pdf-sub" class="font-bold"></span></p>
+            <p class="text-sm">IVA (19%): <span id="pdf-iva" class="font-bold"></span></p>
+            <p class="text-lg font-bold text-blue-600 border-t pt-2 mt-2">TOTAL: <span id="pdf-total"></span></p>
         </div>
         
-        <div class="mt-8 pt-4 border-t border-gray-200 text-[10px] text-gray-500">
-            <p class="font-bold text-gray-700 mb-1 uppercase">Condiciones Comerciales</p>
-            <ul class="list-disc pl-4 space-y-0.5" contenteditable="true">
-                <li>Validez: 10 días hábiles.</li>
-                <li>Pago: 50% anticipo al agendar, 50% al finalizar conforme.</li>
-                <li>Garantía: 1 año en la instalación. Equipos según póliza del fabricante.</li>
-            </ul>
+        <div class="mt-8 text-center no-print">
+            <button onclick="window.print()" class="bg-gray-800 text-white font-bold py-2 px-6 rounded">Imprimir</button>
         </div>
     </div>
 
-    <!-- ACCIONES PDF -->
-    <div id="print-action-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 hidden flex flex-col gap-2 no-print shadow-lg">
-        <button id="print-btn" class="w-full bg-[#212B3B] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2"><i class="fas fa-file-pdf"></i> Imprimir / Guardar PDF</button>
-        <button id="back-to-edit-btn" class="text-gray-400 text-xs font-bold py-2 uppercase">Volver a Editar</button>
-    </div>
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y", authDomain: "easycool-cloud.firebaseapp.com", projectId: "easycool-cloud", storageBucket: "easycool-cloud.firebasestorage.app", messagingSenderId: "1088663353920", appId: "1:1088663353920:web:221585b4896c037dfbfda5" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    firebase.auth().signInAnonymously().then(()=> document.getElementById('fb-status').innerText = '✅ Nube OK').catch(()=> document.getElementById('fb-status').innerText = '❌ Error Nube');
 
-    <!-- MODAL PRECIOS -->
-    <div id="price-editor-modal" class="fixed inset-0 z-50 flex items-end justify-center bg-black bg-opacity-50 hidden no-print">
-        <div class="bg-white w-full rounded-t-2xl p-6 h-[70vh] flex flex-col">
-            <div class="flex justify-between border-b pb-2 mb-4"><h3 class="font-bold">Ajustes & Costos</h3><button id="close-modal-btn" class="text-xl">&times;</button></div>
-            <div class="overflow-y-auto flex-1">
-                <h4 class="text-[10px] font-bold text-gray-400 uppercase mb-2">Costos Materiales (Base)</h4>
-                <div class="grid grid-cols-2 gap-2 mb-4">
-                    <div><label class="text-[10px]">Soporte</label><input type="number" id="modal-costo-soporte" class="border w-full text-xs p-1 rounded"></div>
-                    <div><label class="text-[10px]">C. 100</label><input type="number" id="modal-costo-canaleta-1" class="border w-full text-xs p-1 rounded"></div>
-                    <div><label class="text-[10px]">C. 20</label><input type="number" id="modal-costo-canaleta-2" class="border w-full text-xs p-1 rounded"></div>
-                    <div><label class="text-[10px]">Cordón</label><input type="number" id="modal-costo-cordon" class="border w-full text-xs p-1 rounded"></div>
-                    <div><label class="text-[10px]">Bomba</label><input type="number" id="modal-costo-bomba" class="border w-full text-xs p-1 rounded"></div>
-                    <div><label class="text-[10px]">Tubería</label><input type="number" id="modal-costo-tuberia" class="border w-full text-xs p-1 rounded"></div>
-                </div>
-                <h4 class="text-[10px] font-bold text-gray-400 uppercase mb-2 border-t pt-2">Equipos Guardados</h4>
-                <div id="equipment-price-editor" class="space-y-1 mb-4 text-xs"></div>
-                <div class="bg-gray-50 p-2 rounded border mb-4">
-                    <p class="text-[10px] font-bold mb-1">Nuevo Equipo</p>
-                    <input id="new-eq-name" type="text" placeholder="Nombre" class="w-full p-1 border rounded text-xs mb-1">
-                    <div class="flex gap-1"><input id="new-eq-price" type="number" placeholder="Costo Neto" class="w-full p-1 border rounded text-xs"><button id="add-new-eq-btn" class="bg-blue-600 text-white px-3 rounded">+</button></div>
-                </div>
-            </div>
-            <button id="save-prices-btn" class="w-full bg-[#212B3B] text-white py-3 rounded-lg font-bold mt-2">Guardar Cambios</button>
-        </div>
-    </div>
+    function calc() {
+        const costo = parseFloat(document.getElementById('cot-costo-eq').value) || 0;
+        const margen = parseFloat(document.getElementById('cot-margen').value) || 0;
+        const neto = costo * (1 + (margen/100));
+        const total = neto * 1.19;
+        document.getElementById('sim-venta').innerText = "$" + Math.round(neto).toLocaleString('es-CL');
+        document.getElementById('sim-total').innerText = "$" + Math.round(total).toLocaleString('es-CL');
+        return { neto: Math.round(neto), total: Math.round(total), iva: Math.round(neto*0.19) };
+    }
 
-    <!-- SCRIPT FIREBASE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    document.getElementById('generar-cot').addEventListener('click', async () => {
+        const c = document.getElementById('cot-cliente').value;
+        const r = document.getElementById('cot-rut').value;
+        const d = document.getElementById('cot-dir').value;
+        const vals = calc();
+        
+        document.getElementById('pdf-cliente').innerText = c;
+        document.getElementById('pdf-rut').innerText = r;
+        document.getElementById('pdf-dir').innerText = d;
+        document.getElementById('pdf-neto').innerText = "$" + vals.neto.toLocaleString('es-CL');
+        document.getElementById('pdf-sub').innerText = "$" + vals.neto.toLocaleString('es-CL');
+        document.getElementById('pdf-iva').innerText = "$" + vals.iva.toLocaleString('es-CL');
+        document.getElementById('pdf-total').innerText = "$" + vals.total.toLocaleString('es-CL');
 
-        const firebaseConfig = { apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y", authDomain: "easycool-cloud.firebaseapp.com", projectId: "easycool-cloud", storageBucket: "easycool-cloud.firebasestorage.app", messagingSenderId: "1088663353920", appId: "1:1088663353920:web:221585b4896c037dfbfda5" };
-        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
-        let isCloudConnected = false;
-
-        signInAnonymously(auth).then(() => {
-            isCloudConnected = true;
-            document.getElementById('cloud-status').className = "absolute top-2 right-4 text-[9px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200";
-            document.getElementById('cloud-status').innerText = "✅ Nube Activa";
-        }).catch(() => {
-            document.getElementById('cloud-status').innerText = "❌ Nube Offline";
-        });
-
-        let equiposDB = JSON.parse(localStorage.getItem('ec_db_equipos')) || { 'eq-9k': { nombre: 'Midea Xtreme Save 9.000', costo: 220000 }, 'eq-12k': { nombre: 'Midea Xtreme Save 12.000', costo: 240000 }, 'otro': { nombre: 'Otro (Ingresar manual)', costo: 0 } };
-        function saveLocalDB() { localStorage.setItem('ec_db_equipos', JSON.stringify(equiposDB)); }
-        function formatCurrency(val) { return "$ " + Math.round(val).toLocaleString('es-CL'); }
-
-        function calculateFinances() {
-            let totalEq = 0, totalQty = 0;
-            document.querySelectorAll('.equipo-item').forEach(row => {
-                const k = row.querySelector('.eq-sel').value; const q = parseFloat(row.querySelector('.eq-qty').value)||0; const c = (k==='otro') ? parseFloat(row.querySelector('.eq-cost').value)||0 : equiposDB[k].costo;
-                totalEq += q*c; totalQty += q;
+        try {
+            await db.collection('cotizaciones').add({
+                cliente: c, rut: r, tipo: 'Manager', total: vals.total, date: new Date().toISOString()
             });
-            const getVal = id => parseFloat(document.getElementById(id).value)||0;
-            const totalMat = (getVal('qty-soporte')*getVal('costo-soporte')) + (getVal('qty-canaleta-1')*getVal('costo-canaleta-1')) + (getVal('qty-canaleta-2')*getVal('costo-canaleta-2')) + (getVal('qty-cordon')*getVal('costo-cordon'));
-            const extraBomba = getVal('qty-bomba')*getVal('costo-bomba'), extraTuberia = getVal('qty-tuberia')*getVal('costo-tuberia');
-            const margen = getVal('margen-ganancia')/100;
-            const netoVenta = (totalEq + totalMat + extraBomba + extraTuberia) * (1 + margen);
-            const totalMO = getVal('costo-mano-obra') * totalQty;
-            let extraCosto = 0; document.querySelectorAll('.extra-cost').forEach(i => extraCosto += parseFloat(i.value)||0);
-            const netoTotal = netoVenta + totalMO + extraCosto;
-            const iva = netoTotal * 0.19; const cobrar = netoTotal + iva;
-            const costoReal = totalEq + totalMat + extraBomba + extraTuberia + extraCosto;
-            const ivaCompra = costoReal * 0.19; const utilidad = netoTotal - costoReal;
+        } catch(e) {}
 
-            document.getElementById('live-total-cobrar').innerText = formatCurrency(cobrar); document.getElementById('live-pago-proveedores').innerText = formatCurrency(costoReal * 1.19);
-            document.getElementById('live-pago-iva').innerText = formatCurrency(iva - ivaCompra); document.getElementById('live-utilidad').innerText = formatCurrency(utilidad);
-            return { netoTotal, iva, cobrar, extraBomba, extraTuberia, totalMO };
-        }
-
-        function addRow() {
-            const div = document.createElement('div'); div.className = 'equipo-item flex gap-2 items-center bg-gray-50 p-2 rounded border border-gray-200';
-            div.innerHTML = `<select class="eq-sel border rounded p-1.5 text-xs flex-1 bg-white outline-none">${Object.keys(equiposDB).map(k=>`<option value="${k}">${equiposDB[k].nombre}</option>`).join('')}</select><input type="number" class="eq-qty border rounded p-1.5 text-xs w-12 text-center bg-white outline-none" value="1"><input type="number" class="eq-cost border rounded p-1.5 text-xs flex-1 bg-white hidden outline-none" placeholder="Costo"><button class="rm-btn text-red-400 px-2">&times;</button>`;
-            document.getElementById('equipos-container').appendChild(div);
-            const sel = div.querySelector('.eq-sel'), cost = div.querySelector('.eq-cost');
-            sel.onchange = () => { cost.classList.toggle('hidden', sel.value !== 'otro'); if(equiposDB[sel.value]) cost.value = equiposDB[sel.value].costo; calculateFinances(); };
-            cost.oninput = calculateFinances; div.querySelector('.eq-qty').oninput = calculateFinances; div.querySelector('.rm-btn').onclick = () => { div.remove(); calculateFinances(); };
-            sel.value = Object.keys(equiposDB)[0]; sel.onchange();
-        }
-
-        document.getElementById('add-equipo-btn').onclick = addRow;
-        document.getElementById('add-extra-btn').onclick = () => {
-            const div = document.createElement('div'); div.className = 'flex gap-2 mb-1';
-            div.innerHTML = `<input type="text" class="extra-desc border rounded p-1 text-xs flex-1" placeholder="Descripción"><input type="number" class="extra-cost border rounded p-1 text-xs w-20 text-right" value="0"><button class="rm-ex text-red-400 px-1">&times;</button>`;
-            document.getElementById('extras-container').appendChild(div);
-            div.querySelectorAll('input').forEach(i => i.oninput = calculateFinances); div.querySelector('.rm-ex').onclick = () => { div.remove(); calculateFinances(); };
-        };
-        document.querySelectorAll('.material-input, #costo-mano-obra, #margen-ganancia').forEach(el => el.oninput = calculateFinances);
-
-        document.getElementById('generate-quote-btn').onclick = async () => {
-            const name = document.getElementById('calc-client-name').value || 'Cliente'; const folio = document.getElementById('calc-folio-number').value || '100'; const fin = calculateFinances();
-            
-            document.getElementById('client-name').innerText = name; document.getElementById('client-rut').innerText = document.getElementById('calc-client-rut').value;
-            document.getElementById('client-address').innerText = document.getElementById('calc-client-address').value; document.getElementById('quote-number').innerText = 'Cotización Nº ' + folio;
-            document.getElementById('current-date').innerText = new Date().toLocaleDateString('es-CL');
-            
-            let tbody = '';
-            document.querySelectorAll('.equipo-item').forEach(row => { const k = row.querySelector('.eq-sel').value; const q = row.querySelector('.eq-qty').value; const nom = k === 'otro' ? 'Equipo Personalizado' : equiposDB[k].nombre; tbody += `<tr class="border-b border-gray-100"><td class="py-2">Suministro: ${q}x ${nom}<br><span class="text-[10px] text-gray-500">+ Kit de Materiales Básicos</span></td><td class="py-2 text-right font-medium">Incluido</td></tr>`; });
-            
-            if(parseFloat(document.getElementById('qty-bomba').value)>0) tbody += `<tr class="border-b border-gray-100"><td class="py-2">Adicional: Bomba de Condensado</td><td class="py-2 text-right font-medium">Incluido</td></tr>`;
-            if(parseFloat(document.getElementById('qty-tuberia').value)>0) tbody += `<tr class="border-b border-gray-100"><td class="py-2">Adicional: Metros Tubería Extra</td><td class="py-2 text-right font-medium">Incluido</td></tr>`;
-            
-            document.querySelectorAll('.extra-desc').forEach((el, i) => { const cost = document.querySelectorAll('.extra-cost')[i].value; if(el.value) tbody += `<tr class="border-b border-gray-100"><td class="py-2">${el.value}</td><td class="py-2 text-right font-medium">${formatCurrency(cost)}</td></tr>`; });
-            
-            tbody += `<tr class="border-b border-gray-100"><td class="py-2">Servicio de Instalación y Puesta en Marcha</td><td class="py-2 text-right font-medium">${formatCurrency(fin.netoTotal)}</td></tr>`;
-            
-            document.querySelector('#items-table tbody').innerHTML = tbody; document.getElementById('subtotal').innerText = formatCurrency(fin.netoTotal);
-            document.getElementById('iva').innerText = formatCurrency(fin.iva); document.getElementById('total').innerText = formatCurrency(fin.cobrar);
-            
-            if (isCloudConnected) { try { await addDoc(collection(db, "cotizaciones"), { cliente: name, folio: folio, total: formatCurrency(fin.cobrar), fecha: new Date().toISOString(), timestamp: new Date() }); document.getElementById('calc-folio-number').value = parseInt(folio) + 1; } catch(e) {} }
-
-            document.getElementById('view-calculator').classList.add('hidden'); document.getElementById('bottom-nav').classList.add('hidden');
-            document.getElementById('quote-section').classList.remove('hidden'); document.getElementById('print-action-bar').classList.remove('hidden'); window.scrollTo(0,0);
-        };
-
-        window.loadHistoryFromCloud = async () => {
-            const list = document.getElementById('history-list'); if(!isCloudConnected) { list.innerHTML = `<div class="text-center text-red-500 mt-10">Conexión a la nube no disponible.</div>`; return; }
-            list.innerHTML = `<div class="text-center text-blue-500 mt-10"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><p>Sincronizando...</p></div>`;
-            try {
-                const q = query(collection(db, "cotizaciones"), orderBy("timestamp", "desc"), limit(20)); const snapshot = await getDocs(q);
-                if(snapshot.empty) { list.innerHTML = `<div class="text-center text-gray-400 mt-10">No hay cotizaciones en la nube.</div>`; return; }
-                let html = ''; snapshot.forEach(doc => { const data = doc.data(); const d = new Date(data.fecha).toLocaleDateString('es-CL'); html += `<div class="bg-gray-50 p-3 rounded-lg border flex justify-between items-center"><div class="leading-tight"><p class="font-bold text-gray-800">${data.cliente}</p><p class="text-[10px] text-gray-500">Folio: ${data.folio} | ${d}</p></div><div class="font-bold text-blue-600">${data.total}</div></div>`; });
-                list.innerHTML = html;
-            } catch(e) { list.innerHTML = `<div class="text-center text-red-500 mt-10">Error al leer la nube.</div>`; }
-        };
-
-        window.switchTab = (tab) => {
-            document.getElementById('view-calculator').classList.toggle('hidden', tab !== 'calculator'); document.getElementById('view-history').classList.toggle('hidden', tab !== 'history');
-            document.querySelectorAll('.bottom-nav-item')[0].classList.toggle('active', tab === 'calculator'); document.querySelectorAll('.bottom-nav-item')[1].classList.toggle('active', tab === 'history');
-            if(tab === 'history') loadHistoryFromCloud();
-        };
-
-        document.getElementById('back-to-edit-btn').onclick = () => { document.getElementById('quote-section').classList.add('hidden'); document.getElementById('print-action-bar').classList.add('hidden'); document.getElementById('view-calculator').classList.remove('hidden'); document.getElementById('bottom-nav').classList.remove('hidden'); };
-        document.getElementById('print-btn').onclick = () => { const name = document.getElementById('client-name').innerText.trim() || 'Cliente'; document.title = `Cotización ${document.getElementById('quote-number').innerText} - ${name}`; window.print(); setTimeout(() => document.title = 'EasyCool Cotizador Cloud', 1000); };
-        
-        document.getElementById('open-price-editor-btn').onclick = () => document.getElementById('price-editor-modal').classList.remove('hidden');
-        document.getElementById('close-modal-btn').onclick = () => document.getElementById('price-editor-modal').classList.add('hidden');
-        document.getElementById('save-prices-btn').onclick = () => { document.getElementById('price-editor-modal').classList.add('hidden'); calculateFinances(); };
-        
-        addRow();
-    </script>
+        document.getElementById('pdf-section').style.display = 'block';
+    });
+</script>
 </body>
 </html>
