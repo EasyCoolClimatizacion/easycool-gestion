@@ -1,16 +1,21 @@
 {
-  "name": "EasyCool Operations",
+  "name": "EasyCool App Cloud",
   "short_name": "EasyCool",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4981F3",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2916/2916315.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/1830/1830182.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1830/1830182.png",
       "sizes": "512x512",
       "type": "image/png"
     }
   ]
 }
-
