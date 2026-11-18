@@ -4,204 +4,278 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Certificado de Instalación - EasyCool</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1830/1830182.png">
+    <meta name="theme-color" content="#4981F3">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { 'montserrat': ['Montserrat', 'sans-serif'], 'inter': ['Inter', 'sans-serif'] } } } };
+    </script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; padding-bottom: 80px; -webkit-tap-highlight-color: transparent;}
-        .font-montserrat { font-family: 'Montserrat', sans-serif; }
-        [contenteditable="true"]:focus { outline: 2px solid #4981F3; background-color: #F1F6FF; }
-        canvas.signature-pad { cursor: crosshair; touch-action: none; width: 100%; height: 100%; display: block; }
-        
-        /* FIX DE COLOR PARA PDF */
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; padding-bottom: 80px; }
+        .spinner { border: 2px solid #f3f3f3; border-top: 2px solid #ffffff; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; margin-right: 8px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        canvas.signature-pad { touch-action: none; cursor: crosshair; }
+        .bottom-nav-item { flex: 1; text-align: center; padding: 10px; color: #9ca3af; transition: all 0.2s; cursor: pointer; }
+        .bottom-nav-item.active { color: #3b82f6; border-top: 3px solid #3b82f6; background: #eff6ff; }
         @media print {
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body { background: white; margin: 0; padding: 0; font-size: 11px; }
+            @page { size: letter; margin: 0.5cm; }
+            body { background-color: #ffffff; margin: 0; padding: 0; font-size: 11px; }
             .no-print { display: none !important; }
-            .printable-section { width: 100% !important; max-width: 100% !important; padding: 10mm !important; box-shadow: none !important; }
-            .page-break-inside-avoid { page-break-inside: avoid; }
+            .printable-section { max-width: 100% !important; width: 100% !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; display: block !important;}
         }
     </style>
 </head>
-<body class="sm:p-8">
+<body class="p-4 sm:p-8">
 
-    <!-- FORMULARIO -->
-    <div id="form-section" class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-lg no-print">
-        <div class="flex justify-between items-center mb-6 border-b pb-4">
-            <div class="flex flex-row items-center justify-start font-montserrat gap-3">
-                <div class="relative w-[40px] h-[40px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[6px] gap-[3px] shadow-sm">
-                    <div class="h-[5px] w-[24px] bg-[#F1F6FF] rounded-full"></div>
-                    <div class="h-[5px] w-[19px] bg-[#E4EEFF] rounded-full"></div>
-                    <div class="h-[5px] w-[14px] bg-[#D2E3FF] rounded-full"></div>
-                </div>
-                <div class="flex flex-col items-start leading-none mt-1">
-                    <span class="text-[#212B3B] font-[900] text-[18px] tracking-[-0.01em]">EASYCOOL</span>
-                    <span class="text-[#9FA5B1] font-[500] text-[9px] tracking-[0.01em]">Climatización</span>
-                </div>
-            </div>
-            <div class="text-right">
-                <label class="text-[10px] font-bold text-gray-500 uppercase block">Folio Certificado</label>
-                <input type="text" id="cert-number" class="w-24 border border-gray-300 rounded p-1 text-center font-bold text-[#4981F3] outline-none" value="C-1001">
+    <div id="view-generator" class="view-section max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-xl mb-8 no-print border-t-4 border-blue-600">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Generar Certificado</h2>
+                <p class="text-xs text-green-600 font-bold mt-1" id="fb-status">Conectando a nube...</p>
             </div>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <input type="text" id="cert-client-name" placeholder="Nombre del Cliente" class="border p-2 rounded text-sm w-full outline-none focus:border-blue-500">
-            <input type="text" id="cert-client-rut" placeholder="RUT del Cliente" class="border p-2 rounded text-sm w-full outline-none focus:border-blue-500">
-            <input type="text" id="cert-address" placeholder="Dirección de Instalación" class="border p-2 rounded text-sm w-full md:col-span-2 outline-none focus:border-blue-500">
-            <input type="text" id="cert-equipment" placeholder="Equipos Instalados (Ej: 2x Midea 12K)" class="border p-2 rounded text-sm w-full md:col-span-2 outline-none focus:border-blue-500">
-        </div>
-
-        <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
-            <h3 class="text-xs font-bold text-[#212B3B] mb-2 uppercase">Checklist de Conformidad</h3>
-            <div class="grid grid-cols-1 gap-2 text-sm text-gray-700">
-                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 text-[#4981F3] rounded" checked> Prueba de presiones e inyección térmica correcta.</label>
-                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 text-[#4981F3] rounded" checked> Prueba de hermeticidad y drenaje sin fugas.</label>
-                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 text-[#4981F3] rounded" checked> Explicación de uso de control remoto y filtros al cliente.</label>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b pb-6 mb-6">
+            <input type="text" id="cert-client-name" placeholder="Nombre del Cliente" class="save-input block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500 border">
+            <input type="text" id="cert-client-rut" placeholder="RUT del Cliente" class="save-input block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500 border">
+            <input type="text" id="cert-client-address" placeholder="Dirección del Cliente" class="save-input md:col-span-2 block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm border">
+            
+            <div class="relative">
+                <label class="absolute top-1 left-2 text-[10px] text-blue-600 font-bold">Folio</label>
+                <input type="text" id="cert-number" class="save-input block w-full rounded-lg border border-gray-300 bg-white p-2.5 pt-5 text-sm font-mono font-bold text-gray-800">
+            </div>
+            <div class="relative">
+                <label class="absolute top-1 left-2 text-[10px] text-gray-500">Fecha Instalación</label>
+                <input type="date" id="cert-install-date" class="save-input block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 pt-5 text-sm text-gray-800">
+            </div>
+            
+            <div class="md:col-span-2">
+                <label class="block text-xs font-medium text-gray-500 mb-1">Suministro de Equipo</label>
+                <select id="cert-supply" class="save-input block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm">
+                    <option value="Suministrado por EasyCool Climatización">Suministrado por EasyCool Climatización</option>
+                    <option value="Suministrado por el Cliente">Suministrado por el Cliente</option>
+                </select>
             </div>
         </div>
 
-        <button onclick="openSignatureModal()" class="w-full bg-[#212B3B] text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 hover:bg-black transition-colors mb-4">
-            <i class="fas fa-signature"></i> Tocar para Firmar Conformidad
-        </button>
-    </div>
+        <div class="border-b pb-4 mb-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4"><i class="fas fa-server text-blue-600"></i> Equipos Instalados</h3>
+            <div id="equipos-container" class="space-y-6"></div>
+            <button id="add-equipo-btn" class="mt-4 w-full py-3 px-4 rounded-lg border-2 border-dashed border-blue-300 text-blue-700 font-bold hover:bg-blue-50 transition-colors"><i class="fas fa-plus"></i> Añadir equipo</button>
+        </div>
 
-    <!-- MODAL FIRMA -->
-    <div id="signature-modal" class="fixed inset-0 z-[100] hidden bg-white flex flex-col no-print">
-        <div class="bg-[#212B3B] text-white p-4 flex justify-between items-center shadow-md">
-            <h2 class="font-bold">Firma del Cliente</h2>
-            <button onclick="closeSignatureModal()" class="text-white bg-gray-700 px-3 py-1 rounded">Cancelar</button>
-        </div>
-        <div class="flex-1 bg-gray-100 relative p-4 flex flex-col">
-            <p class="text-xs text-center text-gray-500 mb-2">Por favor firme dentro del recuadro blanco usando su dedo.</p>
-            <div class="flex-1 bg-white border-2 border-dashed border-gray-400 rounded-xl relative shadow-inner overflow-hidden" id="canvas-container">
-                <canvas id="sig-canvas" class="signature-pad"></canvas>
-            </div>
-            <button onclick="clearCanvas('sig-canvas')" class="mt-4 text-sm text-red-500 font-bold uppercase tracking-wider text-center w-full">Borrar y firmar de nuevo</button>
-        </div>
-        <div class="p-4 bg-white border-t">
-            <button onclick="saveSignatureAndGenerate()" class="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg text-lg">Guardar Firma y Generar PDF</button>
-        </div>
-    </div>
-
-    <!-- VISTA PDF -->
-    <div id="print-section" class="max-w-[21.5cm] mx-auto bg-white p-8 shadow-2xl printable-section hidden min-h-[27.9cm] flex flex-col justify-between">
         <div>
-            <header class="flex justify-between items-start pb-6 border-b border-gray-200 mb-6">
-                <div class="flex flex-row items-center font-montserrat gap-3">
-                    <div class="relative w-[50px] h-[50px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[8px] gap-[4px]">
-                        <div class="h-[6px] w-[30px] bg-[#F1F6FF] rounded-full"></div>
-                        <div class="h-[6px] w-[24px] bg-[#E4EEFF] rounded-full"></div>
-                        <div class="h-[6px] w-[18px] bg-[#D2E3FF] rounded-full"></div>
-                    </div>
-                    <div class="flex flex-col items-start leading-none mt-1">
-                        <span class="text-[#212B3B] font-[900] text-[22px] tracking-[-0.01em]">EASYCOOL</span>
-                        <span class="text-[#9FA5B1] font-[500] text-[11px] tracking-[0.01em]">Climatización</span>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Checklist y Notas</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3 mb-4">
+                <label class="flex items-center cursor-pointer"><input id="cert-check-drain" type="checkbox" class="w-5 h-5 text-blue-600 rounded border-gray-300"><span class="ml-3 text-sm text-gray-700 font-medium">Prueba de Drenaje OK</span></label>
+                <label class="flex items-center cursor-pointer"><input id="cert-check-briefing" type="checkbox" class="w-5 h-5 text-blue-600 rounded border-gray-300"><span class="ml-3 text-sm text-gray-700 font-medium">Instrucción al cliente OK</span></label>
+                <label class="flex items-center cursor-pointer"><input id="cert-check-cleaning" type="checkbox" class="w-5 h-5 text-blue-600 rounded border-gray-300"><span class="ml-3 text-sm text-gray-700 font-medium">Limpieza del lugar OK</span></label>
+            </div>
+            <textarea id="cert-notes" rows="3" class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm" placeholder="Detalles..."></textarea>
+        </div>
+
+        <div class="mt-8 border-t pt-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Firmas de Aceptación</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <p class="text-xs font-bold text-blue-800 uppercase mb-2">Firma Técnico</p>
+                    <div class="border-2 border-dashed border-blue-300 rounded-xl bg-blue-50 relative overflow-hidden">
+                        <canvas id="signature-pad-tech" class="signature-pad w-full h-40 bg-transparent"></canvas>
+                        <button type="button" id="clear-signature-tech" class="absolute bottom-2 right-2 text-xs bg-white text-red-600 px-2 py-1 rounded border font-bold">Borrar</button>
                     </div>
                 </div>
-                <div class="text-right text-[10px] text-gray-500">
-                    <h1 class="text-sm font-bold text-gray-900 uppercase">Certificado Puesta en Marcha</h1>
-                    <p id="print-folio" class="font-bold text-[#4981F3] mt-1"></p>
-                    <p id="print-date"></p>
+                <div>
+                    <p class="text-xs font-bold text-gray-600 uppercase mb-2">Firma Cliente</p>
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 relative overflow-hidden">
+                        <canvas id="signature-pad-client" class="signature-pad w-full h-40 bg-transparent"></canvas>
+                        <button type="button" id="clear-signature-client" class="absolute bottom-2 right-2 text-xs bg-white text-red-600 px-2 py-1 rounded border font-bold">Borrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-10 mb-20">
+            <button id="generate-certificate-btn" class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center">
+                <span class="btn-text">Generar y Guardar PDF</span>
+                <span class="spinner" style="display: none;"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- VISTA PDF IMPRIMIBLE -->
+    <div id="printable-area" class="max-w-4xl mx-auto">
+        <div id="certificate-section" class="printable-section bg-white p-6 sm:p-10 rounded-lg" style="display:none;">
+            
+            <header class="flex justify-between items-start pb-4 border-b-2 border-[#212B3B] mb-6">
+                <div class="flex flex-row items-center font-montserrat gap-4">
+                    <div class="relative w-[70px] h-[70px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[12px] gap-[5px]">
+                        <div class="h-[8px] w-[45px] bg-[#F1F6FF] rounded-full"></div>
+                        <div class="h-[8px] w-[35px] bg-[#E4EEFF] rounded-full"></div>
+                        <div class="h-[8px] w-[25px] bg-[#D2E3FF] rounded-full"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <h1 class="text-[#212B3B] font-[900] text-[24px] leading-none mb-1">EASYCOOL</h1>
+                        <p class="text-[#9FA5B1] font-[500] text-[12px] leading-none">Climatización</p>
+                    </div>
+                </div>
+                <div class="text-right text-[#212B3B]">
+                    <h1 class="text-sm font-bold mb-1">EasyCool Climatización</h1>
+                    <p class="text-xs">RUT: 77.448.234-2</p>
+                    <p class="text-xs">ventas@easycoolclimatizacion.com</p>
+                    <p class="text-xs">+569 5777 6174</p>
                 </div>
             </header>
 
-            <div class="bg-gray-50 p-4 rounded border border-gray-200 mb-6">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 border-b pb-1">Datos del Cliente e Instalación</p>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div><span class="text-gray-500 block text-[10px]">Nombre:</span><span id="print-client-name" class="font-bold text-gray-900" contenteditable="true"></span></div>
-                    <div><span class="text-gray-500 block text-[10px]">RUT:</span><span id="print-client-rut" class="text-gray-900" contenteditable="true"></span></div>
-                    <div class="col-span-2"><span class="text-gray-500 block text-[10px]">Dirección:</span><span id="print-client-address" class="text-gray-900" contenteditable="true"></span></div>
-                    <div class="col-span-2"><span class="text-gray-500 block text-[10px]">Equipos Instalados:</span><span id="print-equipment" class="font-medium text-[#4981F3]" contenteditable="true"></span></div>
-                </div>
+            <div class="text-center mb-6">
+                <h1 class="text-xl font-black text-gray-900 uppercase">Certificado Puesta en Marcha</h1>
+                <p class="text-sm text-gray-600">Folio: <strong id="print-cert-number" class="text-blue-800"></strong></p>
             </div>
 
-            <div class="mb-6 text-sm text-gray-700 text-justify leading-relaxed">
-                <p>Mediante el presente documento, el cliente declara recibir conforme la instalación de los equipos detallados anteriormente por parte del equipo técnico de <strong>EasyCool Climatización</strong>.</p><br>
-                <p>Se certifica que los equipos fueron probados en todas sus funciones, verificando correctas presiones de trabajo, salto térmico adecuado y drenaje fluido sin presentar filtraciones hacia el interior.</p>
-            </div>
-        </div>
+            <section class="mb-6 border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <h2 class="text-xs font-bold text-blue-800 uppercase mb-2 border-b border-gray-300 pb-1">Datos Cliente</h2>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                    <div><span class="text-gray-500">Cliente:</span> <span id="print-cert-client-name" class="font-bold"></span></div>
+                    <div><span class="text-gray-500">RUT:</span> <span id="print-cert-client-rut"></span></div>
+                    <div class="col-span-2"><span class="text-gray-500">Dirección:</span> <span id="print-cert-client-address"></span></div>
+                    <div><span class="text-gray-500">Fecha Inst.:</span> <span id="print-cert-install-date"></span></div>
+                    <div><span class="text-gray-500">Suministro:</span> <span id="print-cert-supply" class="font-medium"></span></div>
+                </div>
+            </section>
 
-        <div class="mt-8 pt-6 border-t border-gray-300 page-break-inside-avoid">
-            <div class="flex justify-center">
-                <div class="text-center w-64">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Recepción Conforme</p>
-                    <div class="h-32 bg-gray-50 border border-gray-200 rounded flex items-center justify-center mb-2">
-                        <img id="print-signature-img" src="" class="max-h-full max-w-full object-contain">
-                    </div>
-                    <div class="border-t border-gray-400 pt-1">
-                        <p id="print-sig-name" class="text-xs font-bold text-gray-900" contenteditable="true"></p>
-                        <p class="text-[10px] text-gray-500">Firma del Cliente</p>
+            <section class="mb-6"><div id="print-equipos-container" class="space-y-4"></div></section>
+
+            <section class="mb-8 grid grid-cols-2 gap-4">
+                <div><h2 class="text-xs font-bold text-gray-700 uppercase mb-2">Checklist</h2><div id="print-cert-checklist" class="text-xs space-y-1"></div></div>
+                <div class="bg-gray-50 p-2 rounded border border-gray-200"><h3 class="text-xs font-bold text-gray-800 mb-1">Notas:</h3><p id="print-cert-notes" class="text-[10px] text-gray-700 whitespace-pre-wrap"></p></div>
+            </section>
+
+            <section class="mt-8 pt-8 border-t-2 border-gray-100 flex justify-between text-center break-inside-avoid">
+                <div class="w-1/3 flex flex-col items-center">
+                    <div class="h-20 w-32 mb-1 flex items-end justify-center"><img id="print-signature-image-tech" class="max-h-full max-w-full object-contain" style="display:none;"></div>
+                    <div class="border-t border-gray-400 w-full pt-1">
+                        <p class="text-xs font-bold">José Guerrero</p>
+                        <p class="text-[9px] text-gray-500">RUT: 15.963.315-2</p>
                     </div>
                 </div>
-            </div>
+                <div class="w-1/3 flex flex-col items-center">
+                    <div class="h-20 w-32 mb-1 flex items-end justify-center"><img id="print-signature-image-client" class="max-h-full max-w-full object-contain" style="display:none;"></div>
+                    <div class="border-t border-gray-400 w-full pt-1">
+                        <p class="text-xs font-bold" id="print-cert-footer-cliente-name">Cliente</p>
+                        <p class="text-[9px] text-gray-500" id="print-cert-footer-cliente-rut"></p>
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
-
-    <!-- BOTONES -->
-    <div id="print-action-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 hidden flex flex-col gap-2 no-print shadow-lg">
-        <button onclick="window.print()" class="w-full bg-[#212B3B] text-white font-bold py-3 rounded-xl shadow flex items-center justify-center gap-2"><i class="fas fa-file-pdf"></i> Imprimir / Guardar PDF</button>
-        <button onclick="editForm()" class="text-gray-400 text-xs font-bold py-2 uppercase">Volver a Editar</button>
+    
+    <div class="max-w-4xl mx-auto text-center mt-6 mb-12 no-print">
+        <button onclick="window.print()" class="bg-gray-800 text-white font-bold py-3 px-8 rounded-full shadow-lg hidden" id="print-button">🖨️ Imprimir</button>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+<script>
+    // --- FIREBASE INIT ---
+    const firebaseConfig = { apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y", authDomain: "easycool-cloud.firebaseapp.com", projectId: "easycool-cloud", storageBucket: "easycool-cloud.firebasestorage.app", messagingSenderId: "1088663353920", appId: "1:1088663353920:web:221585b4896c037dfbfda5" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    firebase.auth().signInAnonymously().then(()=> document.getElementById('fb-status').innerText = '✅ Nube Conectada').catch(e => document.getElementById('fb-status').innerText = '❌ Error de Nube');
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDEdRinj3nsSy-xgkFAQBuABikw48vB92Y", authDomain: "easycool-cloud.firebaseapp.com", projectId: "easycool-cloud",
-            storageBucket: "easycool-cloud.firebasestorage.app", messagingSenderId: "1088663353920", appId: "1:1088663353920:web:221585b4896c037dfbfda5"
-        };
-        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
-        let cloudReady = false; signInAnonymously(auth).then(() => { cloudReady = true; }).catch(e => console.error(e));
-
+    // --- UTILS & CANVAS ---
+    function initSignaturePad(canvasId, clearBtnId) {
+        const canvas = document.getElementById(canvasId), ctx = canvas.getContext('2d'), clearBtn = document.getElementById(clearBtnId);
         let isDrawing = false;
-        const initPad = (id) => {
-            const c = document.getElementById(id); const container = c.parentElement;
-            c.width = container.offsetWidth; c.height = container.offsetHeight;
-            const ctx = c.getContext('2d'); ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#212B3B';
-            const pos = e => { const r = c.getBoundingClientRect(); const t = e.touches ? e.touches[0] : e; return { x: t.clientX - r.left, y: t.clientY - r.top }; };
-            const start = e => { e.preventDefault(); isDrawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-            const move = e => { if(!isDrawing) return; e.preventDefault(); const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
-            const end = () => { isDrawing = false; };
-            c.addEventListener('mousedown', start); c.addEventListener('mousemove', move); c.addEventListener('mouseup', end);
-            c.addEventListener('touchstart', start, {passive: false}); c.addEventListener('touchmove', move, {passive: false}); c.addEventListener('touchend', end);
-        };
+        function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+        window.addEventListener('resize', resize); resize();
+        const pos = (e) => { const rect = canvas.getBoundingClientRect(); const t = e.touches ? e.touches[0] : e; return { x: t.clientX - rect.left, y: t.clientY - rect.top }; };
+        canvas.addEventListener('mousedown', (e) => { isDrawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener('mousemove', (e) => { if(isDrawing){ const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } });
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, {passive:false});
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if(isDrawing){ const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } }, {passive:false});
+        canvas.addEventListener('touchend', () => isDrawing = false);
+        clearBtn.addEventListener('click', () => ctx.clearRect(0, 0, canvas.width, canvas.height));
+        return canvas;
+    }
+    const clientPad = initSignaturePad('signature-pad-client', 'clear-signature-client');
+    const techPad = initSignaturePad('signature-pad-tech', 'clear-signature-tech');
 
-        window.openSignatureModal = () => { document.getElementById('signature-modal').classList.remove('hidden'); setTimeout(() => initPad('sig-canvas'), 100); };
-        window.closeSignatureModal = () => document.getElementById('signature-modal').classList.add('hidden');
-        window.clearCanvas = (id) => { const c = document.getElementById(id); c.getContext('2d').clearRect(0,0,c.width,c.height); };
+    // --- DYNAMIC EQUIPOS ---
+    let eqCount = 0;
+    document.getElementById('add-equipo-btn').addEventListener('click', () => {
+        eqCount++;
+        const div = document.createElement('div');
+        div.className = 'equipo-item grid grid-cols-1 md:grid-cols-4 gap-2 bg-gray-50 p-4 border border-gray-200 rounded';
+        div.innerHTML = `
+            <input type="text" class="eq-loc border p-2 text-sm rounded w-full md:col-span-4" placeholder="Ubicación (Ej: Living)">
+            <input type="text" class="eq-ui border p-2 text-sm rounded w-full" placeholder="Marca UI">
+            <input type="text" class="eq-ue border p-2 text-sm rounded w-full" placeholder="Marca UE">
+            <input type="text" class="eq-gas border p-2 text-sm rounded w-full" placeholder="Gas">
+            <input type="text" class="eq-t border p-2 text-sm rounded w-full" placeholder="Delta T°">
+        `;
+        document.getElementById('equipos-container').appendChild(div);
+    });
+    document.getElementById('add-equipo-btn').click(); // Auto-add first
 
-        window.saveSignatureAndGenerate = async () => {
-            const canvas = document.getElementById('sig-canvas');
-            document.getElementById('print-signature-img').src = canvas.toDataURL('image/png');
-            
-            const name = document.getElementById('cert-client-name').value;
-            const folio = document.getElementById('cert-number').value;
-            
-            document.getElementById('print-client-name').innerText = name;
-            document.getElementById('print-sig-name').innerText = name;
-            document.getElementById('print-client-rut').innerText = document.getElementById('cert-client-rut').value;
-            document.getElementById('print-client-address').innerText = document.getElementById('cert-address').value;
-            document.getElementById('print-equipment').innerText = document.getElementById('cert-equipment').value;
-            document.getElementById('print-folio').innerText = "Nº " + folio;
-            document.getElementById('print-date').innerText = new Date().toLocaleDateString('es-CL');
+    // --- GENERATE & SAVE ---
+    document.getElementById('generate-certificate-btn').addEventListener('click', async () => {
+        const clientName = document.getElementById('cert-client-name').value;
+        const clientRut = document.getElementById('cert-client-rut').value;
+        const folio = document.getElementById('cert-number').value;
 
-            if(cloudReady && name) { try { await addDoc(collection(db, "certificados"), { cliente: name, folio: folio, fecha: new Date().toISOString(), equipos: document.getElementById('cert-equipment').value }); } catch(e) {} }
+        // Render PDF Data
+        document.getElementById('print-cert-client-name').innerText = clientName;
+        document.getElementById('print-cert-client-rut').innerText = clientRut;
+        document.getElementById('print-cert-client-address').innerText = document.getElementById('cert-client-address').value;
+        document.getElementById('print-cert-install-date').innerText = document.getElementById('cert-install-date').value;
+        document.getElementById('print-cert-supply').innerText = document.getElementById('cert-supply').value;
+        document.getElementById('print-cert-number').innerText = folio;
+        document.getElementById('print-cert-notes').innerText = document.getElementById('cert-notes').value;
+        document.getElementById('print-cert-footer-cliente-name').innerText = clientName || 'Cliente';
+        document.getElementById('print-cert-footer-cliente-rut').innerText = clientRut || '';
+        
+        // Checklist
+        let checkHtml = '';
+        if(document.getElementById('cert-check-drain').checked) checkHtml += '<div>✓ Prueba Drenaje</div>';
+        if(document.getElementById('cert-check-briefing').checked) checkHtml += '<div>✓ Instrucción Cliente</div>';
+        document.getElementById('print-cert-checklist').innerHTML = checkHtml;
 
-            document.getElementById('signature-modal').classList.add('hidden');
-            document.getElementById('form-section').classList.add('hidden');
-            document.getElementById('print-section').classList.remove('hidden');
-            document.getElementById('print-action-bar').classList.remove('hidden');
-            window.scrollTo(0,0);
-        };
+        // Equipos
+        let eqHtml = '';
+        const eqData = [];
+        document.querySelectorAll('.equipo-item').forEach((el, i) => {
+            const loc = el.querySelector('.eq-loc').value, ui = el.querySelector('.eq-ui').value, ue = el.querySelector('.eq-ue').value, gas = el.querySelector('.eq-gas').value, t = el.querySelector('.eq-t').value;
+            eqData.push({ loc, ui, ue, gas, t });
+            eqHtml += `<div class="bg-white border rounded p-2 text-[10px] mb-1"><strong>#${i+1} ${loc}</strong> - UI: ${ui} | UE: ${ue} | Gas: ${gas} | ΔT: ${t}</div>`;
+        });
+        document.getElementById('print-equipos-container').innerHTML = eqHtml;
 
-        window.editForm = () => {
-            document.getElementById('print-section').classList.add('hidden');
-            document.getElementById('print-action-bar').classList.add('hidden');
-            document.getElementById('form-section').classList.remove('hidden');
-        };
-    </script>
+        // Sigs
+        document.getElementById('print-signature-image-tech').src = techPad.toDataURL();
+        document.getElementById('print-signature-image-tech').style.display = 'block';
+        document.getElementById('print-signature-image-client').src = clientPad.toDataURL();
+        document.getElementById('print-signature-image-client').style.display = 'block';
+
+        // Firebase Save
+        try {
+            await db.collection('certificados').add({
+                folio: folio, clientName: clientName, clientRut: clientRut,
+                date: new Date().toISOString(), equipos: eqData, tech: 'José Guerrero'
+            });
+        } catch(e) { console.error("Error Saving", e); }
+
+        document.getElementById('certificate-section').style.display = 'block';
+        document.getElementById('print-button').style.display = 'inline-block';
+        document.getElementById('certificate-section').scrollIntoView();
+    });
+
+    document.getElementById('cert-number').value = `EC-CRT-${new Date().getFullYear()}.${Math.floor(Math.random()*1000)}`;
+    document.getElementById('cert-install-date').valueAsDate = new Date();
+</script>
 </body>
 </html>
