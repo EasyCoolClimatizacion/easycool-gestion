@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Certificado de Instalación v7.5 - EasyCool</title>
+    <title>Certificado de Instalación v8.0 - EasyCool</title>
     
     <!-- CONFIGURACIÓN DE ICONO (APP NATIVA) -->
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1830/1830182.png">
@@ -15,11 +15,15 @@
     <meta name="theme-color" content="#3b82f6">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Importar fuentes Inter y Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
         .calculator-section { background: #ffffff; }
         [contenteditable="true"]:hover { outline: 2px dashed #a5b4fc; }
         [contenteditable="true"]:focus { outline: 2px solid #3b82f6; background-color: #eff6ff; }
@@ -61,7 +65,7 @@
                 <h2 class="text-2xl font-bold text-gray-900">Generar Certificado</h2>
                 <p class="text-xs text-green-600 font-bold mt-1" id="auto-save-status"><i class="fas fa-check-circle"></i> Sistema listo</p>
             </div>
-            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">v7.5 DeltaT</span>
+            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">v8.0 Pro</span>
         </div>
         
         <!-- Datos Cliente -->
@@ -81,14 +85,6 @@
             </div>
 
             <input type="text" id="cert-technician" value="Jose Guerrero" placeholder="Nombre del Técnico" class="save-input md:col-span-2 block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
-            
-            <div class="md:col-span-2">
-                <label for="cert-supply" class="block text-xs font-medium text-gray-500 mb-1">Suministro de Equipo</label>
-                <select id="cert-supply" class="save-input block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="Suministrado por EasyCool Climatización">Suministrado por EasyCool Climatización</option>
-                    <option value="Suministrado por el Cliente">Suministrado por el Cliente</option>
-                </select>
-            </div>
         </div>
 
         <!-- Equipos -->
@@ -104,7 +100,7 @@
 
         <!-- Checklist -->
         <div>
-            <h3 class="text-lg font-bold text-gray-800 mb-2">Checklist de Calidad</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Checklist de Calidad y Garantía</h3>
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
                 <label class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
                     <input id="cert-check-drain" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
@@ -118,31 +114,54 @@
                     <input id="cert-check-cleaning" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                     <span class="ml-3 text-sm text-gray-700 font-medium">Limpieza y Orden del lugar OK</span>
                 </label>
+                <label class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer border-t border-gray-200 pt-3">
+                    <input id="cert-check-insulation" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                    <span class="ml-3 text-sm text-gray-700 font-medium">Aislación Térmica Independiente OK</span>
+                </label>
+                <label class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                    <input id="cert-check-terminals" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                    <span class="ml-3 text-sm text-gray-700 font-medium">Uso de Terminales Eléctricos OK</span>
+                </label>
+                <label class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                    <input id="cert-check-ventilation" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                    <span class="ml-3 text-sm text-gray-700 font-medium">Distancias de Ventilación Respetadas OK</span>
+                </label>
+                <label class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer">
+                    <input id="cert-check-leak" type="checkbox" class="save-input w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                    <span class="ml-3 text-sm text-gray-700 font-medium">Prueba de Hermeticidad (Burbuja) OK</span>
+                </label>
             </div>
             
             <div class="mt-6">
                 <label class="block text-sm font-bold text-gray-700 mb-1">Notas Adicionales</label>
-                <textarea id="cert-notes" rows="3" class="save-input block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Detalles de la instalación..."></textarea>
+                <textarea id="cert-notes" rows="3" class="save-input block w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Detalles de la instalación, materiales extra, largo de tubería..."></textarea>
             </div>
         </div>
 
         <!-- Firmas -->
         <div class="mt-8 border-t pt-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Firmas de Aceptación</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                <div class="flex flex-col justify-end">
                     <p class="text-xs font-bold text-blue-800 uppercase mb-2">Firma Técnico</p>
-                    <div class="border-2 border-dashed border-blue-300 rounded-xl bg-blue-50 relative overflow-hidden">
-                        <canvas id="signature-pad-tech" class="signature-pad w-full h-40 bg-transparent"></canvas>
+                    <div class="border-2 border-dashed border-blue-300 rounded-xl bg-blue-50 relative overflow-hidden h-[120px]">
+                        <canvas id="signature-pad-tech" class="signature-pad w-full h-full bg-transparent"></canvas>
                         <div class="absolute bottom-2 right-2">
                             <button type="button" id="clear-signature-tech" class="text-xs bg-white text-red-600 px-2 py-1 rounded shadow border border-gray-200 font-bold">Borrar</button>
                         </div>
                     </div>
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-gray-600 uppercase mb-2">Firma Cliente</p>
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 relative overflow-hidden">
-                        <canvas id="signature-pad-client" class="signature-pad w-full h-40 bg-transparent"></canvas>
+                <div class="flex flex-col justify-end">
+                    <p class="text-xs font-bold text-gray-600 uppercase mb-2">Recepción Conforme</p>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="cert-receiver-name" placeholder="Nombre (Quien recibe)" class="save-input block w-2/3 rounded border-gray-300 bg-gray-50 p-1.5 text-xs focus:border-blue-500 focus:ring-blue-500" title="Dejar en blanco para usar el nombre del Cliente principal">
+                        <input type="text" id="cert-receiver-rut" placeholder="RUT" class="save-input block w-1/3 rounded border-gray-300 bg-gray-50 p-1.5 text-xs focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 relative overflow-hidden h-[120px]">
+                        <canvas id="signature-pad-client" class="signature-pad w-full h-full bg-transparent"></canvas>
+                        <div class="absolute top-2 right-2">
+                            <button type="button" id="fullscreen-signature-client" class="text-xs bg-gray-800 text-white px-2 py-1.5 rounded shadow font-bold flex items-center gap-1 hover:bg-black transition-colors" title="Firmar en Pantalla Completa"><i class="fas fa-expand"></i> Ampliar</button>
+                        </div>
                         <div class="absolute bottom-2 right-2">
                             <button type="button" id="clear-signature-client" class="text-xs bg-white text-red-600 px-2 py-1 rounded shadow border border-gray-200 font-bold">Borrar</button>
                         </div>
@@ -188,9 +207,22 @@
         <div id="certificate-section" class="printable-section bg-white p-6 sm:p-10 rounded-lg" style="display:none;">
             <header class="flex justify-between items-start pb-4 border-b-2 border-gray-800 mb-4">
                 <div class="w-1/2">
-                      <svg viewBox="0 0 250 50" class="h-12 w-auto" aria-label="Logo de EasyCool">
-                          <g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text>
-                      </svg>
+                    <!-- NUEVO LOGO EASYCOOL HORIZONTAL -->
+                    <div class="flex flex-row items-center font-montserrat select-none gap-3">
+                        <div class="relative w-[46px] h-[46px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[9px] gap-[3.5px] shadow-sm">
+                            <div class="h-[6px] w-[28px] bg-[#F1F6FF] rounded-full"></div>
+                            <div class="h-[6px] w-[22px] bg-[#E4EEFF] rounded-full"></div>
+                            <div class="h-[6px] w-[17px] bg-[#D2E3FF] rounded-full"></div>
+                        </div>
+                        <div class="flex flex-col items-start mt-0.5">
+                            <h1 class="text-[#212B3B] font-[900] text-[20px] tracking-[-0.01em] leading-none mb-1">
+                                EASYCOOL
+                            </h1>
+                            <p class="text-[#9FA5B1] font-[500] text-[10px] tracking-[0.01em] leading-none">
+                                Climatización
+                            </p>
+                        </div>
+                    </div>
                 </div>
                 <div class="w-1/2 text-right text-xs text-gray-600 space-y-0.5">
                     <p class="font-bold text-gray-900 text-sm">EasyCool Climatización</p>
@@ -214,7 +246,6 @@
                         <div class="col-span-2"><span class="text-gray-500">Dirección:</span> <span id="print-cert-client-address"></span></div>
                         <div><span class="text-gray-500">Fecha Instalación:</span> <span id="print-cert-install-date"></span></div>
                         <div><span class="text-gray-500">Técnico Resp:</span> <span id="print-cert-technician"></span></div>
-                        <div class="col-span-2"><span class="text-gray-500">Suministro:</span> <span id="print-cert-supply" class="font-medium"></span></div>
                     </div>
                 </section>
                 
@@ -236,14 +267,22 @@
                     </div>
                 </section>
                 
-                <section class="mt-8 pt-8 border-t-2 border-gray-100 flex justify-between text-center break-inside-avoid">
+                <section class="mb-4 bg-gray-50 border border-gray-300 rounded p-3 text-[8.5px] leading-tight text-gray-700 break-inside-avoid">
+                    <h2 class="font-bold text-gray-900 uppercase mb-1">Términos y Condiciones de Garantía</h2>
+                    <ol id="print-cert-terms-list" class="list-decimal pl-4 space-y-1">
+                        <!-- Se llena dinámicamente con JS según el origen de los equipos -->
+                    </ol>
+                </section>
+
+                <section class="mt-4 pt-6 border-t-2 border-gray-100 flex justify-between text-center break-inside-avoid">
                     <div class="w-1/3 flex flex-col items-center">
                         <div class="h-20 w-32 mb-1 flex items-end justify-center relative">
                             <img id="print-signature-image-tech" class="max-h-full max-w-full object-contain" style="display:none;">
                         </div>
                         <div class="border-t border-gray-400 w-full pt-1">
-                            <p class="text-xs font-bold" id="print-cert-footer-tecnico"></p>
-                            <p class="text-[9px] text-gray-500 uppercase">Técnico Certificado</p>
+                            <p class="text-xs font-bold leading-tight" id="print-cert-footer-tecnico"></p>
+                            <p class="text-[9px] text-gray-800">RUT: 15.963.315-2</p>
+                            <p class="text-[9px] text-gray-500 uppercase mt-0.5">Técnico Responsable</p>
                         </div>
                     </div>
                     <div class="w-1/3 flex flex-col items-center">
@@ -251,8 +290,9 @@
                              <img id="print-signature-image-client" class="max-h-full max-w-full object-contain" style="display:none;">
                          </div>
                         <div class="border-t border-gray-400 w-full pt-1">
-                            <p class="text-xs font-bold" id="print-cert-footer-cliente">Firma del Cliente</p>
-                            <p class="text-[9px] text-gray-500 uppercase">Recibí Conforme</p>
+                            <p class="text-xs font-bold leading-tight" id="print-cert-footer-cliente"></p>
+                            <p class="text-[9px] text-gray-800" id="print-cert-footer-cliente-rut"></p>
+                            <p class="text-[9px] text-gray-500 uppercase mt-0.5">Recibí Conforme</p>
                         </div>
                     </div>
                 </section>
@@ -260,20 +300,40 @@
         </div>
     </div>
     
-    <div class="max-w-4xl mx-auto text-center mt-6 mb-12 no-print">
-        <button id="print-button" onclick="window.print()" class="bg-gray-800 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-black transition-colors hidden">
-            🖨️ Imprimir Documento
+    <div id="print-actions-container" class="max-w-4xl mx-auto mt-6 mb-12 no-print justify-center gap-4 flex-col sm:flex-row" style="display: none;">
+        <button id="back-to-edit-btn" class="bg-white border-2 border-gray-800 text-gray-800 font-bold py-3 px-6 rounded-full shadow-lg hover:bg-gray-100 transition-colors w-full sm:w-auto flex justify-center items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Volver a Editar
         </button>
+        <button onclick="window.print()" class="bg-gray-800 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-black transition-colors w-full sm:w-auto flex justify-center items-center mt-3 sm:mt-0">
+            🖨️ Imprimir / Guardar PDF
+        </button>
+    </div>
+
+    <!-- MODAL FIRMA FULLSCREEN -->
+    <div id="fullscreen-signature-modal" class="fixed inset-0 bg-white z-[100] flex flex-col hidden touch-none">
+        <div class="flex justify-between items-center p-4 border-b bg-gray-50 shadow-sm">
+            <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-signature text-blue-600 mr-2"></i>Firma del Cliente</h3>
+            <button id="close-fullscreen-signature" class="text-gray-500 hover:text-red-500 text-3xl font-bold px-2 leading-none">&times;</button>
+        </div>
+        <div class="flex-1 relative bg-gray-200 p-4 sm:p-8">
+            <div class="w-full h-full border-2 border-dashed border-gray-400 bg-white rounded-xl relative overflow-hidden shadow-inner">
+                <canvas id="signature-pad-fullscreen" class="signature-pad w-full h-full bg-transparent"></canvas>
+            </div>
+            <div class="absolute bottom-8 right-8 left-8 flex justify-between gap-4">
+                <button type="button" id="clear-signature-fullscreen" class="bg-white text-red-600 px-4 py-3 rounded-xl shadow border border-gray-300 font-bold text-sm">Borrar</button>
+                <button type="button" id="save-signature-fullscreen" class="bg-blue-600 text-white px-8 py-3 rounded-xl shadow-lg font-bold text-sm hover:bg-blue-700">Guardar Firma</button>
+            </div>
+        </div>
     </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     
     // ==========================================
-    // 1. UTILIDADES Y COMPRESIÓN DE IMÁGENES (OPTIMIZADA)
+    // 1. UTILIDADES Y COMPRESIÓN DE IMÁGENES
     // ==========================================
     
-    async function compressImage(file, maxWidth = 500, quality = 0.5) { // Agresiva para estabilidad
+    async function compressImage(file, maxWidth = 500, quality = 0.5) {
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -373,12 +433,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const clientPad = initSignaturePad('signature-pad-client', 'clear-signature-client', 'client');
     const techPad = initSignaturePad('signature-pad-tech', 'clear-signature-tech', 'tech');
+    const fullscreenPad = initSignaturePad('signature-pad-fullscreen', 'clear-signature-fullscreen', 'fullscreen_client');
+
+    // --- LÓGICA MODAL FIRMA FULLSCREEN ---
+    const fullscreenModal = document.getElementById('fullscreen-signature-modal');
+    
+    document.getElementById('fullscreen-signature-client').addEventListener('click', () => {
+        fullscreenModal.classList.remove('hidden');
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+            fullscreenPad.ctx.clearRect(0, 0, fullscreenPad.canvas.width, fullscreenPad.canvas.height);
+            signatures['fullscreen_client'] = null;
+        }, 100);
+    });
+
+    document.getElementById('close-fullscreen-signature').addEventListener('click', () => {
+        fullscreenModal.classList.add('hidden');
+    });
+
+    document.getElementById('save-signature-fullscreen').addEventListener('click', () => {
+        const dataUrl = fullscreenPad.canvas.toDataURL();
+        signatures['client'] = dataUrl;
+        
+        const img = new Image();
+        img.src = dataUrl;
+        img.onload = () => {
+            clientPad.ctx.clearRect(0, 0, clientPad.canvas.width, clientPad.canvas.height);
+            clientPad.ctx.drawImage(img, 0, 0, clientPad.canvas.width, clientPad.canvas.height);
+        };
+        
+        fullscreenModal.classList.add('hidden');
+    });
 
     // ==========================================
     // 3. LOGICA PRINCIPAL
     // ==========================================
     const generateCertificateBtn = document.getElementById('generate-certificate-btn');
-    const printButton = document.getElementById('print-button');
     const btnText = generateCertificateBtn.querySelector('.btn-text');
     const btnSpinner = generateCertificateBtn.querySelector('.spinner');
     const addEquipoBtn = document.getElementById('add-equipo-btn');
@@ -396,7 +486,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="border border-dashed border-blue-300 p-2 rounded bg-blue-50 relative">
                 <label class="text-[10px] text-blue-600 block mb-1">${label}</label>
                 <input type="file" class="${className} custom-file-input w-full text-[10px]" accept="image/*">
-                <!-- Input oculto para guardar base64 comprimido -->
                 <input type="hidden" class="${className}-base64"> 
                 <p class="mt-1 text-[9px] text-green-700 font-bold truncate hidden file-status"></p>
                 <div class="preview-img-mini mt-1 hidden"><img src="" class="h-8 object-contain"></div>
@@ -423,30 +512,50 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="md:col-span-4"><input type="text" class="cert-ue-model save-input w-full rounded border-gray-300 text-xs" placeholder="Modelo UE" value="${data?.ue_model || ''}"></div>
             <div class="md:col-span-4"><input type="text" class="cert-ue-serial save-input w-full rounded border-gray-300 text-xs" placeholder="Serie UE" value="${data?.ue_serial || ''}"></div>
             
+            <div class="md:col-span-12 mt-1">
+                <label class="text-[10px] text-gray-500 font-bold uppercase">Origen / Suministro del Equipo</label>
+                <select class="cert-eq-supply save-input w-full rounded border-gray-300 text-xs bg-white">
+                    <option value="Vendido por EasyCool (Garantía de Equipo + Instalación)">Vendido por EasyCool (Garantía Equipo + Instalación)</option>
+                    <option value="Suministrado por el Cliente (Solo Garantía de Instalación)">Suministrado por Cliente (Solo Garantía de Instalación)</option>
+                </select>
+            </div>
+
             <div class="md:col-span-12 bg-white p-3 rounded border border-blue-100 mt-2">
-                <h5 class="text-xs font-bold text-blue-800 uppercase mb-2">Parámetros</h5>
+                <h5 class="text-xs font-bold text-blue-800 uppercase mb-2">Parámetros Frigoríficos</h5>
                 <div class="grid grid-cols-3 gap-2">
                     <div><label class="text-[10px] text-gray-500">Gas</label><select class="cert-refrigerant save-input w-full rounded border-gray-300 text-xs"><option>R410A</option><option>R32</option><option>R22</option></select></div>
-                    <div><label class="text-[10px] text-gray-500">Vacío</label><input type="number" class="cert-vacuum save-input w-full rounded border-gray-300 text-xs" value="${data?.vacuum || ''}"></div>
+                    <div><label class="text-[10px] text-gray-500">Vacío (µ)</label><input type="number" class="cert-vacuum save-input w-full rounded border-gray-300 text-xs" value="${data?.vacuum || ''}"></div>
                     <div><label class="text-[10px] text-gray-500">P.Baja</label><input type="number" class="cert-pressure-low save-input w-full rounded border-gray-300 text-xs" value="${data?.p_low || ''}"></div>
                     <div><label class="text-[10px] text-gray-500">P.Alta</label><input type="number" class="cert-pressure-high save-input w-full rounded border-gray-300 text-xs" value="${data?.p_high || ''}"></div>
                     <div><label class="text-[10px] text-gray-500">T° Iny</label><input type="number" class="cert-temp-in save-input w-full rounded border-gray-300 text-xs" value="${data?.t_in || ''}"></div>
                     <div><label class="text-[10px] text-gray-500">T° Ret</label><input type="number" class="cert-temp-out save-input w-full rounded border-gray-300 text-xs" value="${data?.t_out || ''}"></div>
                 </div>
+
+                <h5 class="text-xs font-bold text-blue-800 uppercase mb-2 mt-4 border-t pt-3 border-blue-50">Parámetros Eléctricos</h5>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <div><label class="text-[10px] text-gray-500">Voltaje Entrada (V)</label><input type="number" class="cert-volt save-input w-full rounded border-gray-300 text-xs" value="${data?.volt || ''}" placeholder="Ej: 225"></div>
+                    <div><label class="text-[10px] text-gray-500">Amperaje Máx (A)</label><input type="number" class="cert-amp save-input w-full rounded border-gray-300 text-xs" value="${data?.amp || ''}" placeholder="Ej: 4.5"></div>
+                    <div><label class="text-[10px] text-gray-500">Tipo de Conexión</label><select class="cert-elec-type save-input w-full rounded border-gray-300 text-xs"><option>Existente verificado (Cable 2.5mm² / 16A)</option><option>Circuito Exclusivo desde Tablero</option></select></div>
+                </div>
             </div>
             
             <div class="md:col-span-12 mt-2">
                <h5 class="text-xs font-bold text-gray-700 mb-1">Evidencia (Se comprime auto.)</h5>
-               <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+               <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
                    ${createFileBlock('Vacuómetro', 'cert-photo-vacuum')}
                    ${createFileBlock('Manómetros', 'cert-photo-pressure')}
                    ${createFileBlock('T° Iny', 'cert-photo-temp-in')}
                    ${createFileBlock('T° Ret', 'cert-photo-temp-out')}
                </div>
+               <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                   ${createFileBlock('Placa Serie UI', 'cert-photo-plate-ui')}
+                   ${createFileBlock('Placa Serie UE', 'cert-photo-plate-ue')}
+                   ${createFileBlock('Test Tierra (GND)', 'cert-photo-gnd')}
+               </div>
             </div>
         `;
         
-        // LOGICA DE COMPRESIÓN AL SELECCIONAR
+        // LOGICA DE COMPRESIÓN
         const inputs = div.querySelectorAll('input[type="file"]');
         inputs.forEach(input => {
             input.addEventListener('change', async function() {
@@ -460,7 +569,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     try {
                         const compressedBase64 = await compressImage(this.files[0]);
-                        hiddenInput.value = compressedBase64; // Guardar en input oculto
+                        hiddenInput.value = compressedBase64;
                         statusP.textContent = '✅ ' + this.files[0].name;
                         statusP.classList.add('text-green-700');
                     } catch (e) {
@@ -470,10 +579,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // RELLENAR IMÁGENES SI VIENEN DEL HISTORIAL
         if (data) {
             const selGas = div.querySelector('.cert-refrigerant');
             if(data.gas) selGas.value = data.gas;
+            
+            const selSupply = div.querySelector('.cert-eq-supply');
+            if(data.supply) selSupply.value = data.supply;
+
+            const selElec = div.querySelector('.cert-elec-type');
+            if(data.elec_type) selElec.value = data.elec_type;
 
             const restoreImg = (cls, b64) => {
                 if (b64) {
@@ -488,6 +602,9 @@ document.addEventListener('DOMContentLoaded', function() {
             restoreImg('cert-photo-pressure', data.img_pressure);
             restoreImg('cert-photo-temp-in', data.img_temp_in);
             restoreImg('cert-photo-temp-out', data.img_temp_out);
+            restoreImg('cert-photo-plate-ui', data.img_plate_ui);
+            restoreImg('cert-photo-plate-ue', data.img_plate_ue);
+            restoreImg('cert-photo-gnd', data.img_gnd);
         }
 
         equiposContainer.appendChild(div);
@@ -522,16 +639,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 ue_brand: row.querySelector('.cert-ue-brand').value,
                 ue_model: row.querySelector('.cert-ue-model').value,
                 ue_serial: row.querySelector('.cert-ue-serial').value,
+                supply: row.querySelector('.cert-eq-supply').value,
                 gas: row.querySelector('.cert-refrigerant').value,
                 vacuum: row.querySelector('.cert-vacuum').value,
                 p_low: row.querySelector('.cert-pressure-low').value,
                 p_high: row.querySelector('.cert-pressure-high').value,
                 t_in: row.querySelector('.cert-temp-in').value,
                 t_out: row.querySelector('.cert-temp-out').value,
+                volt: row.querySelector('.cert-volt').value,
+                amp: row.querySelector('.cert-amp').value,
+                elec_type: row.querySelector('.cert-elec-type').value,
                 img_vacuum: row.querySelector('.cert-photo-vacuum-base64').value,
                 img_pressure: row.querySelector('.cert-photo-pressure-base64').value,
                 img_temp_in: row.querySelector('.cert-photo-temp-in-base64').value,
-                img_temp_out: row.querySelector('.cert-photo-temp-out-base64').value
+                img_temp_out: row.querySelector('.cert-photo-temp-out-base64').value,
+                img_plate_ui: row.querySelector('.cert-photo-plate-ui-base64').value,
+                img_plate_ue: row.querySelector('.cert-photo-plate-ue-base64').value,
+                img_gnd: row.querySelector('.cert-photo-gnd-base64').value
             });
         });
 
@@ -542,24 +666,25 @@ document.addEventListener('DOMContentLoaded', function() {
             address: document.getElementById('cert-client-address').value,
             date: document.getElementById('cert-install-date').value,
             tech: document.getElementById('cert-technician').value,
-            supply: document.getElementById('cert-supply').value,
             notes: document.getElementById('cert-notes').value,
+            receiver_name: document.getElementById('cert-receiver-name').value,
+            receiver_rut: document.getElementById('cert-receiver-rut').value,
             equipos: equipos,
             timestamp: new Date().toISOString()
         };
     }
 
     function saveToHistory(data) {
-        let history = JSON.parse(localStorage.getItem('easycool_history_v2') || '[]');
+        let history = JSON.parse(localStorage.getItem('easycool_history_v3') || '[]');
         history.unshift(data);
-        if (history.length > 10) history.pop(); // Guardar solo últimos 10
-        localStorage.setItem('easycool_history_v2', JSON.stringify(history));
+        if (history.length > 10) history.pop();
+        localStorage.setItem('easycool_history_v3', JSON.stringify(history));
         renderHistory();
     }
 
     function renderHistory() {
         const container = document.getElementById('history-list');
-        const history = JSON.parse(localStorage.getItem('easycool_history_v2') || '[]');
+        const history = JSON.parse(localStorage.getItem('easycool_history_v3') || '[]');
         container.innerHTML = '';
         
         if(history.length === 0) {
@@ -583,7 +708,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.loadFromHistory = (idx) => {
-        const history = JSON.parse(localStorage.getItem('easycool_history_v2') || '[]');
+        const history = JSON.parse(localStorage.getItem('easycool_history_v3') || '[]');
         const item = history[idx];
         if(!item) return;
 
@@ -595,10 +720,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('cert-client-address').value = item.address;
         document.getElementById('cert-install-date').value = item.date;
         document.getElementById('cert-technician').value = item.tech;
-        document.getElementById('cert-supply').value = item.supply;
         document.getElementById('cert-notes').value = item.notes;
+        document.getElementById('cert-receiver-name').value = item.receiver_name || '';
+        document.getElementById('cert-receiver-rut').value = item.receiver_rut || '';
 
-        // Reconstruir Equipos
         equiposContainer.innerHTML = '';
         equipoCount = 0;
         item.equipos.forEach(eqData => createEquipoRow(eqData));
@@ -609,7 +734,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.clearHistory = () => {
         if(confirm("¿Borrar todo el historial?")) {
-            localStorage.removeItem('easycool_history_v2');
+            localStorage.removeItem('easycool_history_v3');
             renderHistory();
         }
     };
@@ -618,6 +743,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
         document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
         
+        document.getElementById('certificate-section').style.display = 'none';
+        document.getElementById('print-actions-container').style.display = 'none';
+        document.getElementById('bottom-nav').style.display = '';
+
         if (tab === 'generator') {
             document.getElementById('view-generator').classList.remove('hidden');
             document.querySelectorAll('.bottom-nav-item')[0].classList.add('active');
@@ -629,7 +758,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // ==========================================
-    // 5. GENERAR PDF (ESTABILIDAD MEJORADA)
+    // 5. GENERAR PDF
     // ==========================================
     generateCertificateBtn.addEventListener('click', async () => {
         btnText.style.display = 'none';
@@ -637,28 +766,35 @@ document.addEventListener('DOMContentLoaded', function() {
         generateCertificateBtn.disabled = true;
 
         try {
-            // Guardar en Historial
             const formData = getFormData();
             saveToHistory(formData);
 
             document.getElementById('certificate-section').style.display = 'block';
-            printButton.style.display = 'inline-block';
+            
+            document.getElementById('view-generator').classList.add('hidden');
+            document.getElementById('bottom-nav').style.display = 'none';
+            document.getElementById('print-actions-container').style.display = 'flex';
 
-            // Llenar datos simples
             const setText = (id, val) => document.getElementById(id).textContent = val || '---';
             setText('print-cert-client-name', formData.client);
             setText('print-cert-client-rut', formData.rut);
             setText('print-cert-client-address', formData.address);
             setText('print-cert-technician', formData.tech);
             setText('print-cert-footer-tecnico', formData.tech);
-            setText('print-cert-supply', formData.supply);
             setText('print-cert-number', formData.folio);
             setText('print-cert-notes', formData.notes);
+            
+            const receiverName = formData.receiver_name.trim() !== '' ? formData.receiver_name : formData.client;
+            const receiverRutText = formData.receiver_rut.trim() !== '' 
+                ? 'RUT: ' + formData.receiver_rut 
+                : (formData.rut ? 'RUT: ' + formData.rut : '');
+                
+            setText('print-cert-footer-cliente', receiverName || 'Firma del Cliente');
+            setText('print-cert-footer-cliente-rut', receiverRutText);
             
             const rawDate = formData.date;
             document.getElementById('print-cert-install-date').textContent = rawDate ? new Date(rawDate+'T00:00:00').toLocaleDateString('es-CL') : '---';
 
-            // Firmas
             const sigClient = document.getElementById('print-signature-image-client');
             const sigTech = document.getElementById('print-signature-image-tech');
             sigClient.src = clientPad.canvas.toDataURL();
@@ -666,32 +802,24 @@ document.addEventListener('DOMContentLoaded', function() {
             sigClient.style.display = 'block';
             sigTech.style.display = 'block';
 
-            // Renderizar Equipos
             const printContainer = document.getElementById('print-equipos-container');
             printContainer.innerHTML = '';
 
             let allEquiposHtml = '';
 
             for (const [idx, eq] of formData.equipos.entries()) {
-                // CALCULAR DELTA T
                 const tIn = parseFloat(eq.t_in);
                 const tOut = parseFloat(eq.t_out);
                 let deltaT = "N/A";
-                let deltaTStyle = "bg-gray-100 text-gray-800"; // Color por defecto
+                let deltaTStyle = "bg-gray-100 text-gray-800"; 
 
                 if(!isNaN(tIn) && !isNaN(tOut)){
                     const diff = Math.abs(tOut - tIn);
                     deltaT = diff.toFixed(1) + "°C";
-                    
-                    // Semáforo Delta T
-                    if (diff >= 8 && diff <= 14) {
-                        deltaTStyle = "bg-green-100 text-green-700"; // Rango OK
-                    } else {
-                        deltaTStyle = "bg-red-100 text-red-700"; // Fuera de rango
-                    }
+                    if (diff >= 8 && diff <= 14) deltaTStyle = "bg-green-100 text-green-700";
+                    else deltaTStyle = "bg-red-100 text-red-700";
                 }
 
-                // Función para crear bloque de imagen (Simplificada y sin promesas dentro del loop)
                 const imgBlock = (b64, label) => b64 ? `
                     <div style="width: 23%; display: inline-block; vertical-align: top; margin: 0 1%;">
                         <div style="height: 90px; background-color: #f3f4f6; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
@@ -707,16 +835,29 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${imgBlock(eq.img_temp_in, 'T° Iny')}
                         ${imgBlock(eq.img_temp_out, 'T° Ret')}
                     </div>
+                    <div style="margin-top: 8px; text-align: center; font-size: 0;">
+                        ${imgBlock(eq.img_plate_ui, 'Placa Serie UI')}
+                        ${imgBlock(eq.img_plate_ue, 'Placa Serie UE')}
+                        ${imgBlock(eq.img_gnd, 'Multímetro (GND)')}
+                    </div>
                 `;
 
                 allEquiposHtml += `
                     <div class="equipo-item-print bg-white rounded border border-gray-300 p-2 mb-2 text-[10px] break-inside-avoid">
-                        <div class="font-bold text-blue-800 border-b border-gray-200 mb-1 pb-1">Equipo #${idx+1} - ${eq.location}</div>
+                        <div class="font-bold text-blue-800 border-b border-gray-200 mb-1 pb-1 flex justify-between">
+                            <span>Equipo #${idx+1} - ${eq.location}</span>
+                            <span class="text-[9px] text-gray-500 font-normal">Origen: ${eq.supply}</span>
+                        </div>
                         <div class="grid grid-cols-2 gap-x-4 gap-y-1">
                             <div><strong>UI:</strong> ${eq.ui_brand} / ${eq.ui_model}</div>
                             <div><strong>UE:</strong> ${eq.ue_brand} / ${eq.ue_model}</div>
                             <div><strong>S/N UI:</strong> ${eq.ui_serial}</div>
                             <div><strong>S/N UE:</strong> ${eq.ue_serial}</div>
+                            
+                            <div class="col-span-2 text-[9px] text-gray-700 bg-gray-50 p-1.5 border border-gray-200 rounded mt-1">
+                                <strong class="text-gray-800">Eléctrico:</strong> Voltaje: ${eq.volt || '-'}V | Amperaje: ${eq.amp || '-'}A | ${eq.elec_type}
+                            </div>
+                            
                             <div class="col-span-2 mt-1 pt-1 border-t border-gray-100 grid grid-cols-7 gap-1 text-center bg-gray-50 rounded font-mono text-[9px]">
                                 <span><strong>Gas:</strong> ${eq.gas}</span>
                                 <span><strong>Vac:</strong> ${eq.vacuum}</span>
@@ -731,35 +872,69 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
                 
-                // Pequeña pausa para no bloquear la UI si hay muchos equipos
                 await new Promise(r => setTimeout(r, 10)); 
             }
             
             printContainer.innerHTML = allEquiposHtml;
-
-            // Esperar renderizado de imágenes
             await new Promise(r => setTimeout(r, 800));
 
-            // Checklist Visual
             const checkContainer = document.getElementById('print-cert-checklist');
             checkContainer.innerHTML = '';
-            ['cert-check-drain', 'cert-check-briefing', 'cert-check-cleaning'].forEach(id => {
-                const el = document.getElementById(id);
-                const label = el.parentElement.querySelector('span').innerText;
-                const icon = el.checked ? '<span class="text-green-600 font-bold">✓</span>' : '<span class="text-red-400">✗</span>';
-                checkContainer.innerHTML += `<div>${icon} ${label}</div>`;
-            });
+            
+            const checklistItems = [
+                'cert-check-drain', 
+                'cert-check-briefing', 
+                'cert-check-cleaning',
+                'cert-check-insulation',
+                'cert-check-terminals',
+                'cert-check-ventilation',
+                'cert-check-leak'
+            ];
 
-            document.getElementById('certificate-section').scrollIntoView({behavior:'smooth'});
+            checklistItems.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    const label = el.parentElement.querySelector('span').innerText;
+                    const icon = el.checked 
+                        ? '<i class="fas fa-check-square text-green-600 text-sm mt-0.5 mr-1.5"></i>' 
+                        : '<i class="far fa-square text-gray-400 text-sm mt-0.5 mr-1.5"></i>';
+                    checkContainer.innerHTML += `<div class="flex items-start mb-1">${icon} <span>${label}</span></div>`;
+                }
+            });
+            
+            // --- TÉRMINOS Y CONDICIONES DINÁMICOS ---
+            const hasEasyCool = formData.equipos.some(eq => eq.supply.includes('EasyCool'));
+            const hasClient = formData.equipos.some(eq => eq.supply.includes('Cliente'));
+            let termsHtml = '';
+
+            termsHtml += `<li><strong>Garantía de Instalación (1 Año):</strong> Cubre exclusivamente defectos técnicos de la instalación realizada (fugas en uniones flair, declive de drenaje, fijación de soportes).</li>`;
+
+            if (hasEasyCool && !hasClient) {
+                termsHtml += `<li><strong>Garantía del Equipo (Fallas de Fábrica):</strong> Cubre defectos de fabricación durante el primer año (repuestos y mano de obra).</li>`;
+                termsHtml += `<li><strong>Garantía Extendida (3 Años):</strong> Condicionada estrictamente a la realización de una <strong>Mantención Preventiva Anual obligatoria</strong> ejecutada por EasyCool. A partir del mes 13, cubre el compresor y mano de obra; repuestos (placas, motores) son costeados por el cliente. Si no se realiza la mantención anual, esta garantía caducará a los 12 meses.</li>`;
+            } else if (!hasEasyCool && hasClient) {
+                termsHtml += `<li><strong>Garantía del Equipo (Suministrado por Cliente):</strong> La garantía por fallas de fábrica se rige por el vendedor original o la marca. EasyCool no asume costos de repuestos ni visitas técnicas por defectos de fabricación, configuración o funcionamiento del equipo.</li>`;
+            } else if (hasEasyCool && hasClient) {
+                termsHtml += `<li><strong>Garantía Mixta de Equipos:</strong> <strong>1) Equipos EasyCool:</strong> Garantía de fábrica 1 año y Extendida de 3 años (condicionada a mantención anual obligatoria). <strong>2) Equipos del Cliente:</strong> Garantía de fábrica se rige por el vendedor original, sin responsabilidad de EasyCool en su fabricación.</li>`;
+            }
+
+            termsHtml += `<li><strong>Exclusiones (Pérdida de Garantía):</strong> La garantía queda automáticamente anulada por: falta de mantenimiento preventivo (al no contar con informe técnico de respaldo emitido por EasyCool), manipulación por terceros, alzas de voltaje, mala conexión a tierra en el domicilio, o uso indebido. Las visitas técnicas derivadas de estos problemas excluidos tendrán costo de diagnóstico.</li>`;
+
+            document.getElementById('print-cert-terms-list').innerHTML = termsHtml;
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             document.title = `Certificado_${formData.client.replace(/\s+/g,'_')}`;
 
-            // Actualizar Folio Siguiente
             const parts = formData.folio.split('.'); 
             if (parts.length === 2) {
-                const currentSeq = parseInt(parts[1]);
-                const year = new Date().getFullYear();
+                const currentSeq = parseInt(parts[1], 10);
+                // Extraer el año directamente del texto del folio
+                const matchYear = formData.folio.match(/EC-CERT-(\d{4})/);
+                const folioYear = matchYear ? matchYear[1] : new Date().getFullYear();
+                
                 if (!isNaN(currentSeq)) {
-                    localStorage.setItem(`easycool_cert_seq_${year}`, currentSeq + 1);
+                    // Guarda la secuencia correspondiente a ese año específico
+                    localStorage.setItem(`easycool_cert_seq_${folioYear}`, currentSeq + 1);
                 }
             }
 
@@ -773,16 +948,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // INIT
+    document.getElementById('back-to-edit-btn').addEventListener('click', () => {
+        document.getElementById('certificate-section').style.display = 'none';
+        document.getElementById('print-actions-container').style.display = 'none';
+        
+        document.getElementById('view-generator').classList.remove('hidden');
+        document.getElementById('bottom-nav').style.display = '';
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // LÓGICA DE CORRELATIVO INTELIGENTE POR AÑO
     const currentYear = new Date().getFullYear();
     let sequence = localStorage.getItem(`easycool_cert_seq_${currentYear}`);
-    if (!sequence) sequence = 48;
-    certNumberInput.value = `EC-CERT-${currentYear}.${sequence}`;
+    
+    if (!sequence) {
+        if (currentYear === 2026) {
+            sequence = 189; // Inicio para 2026
+        } else {
+            sequence = 1;   // Reinicio a 1 para cualquier año nuevo (2027, 2028...)
+        }
+    }
+    
+    // Formatear a 2 dígitos si es menor a 10 (ej: 01, 02... 10... 189)
+    const formattedSeq = String(sequence).padStart(2, '0');
+    certNumberInput.value = `EC-CERT-${currentYear}.${formattedSeq}`;
     document.getElementById('cert-install-date').valueAsDate = new Date();
     
-    // Crear primer equipo vacío
     createEquipoRow();
-    
     renderHistory();
 });
 </script>
