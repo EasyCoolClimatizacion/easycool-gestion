@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,303 +8,510 @@
     <!-- Icono genérico para la PWA (base64) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❄️</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;800;900&display=swap" rel="stylesheet">
+    <!-- Librería para descarga directa de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        cuerpo {
+        body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
-            -webkit-print-color-adjust: exacto;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        .font-montserrat {
+            font-family: 'Montserrat', sans-serif;
         }
         
         /* --- ESTILOS DE IMPRESIÓN (CARTA CHILE) --- */
         @media print {
             @page {
-                tamaño: carta;
-                margen: 1cm;
+                size: letter;
+                margin: 1cm;
             }
 
-            cuerpo {
-                color de fondo: blanco;
+            body {
+                background-color: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
                 font-size: 11px;
             }
 
-            .no-print { display: none !important; }
+            .no-print,
+            #editor-wrapper {
+                display: none !important;
+            }
             
-            #cotizacion-container {
-                box-shadow: none !important;
-                borde: ninguno !importante;
-                relleno: 0 !importante;
-                margen: 0 !importante;
+            #preview-wrapper {
+                display: block !important;
+                width: 100% !important;
                 max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
 
-            /* Entradas transparentes al imprimir */
-            input, textarea {
-                borde: ninguno !importante;
-                background-color: transparent !important;
-                relleno: 0 !importante;
-                redimensionar: ninguno;
-                font-family: 'Inter', sans-serif;
+            #preview-sheet {
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                min-height: auto !important;
             }
-            input::placeholder, textarea::placeholder { color: transparent; }
-            
+
             /* Colores forzados para impresión */
             .bg-blue-600 { background-color: #2563eb !important; color: white !important; }
             .bg-gray-50 { background-color: #f9fafb !important; }
             .bg-yellow-50 { background-color: #fefce8 !important; border: 1px solid #fef08a !important; }
             .border-gray-200 { border-color: #e5e7eb !important; }
-            
-            /* Forzar enlaces visibles */
             a { text-decoration: none !important; color: #2563eb !important; }
         }
 
         /* Estilos de entradas en pantalla */
         input, textarea {
-            borde: 1px sólido #D1D5DB;
-            relleno: 6px 8px;
+            border: 1px solid #D1D5DB;
+            padding: 6px 8px;
             border-radius: 4px;
-            ancho: 100%;
+            width: 100%;
             background-color: #fff;
-            transición: color de borde 0,2 s, sombra de caja 0,2 s;
+            transition: border-color 0.2s, box-shadow 0.2s;
             font-family: 'Inter', sans-serif;
-            font-size: 0.875rem; /* text-sm */
+            font-size: 0.875rem;
+        }
+        textarea {
+            resize: none;
         }
         input:focus, textarea:focus {
-            esquema: ninguno;
-            color del borde: #3B82F6;
-            anillo: 2px sólido #93C5FD;
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 2px #93C5FD;
         }
         
         /* Clase para totales (Solo lectura, aspecto limpio) */
         .input-readonly-clean {
             background-color: transparent !important;
-            color del borde: transparente !importante;
-            relleno derecho: 0 !importante;
+            border-color: transparent !important;
+            padding-right: 0 !important;
             text-align: right;
             font-weight: 600;
             cursor: default;
         }
+        .input-readonly-clean:focus {
+            box-shadow: none !important;
+        }
         
         /* Entradas de encabezado "silenciosos" */
         .input-silent {
-            fondo: transparente;
-            borde: 1px sólido transparente;
+            background: transparent;
+            border: 1px solid transparent;
             text-align: center;
         }
         .input-silent:hover { border-color: #e5e7eb; }
         .input-silent:focus { background: white; border-color: #3B82F6; }
+
+        /* Estilos temporales al exportar PDF directo */
+        .exporting-pdf {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            min-height: auto !important;
+        }
     </style>
 </head>
-<body class="p-4 sm:p-8 min-h-screen flex flex-col items-center">
+<body class="p-4 sm:p-8 min-h-screen flex flex-col items-center pb-24">
 
-    <!-- CONTENEDOR PRINCIPAL (Hoja Carta) -->
-    <div class="w-full max-w-[21.59cm] bg-white p-8 sm:p-10 rounded-xl shadow-2xl min-h-[27.94cm] flex flex-col justify-between relative" id="cotizacion-container">
-        
-        <!-- CONTENIDO SUPERIOR -->
-        <div>
-            <!-- ENCABEZADO (Idéntico al Informe Técnico) -->
-            <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-6">
-                <div class="w-2/3">
-                    <svg viewBox="0 0 250 50" class="h-12 w-auto mb-2"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
-                    <div class="text-[10px] text-gray-500 leading-tight">
-                        <p class="font-bold text-gray-700">Climatización EasyCool</p>
-                        <p>RUT: 77.448.234-2</p>
-                        <p>Providencia, Santiago</p>
-                        <p>📞 +569 5777 6174 | ✉️ ventas@easycoolclimatizacion.com</p>
-                    </div>
-                </div>
-                <div class="w-1/3 text-right">
-                    <h1 class="text-xl font-bold text-gray-800 uppercase">COTIZACIÓN</h1>
-                    <div class="mt-2 flex flex-col items-end gap-1">
-                        <div class="flex items-center justify-end gap-1">
-                            <span class="text-xs font-bold text-gray-500">N°</span>
-                            <!-- Entrada Editable pero con lógica automática -->
-                            <input type="text" id="cotizacion_n" class="w-24 text-right text-sm font-bold text-red-600 border border-red-200 bg-red-50 rounded px-1 input-silent" title="Se puede editar manualmente si es necesario">
-                        </div>
-                        <div class="flex items-center justify-end gap-1">
-                            <span class="text-xs text-gray-500">Fecha:</span>
-                            <input type="date" id="fecha" class="w-28 text-right text-xs text-gray-600 border-none bg-transparent p-0">
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- DATOS CLIENTE & CONDICIONES -->
-            <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <!-- Cliente -->
-                <div>
-                    <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Cliente</h3>
-                    <div class="space-y-1">
-                        <input type="text" id="cliente" placeholder="Nombre / Razón Social" class="font-bold text-gray-800 bg-transparent border-none p-0 text-sm focus:bg-white focus:border focus:p-1">
-                        <input type="text" id="rut_cliente" placeholder="RUT Cliente" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
-                        <input type="text" id="direccion" placeholder="Dirección del Proyecto" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
-                    </div>
-                </div>
-                <!-- Condiciones -->
-                <div>
-                    <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Condiciones Comerciales</h3>
-                    <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs items-center">
-                        <label class="text-gray-500 font-medium">Validez:</label>
-                        <input type="text" value="10 días hábiles" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
-                        
-                        <label class="text-gray-500 font-medium">Pago:</label>
-                        <input type="text" value="50% Anticipo / 50% Término" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
-                        
-                        <label class="text-gray-500 font-medium">Plazo:</label>
-                        <input type="text" placeholder="Un recuerdo" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
-                    </div>
-                </div>
-            </section>
-
-            <!-- TABLA DE ÍTEMS -->
-            <section class="mb-6">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-blue-600 text-white text-[10px] uppercase font-bold tracking-wider">
-                            <th class="p-2 w-12 text-center rounded-tl">Cantón.</th>
-                            <th class="p-2">Descripción del Servicio / Producto</th>
-                            <th class="p-2 w-24 text-right">P. Unitario</th>
-                            <th class="p-2 w-24 text-right rounded-tr">Total Neto</th>
-                            <th class="p-2 w-6 no-print bg-white"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="items-body" class="text-xs text-gray-700">
-                        <!-- Filas dinámicas -->
-                    </tbody>
-                </table>
-                <button id="addRow" class="mt-3 flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold text-xs no-print transition-colors px-2 py-1 rounded hover:bg-blue-50">
-                    <span class="text-lg">+</span> Agregar Ítem
-                </button>
-            </section>
+    <!-- ========================================== -->
+    <!-- VISTA 1: EDITOR DE COTIZACIÓN              -->
+    <!-- ========================================== -->
+    <div id="editor-wrapper" class="w-full max-w-[21.59cm]">
+        <div class="w-full bg-white p-6 sm:p-10 rounded-xl shadow-2xl min-h-[27.94cm] flex flex-col justify-between relative" id="cotizacion-container">
             
-            <!-- TOTALES Y NOTAS -->
-            <section class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2">
-                <!-- Notas (Izquierda) -->
-                <div class="md:col-span-7">
-                    <div class="bg-yellow-50 p-3 borde redondeado borde-amarillo-100 h-completo">
-                        <h4 class="font-bold text-[10px] text-gray-600 mb-1 uppercase">Observaciones Técnicas</h4>
-                        <textarea class="w-full h-20 text-xs bg-transparent border-none p-0 text-gray-700 resize-none focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía..."></textarea>
-                    </div>
-                </div>
-
-                <!-- Cálculos (Derecha) -->
-                <div class="md:col-span-5">
-                    <div class="bg-gray-50 p-3 borde redondeado borde-gray-200">
-                        <div class="space-y-1 text-xs">
-                            <div class="flex justify-between text-gray-600">
-                                <span>Subtotal neto:</span>
-                                <span id="subtotal" class="font-mono font-medium">$0</span>
+            <!-- CONTENIDO SUPERIOR -->
+            <div>
+                <!-- ENCABEZADO -->
+                <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-6">
+                    <div class="w-2/3">
+                        <!-- NUEVO LOGO EASYCOOL HORIZONTAL -->
+                        <div class="flex flex-row items-center font-montserrat select-none gap-3 mb-2">
+                            <div class="relative w-[46px] h-[46px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[9px] gap-[3.5px] shadow-sm">
+                                <div class="h-[6px] w-[28px] bg-[#F1F6FF] rounded-full"></div>
+                                <div class="h-[6px] w-[22px] bg-[#E4EEFF] rounded-full"></div>
+                                <div class="h-[6px] w-[17px] bg-[#D2E3FF] rounded-full"></div>
                             </div>
-                            <div class="flex justify-between text-gray-600 items-center">
-                                <span>Descuento (-):</span>
-                                <div class="flex items-center gap-1 w-20 justify-end">
-                                    <input type="number" id="descuento" class="w-full text-right font-mono bg-white border border-gray-300 rounded px-1 py-0.5 text-xs focus:ring-1 focus:ring-blue-500" placeholder="0" min="0">
+                            <div class="flex flex-col items-start mt-0.5">
+                                <div class="text-[#212B3B] font-[900] text-[20px] tracking-[-0.01em] leading-none mb-1">
+                                    EASYCOOL
+                                </div>
+                                <p class="text-[#9FA5B1] font-[500] text-[10px] tracking-[0.01em] leading-none">
+                                    Climatización
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-[10px] text-gray-500 leading-tight">
+                            <p class="font-bold text-gray-700">Climatización EasyCool</p>
+                            <p>RUT: 77.448.234-2</p>
+                            <p>Providencia, Santiago</p>
+                            <p>📞 +569 5777 6174 | ✉️ ventas@easycoolclimatizacion.com</p>
+                        </div>
+                    </div>
+                    <div class="w-1/3 text-right">
+                        <h1 class="text-xl font-bold text-gray-800 uppercase">COTIZACIÓN</h1>
+                        <div class="mt-2 flex flex-col items-end gap-1">
+                            <div class="flex items-center justify-end gap-1">
+                                <span class="text-xs font-bold text-gray-500">N°</span>
+                                <input type="text" id="cotizacion_n" class="w-24 text-right text-sm font-bold text-red-600 border border-red-200 bg-red-50 rounded px-1 input-silent" title="Se puede editar manualmente si es necesario">
+                            </div>
+                            <div class="flex items-center justify-end gap-1">
+                                <span class="text-xs text-gray-500">Fecha:</span>
+                                <input type="date" id="fecha" class="w-28 text-right text-xs text-gray-600 border-none bg-transparent p-0">
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- DATOS CLIENTE & CONDICIONES -->
+                <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <!-- Cliente -->
+                    <div>
+                        <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Cliente</h3>
+                        <div class="space-y-1">
+                            <input type="text" id="cliente" placeholder="Nombre / Razón Social" class="font-bold text-gray-800 bg-transparent border-none p-0 text-sm focus:bg-white focus:border focus:p-1">
+                            <input type="text" id="rut_cliente" placeholder="RUT Cliente" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
+                            <input type="text" id="direccion" placeholder="Dirección del Proyecto" class="text-xs text-gray-600 bg-transparent border-none p-0 focus:bg-white focus:border focus:p-1">
+                        </div>
+                    </div>
+                    <!-- Condiciones -->
+                    <div>
+                        <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Condiciones Comerciales</h3>
+                        <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs items-center">
+                            <label class="text-gray-500 font-medium">Validez:</label>
+                            <input type="text" id="cond_validez" value="10 días hábiles" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
+                            
+                            <label class="text-gray-500 font-medium">Pago:</label>
+                            <input type="text" id="cond_pago" value="50% Anticipo / 50% Término" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
+                            
+                            <label class="text-gray-500 font-medium">Plazo:</label>
+                            <input type="text" id="cond_plazo" placeholder="A convenir" class="bg-transparent border-none p-0 text-gray-800 font-medium focus:bg-white focus:border focus:p-1">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TABLA DE ÍTEMS -->
+                <section class="mb-6">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-blue-600 text-white text-[10px] uppercase font-bold tracking-wider">
+                                <th class="p-2 w-12 text-center rounded-tl">Cant.</th>
+                                <th class="p-2">Descripción del Servicio / Producto</th>
+                                <th class="p-2 w-24 text-right">P. Unitario</th>
+                                <th class="p-2 w-24 text-right rounded-tr">Total Neto</th>
+                                <th class="p-2 w-6 no-print bg-white"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-body" class="text-xs text-gray-700">
+                            <!-- Filas dinámicas -->
+                        </tbody>
+                    </table>
+                    <button type="button" id="addRow" class="mt-3 flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold text-xs no-print transition-colors px-2 py-1 rounded hover:bg-blue-50 cursor-pointer">
+                        <span class="text-lg">+</span> Agregar Ítem
+                    </button>
+                </section>
+                
+                <!-- TOTALES Y NOTAS -->
+                <section class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2">
+                    <!-- Notas (Izquierda) -->
+                    <div class="md:col-span-7">
+                        <div class="bg-yellow-50 p-3 border rounded border-yellow-200 h-full">
+                            <h4 class="font-bold text-[10px] text-gray-600 mb-1 uppercase">Observaciones Técnicas</h4>
+                            <textarea id="observaciones" class="w-full h-24 text-xs bg-transparent border-none p-0 text-gray-700 resize-none focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Cálculos (Derecha) -->
+                    <div class="md:col-span-5">
+                        <div class="bg-gray-50 p-3 border rounded border-gray-200">
+                            <div class="space-y-1 text-xs">
+                                <div class="flex justify-between text-gray-600">
+                                    <span>Subtotal neto:</span>
+                                    <span id="subtotal" class="font-mono font-medium">$0</span>
+                                </div>
+                                <div class="flex justify-between text-gray-600 items-center">
+                                    <span>Descuento (-):</span>
+                                    <div class="flex items-center gap-1 w-24 justify-end">
+                                        <input type="number" id="descuento" class="w-full text-right font-mono bg-white border border-gray-300 rounded px-1 py-0.5 text-xs focus:ring-1 focus:ring-blue-500" placeholder="0" min="0">
+                                    </div>
+                                </div>
+                                <div class="flex justify-between text-gray-600">
+                                    <span>IVA (19%):</span>
+                                    <span id="iva" class="font-mono font-medium">$0</span>
+                                </div>
+                                <div class="flex justify-between border-t border-gray-300 pt-2 mt-2">
+                                    <span class="font-bold text-sm text-gray-800">TOTAL A PAGAR:</span>
+                                    <span id="total" class="font-bold text-sm text-blue-600 font-mono">$0</span>
                                 </div>
                             </div>
-                            <div class="flex justify-between text-gray-600">
-                                <span>IVA (19%):</span>
-                                <span id="iva" class="font-mono font-medium">$0</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- PIE DE PÁGINA -->
+            <footer class="mt-8 pt-4 border-t-2 border-gray-200 text-center">
+                <div class="flex flex-col items-center gap-2 mb-2">
+                    <p class="text-[10px] font-bold text-gray-600">Síguenos en nuestras redes:</p>
+                    <a href="https://www.instagram.com/easycoolclimatizacion" target="_blank" class="text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline">
+                        📸 Instagram: @easycoolclimatizacion
+                    </a>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded px-3 py-1 w-full max-w-xs text-center">
+                        <p class="text-[9px] font-bold text-gray-700">Tu opinión nos ayuda a seguir creciendo</p>
+                        <a href="https://g.page/r/Ccgzu2uxiaSiEBI/review" target="_blank" class="text-[10px] font-bold text-blue-700 hover:underline">
+                            ⭐⭐⭐⭐⭐ ¡Califícanos en Google!
+                        </a>
+                    </div>
+                </div>
+                <p class="text-[8px] text-gray-400 mt-2">EasyCool Climatización - Documento generado digitalmente.</p>
+            </footer>
+        </div>
+
+        <!-- BOTÓN FLOTANTE EN MODO EDICIÓN -->
+        <div class="fixed bottom-6 right-6 no-print z-50">
+            <button type="button" onclick="openPreview()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-xl flex items-center gap-2 transition-all transform hover:scale-105 border-2 border-white cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                Vista Previa
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: VISTA PREVIA (REVISIÓN Y PDF)     -->
+    <!-- ========================================== -->
+    <div id="preview-wrapper" class="hidden w-full max-w-[21.59cm]">
+        
+        <!-- BARRA SUPERIOR DE REVISIÓN (NO SE IMPRIME) -->
+        <div class="no-print mb-4 bg-blue-50 border border-blue-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+            <div>
+                <p class="text-xs font-bold text-blue-800 uppercase tracking-wide">Vista Previa de Cotización</p>
+                <p class="text-xs text-gray-600 mt-0.5">Archivo: <strong id="preview-filename-label" class="text-gray-900"></strong></p>
+            </div>
+            <button type="button" onclick="closePreview()" class="bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 font-bold text-xs py-2 px-4 rounded-lg shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                Volver a Editar
+            </button>
+        </div>
+
+        <!-- HOJA FINAL LISTA PARA IMPRIMIR / DESCARGAR -->
+        <div id="preview-sheet" class="w-full bg-white p-8 sm:p-10 rounded-xl shadow-2xl min-h-[27.94cm] flex flex-col justify-between">
+            <div>
+                <!-- ENCABEZADO PREVIEW -->
+                <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-6">
+                    <div class="w-2/3">
+                        <div class="flex flex-row items-center font-montserrat select-none gap-3 mb-2">
+                            <div class="relative w-[46px] h-[46px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[9px] gap-[3.5px] shadow-sm">
+                                <div class="h-[6px] w-[28px] bg-[#F1F6FF] rounded-full"></div>
+                                <div class="h-[6px] w-[22px] bg-[#E4EEFF] rounded-full"></div>
+                                <div class="h-[6px] w-[17px] bg-[#D2E3FF] rounded-full"></div>
                             </div>
-                            <div class="flex justify-between border-t border-gray-300 pt-2 mt-2">
-                                <span class="font-bold text-sm text-gray-800">TOTAL A PAGAR:</span>
-                                <span id="total" class="font-bold text-sm text-blue-600 font-mono">$0</span>
+                            <div class="flex flex-col items-start mt-0.5">
+                                <div class="text-[#212B3B] font-[900] text-[20px] tracking-[-0.01em] leading-none mb-1">
+                                    EASYCOOL
+                                </div>
+                                <p class="text-[#9FA5B1] font-[500] text-[10px] tracking-[0.01em] leading-none">
+                                    Climatización
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-[10px] text-gray-500 leading-tight">
+                            <p class="font-bold text-gray-700">Climatización EasyCool</p>
+                            <p>RUT: 77.448.234-2</p>
+                            <p>Providencia, Santiago</p>
+                            <p>📞 +569 5777 6174 | ✉️ ventas@easycoolclimatizacion.com</p>
+                        </div>
+                    </div>
+                    <div class="w-1/3 text-right">
+                        <h1 class="text-xl font-bold text-gray-800 uppercase">COTIZACIÓN</h1>
+                        <div class="mt-2 flex flex-col items-end gap-1">
+                            <div class="text-sm font-bold text-red-600">
+                                <span class="text-xs text-gray-500 mr-1">N°</span><span id="prev-folio"></span>
+                            </div>
+                            <div class="text-xs text-gray-600">
+                                <span class="text-gray-500 mr-1">Fecha:</span><span id="prev-fecha"></span>
                             </div>
                         </div>
                     </div>
+                </header>
+
+                <!-- CLIENTE Y CONDICIONES PREVIEW -->
+                <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div>
+                        <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Cliente</h3>
+                        <div class="space-y-1">
+                            <p id="prev-cliente" class="font-bold text-gray-800 text-sm"></p>
+                            <p id="prev-rut" class="text-xs text-gray-600"></p>
+                            <p id="prev-direccion" class="text-xs text-gray-600"></p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Condiciones Comerciales</h3>
+                        <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs items-center">
+                            <span class="text-gray-500 font-medium">Validez:</span>
+                            <span id="prev-validez" class="text-gray-800 font-medium"></span>
+                            
+                            <span class="text-gray-500 font-medium">Pago:</span>
+                            <span id="prev-pago" class="text-gray-800 font-medium"></span>
+                            
+                            <span class="text-gray-500 font-medium">Plazo:</span>
+                            <span id="prev-plazo" class="text-gray-800 font-medium"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TABLA PREVIEW -->
+                <section class="mb-6">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-blue-600 text-white text-[10px] uppercase font-bold tracking-wider">
+                                <th class="p-2 w-12 text-center rounded-tl">Cant.</th>
+                                <th class="p-2">Descripción del Servicio / Producto</th>
+                                <th class="p-2 w-28 text-right">P. Unitario</th>
+                                <th class="p-2 w-28 text-right rounded-tr">Total Neto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prev-items-body" class="text-xs text-gray-700">
+                            <!-- Filas limpias generadas dinámicamente -->
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- TOTALES Y NOTAS PREVIEW -->
+                <section class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2">
+                    <div class="md:col-span-7">
+                        <div id="prev-notes-box" class="bg-yellow-50 p-3 border rounded border-yellow-200 h-full">
+                            <h4 class="font-bold text-[10px] text-gray-600 mb-1 uppercase">Observaciones Técnicas</h4>
+                            <p id="prev-observaciones" class="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-5">
+                        <div class="bg-gray-50 p-3 border rounded border-gray-200">
+                            <div class="space-y-1.5 text-xs">
+                                <div class="flex justify-between text-gray-600">
+                                    <span>Subtotal neto:</span>
+                                    <span id="prev-subtotal" class="font-mono font-medium">$0</span>
+                                </div>
+                                <div id="prev-descuento-row" class="flex justify-between text-gray-600">
+                                    <span>Descuento (-):</span>
+                                    <span id="prev-descuento" class="font-mono font-medium text-red-600">-$0</span>
+                                </div>
+                                <div class="flex justify-between text-gray-600">
+                                    <span>IVA (19%):</span>
+                                    <span id="prev-iva" class="font-mono font-medium">$0</span>
+                                </div>
+                                <div class="flex justify-between border-t border-gray-300 pt-2 mt-2">
+                                    <span class="font-bold text-sm text-gray-800">TOTAL A PAGAR:</span>
+                                    <span id="prev-total" class="font-bold text-sm text-blue-600 font-mono">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- PIE DE PÁGINA PREVIEW -->
+            <footer class="mt-8 pt-4 border-t-2 border-gray-200 text-center">
+                <div class="flex flex-col items-center gap-2 mb-2">
+                    <p class="text-[10px] font-bold text-gray-600">Síguenos en nuestras redes:</p>
+                    <a href="https://www.instagram.com/easycoolclimatizacion" target="_blank" class="text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline">
+                        📸 Instagram: @easycoolclimatizacion
+                    </a>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded px-3 py-1 w-full max-w-xs text-center">
+                        <p class="text-[9px] font-bold text-gray-700">Tu opinión nos ayuda a seguir creciendo</p>
+                        <a href="https://g.page/r/Ccgzu2uxiaSiEBI/review" target="_blank" class="text-[10px] font-bold text-blue-700 hover:underline">
+                            ⭐⭐⭐⭐⭐ ¡Califícanos en Google!
+                        </a>
+                    </div>
                 </div>
-            </section>
+                <p class="text-[8px] text-gray-400 mt-2">EasyCool Climatización - Documento generado digitalmente.</p>
+            </footer>
         </div>
 
-        <!-- PIE DE PÁGINA (Idéntico al Informe Técnico) -->
-        <footer class="mt-8 pt-4 border-t-2 border-gray-200 text-center">
-            <div class="flex flex-col items-center gap-2 mb-2">
-                <p class="text-[10px] font-bold text-gray-600">Síguenos en nuestras redes:</p>
-                <a href="https://www.instagram.com/easycoolclimatizacion" target="_blank" class="text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline">
-                    📸 Instagram: @easycoolclimatizacion
-                </a>
-                <div class="bg-yellow-50 border border-yellow-200 rounded px-3 py-1 w-full max-w-xs text-center">
-                    <p class="text-[9px] font-bold text-gray-700">Tu opinión nos ayuda a seguir creciendo</p>
-                    <a href="https://g.page/r/Ccgzu2uxiaSiEBI/review" target="_blank" class="text-[10px] font-bold text-blue-700 hover:underline">
-                        ⭐⭐⭐⭐⭐ ¡Califícanos en Google!
-                    </a>
-                </div>
-            </div>
-            <p class="text-[8px] text-gray-400 mt-2">EasyCool Climatización - Documento generado digitalmente.</p>
-        </footer>
-
+        <!-- BOTONES DE ACCIÓN EN VISTA PREVIA (NO SE IMPRIMEN) -->
+        <div class="no-print mt-6 flex flex-col sm:flex-row justify-center items-center gap-3">
+            <button type="button" onclick="closePreview()" class="w-full sm:w-auto bg-white hover:bg-gray-100 text-gray-800 border-2 border-gray-800 font-bold py-3 px-6 rounded-full shadow-lg flex items-center justify-center gap-2 transition-colors cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Volver a Editar
+            </button>
+            <button type="button" id="btn-download-pdf" onclick="downloadPDF()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span id="btn-pdf-text">Guardar PDF</span>
+            </button>
+            <button type="button" onclick="printCotizacion()" class="w-full sm:w-auto bg-gray-900 hover:bg-black text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
+                Imprimir
+            </button>
+        </div>
     </div>
 
-    <!-- BOTÓN DE IMPRESIÓN FLOTANTE -->
-    <div class="fixed bottom-6 right-6 no-print z-50">
-        <button onclick="printCotizacion()" class="bg-gray-900 hover:bg-black text-white font-bold py-3 px-5 rounded-full shadow-xl flex items-center gap-2 transition-all transform hover:scale-105 border-2 border-white">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
-            Imprimir PDF
-        </button>
-    </div>
+    <!-- NOTIFICACIÓN FLOTANTE -->
+    <div id="toast-msg" class="fixed top-5 right-5 z-50 bg-gray-900 text-white text-xs font-medium px-4 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 no-print"></div>
 
     <script>
+        const formatCurrency = (value) => {
+            return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+        };
+
+        const escapeHtml = (text) => {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             // --- LÓGICA DE FOLIO AUTOMÁTICO INTELIGENTE ---
-            const folioInput = document.getElementById('cotización_n');
+            const folioInput = document.getElementById('cotizacion_n');
             const currentYear = new Date().getFullYear();
             
-            // Recuperar el último estado guardado
             const lastYear = localStorage.getItem('easycool_cot_year');
-            let nextNum = parseInt(localStorage.getItem('easycool_cot_num') || '1');
+            let nextNum = parseInt(localStorage.getItem('easycool_cot_num') || '1', 10);
 
-            // Si cambiamos de año, reinicie el contador a 1
-            if (último año && parseInt(último año)! == año actual) {
+            if (lastYear && parseInt(lastYear, 10) !== currentYear) {
                 nextNum = 1;
             }
 
-            // Formatear número (ej: 1 -> 01)
             const formattedNum = nextNum.toString().padStart(2, '0');
-            const newFolio = `${currentYear}-${formattedNum}`;
-            
-            // Asignar al input
-            folioInput.value = newFolio;
-
-            // Guardar el año actual para futuras comprobaciones
+            folioInput.value = `${currentYear}-${formattedNum}`;
             localStorage.setItem('easycool_cot_year', currentYear);
-
             // --- FIN LÓGICA FOLIO ---
 
             const itemsBody = document.getElementById('items-body');
             const addRowBtn = document.getElementById('addRow');
             const discountInput = document.getElementById('descuento');
-            
-            const formatCurrency = (valor) => {
-                return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
-            };
-
-            const parseCurrency = (str) => {
-                return parseFloat(str.replace(/[^0-9-]/g, '')) || 0;
-            };
 
             const calculateTotals = () => {
-                sea ​​subtotal = 0;
-                const filas = itemsBody.querySelectorAll('tr');
+                let subtotal = 0;
+                const rows = itemsBody.querySelectorAll('tr');
 
-                filas.forEach(fila => {
+                rows.forEach(row => {
                     const qtyInput = row.querySelector('.qty');
                     const priceInput = row.querySelector('.price');
                     const totalInput = row.querySelector('.total-neto');
 
-                    si(cantidadEntrada && precioEntrada) {
+                    if (qtyInput && priceInput) {
                         const qty = parseFloat(qtyInput.value) || 0;
-                        const precio = parseFloat(precioInput.value) || 0;
-                        const filaTotal = cantidad * precio;
+                        const price = parseFloat(priceInput.value) || 0;
+                        const rowTotal = qty * price;
                         
-                        if(totalInput) totalInput.value = formatCurrency(rowTotal);
+                        if (totalInput) totalInput.value = formatCurrency(rowTotal);
                         subtotal += rowTotal;
                     }
                 });
 
                 const descuento = parseFloat(discountInput.value) || 0;
-                const CantidadImponible = Math.max(0, subtotal - descuento);
-                const iva = importe imponible * 0,19;
-                const total = importe imponible + IVA;
+                const taxableAmount = Math.max(0, subtotal - descuento);
+                const iva = taxableAmount * 0.19;
+                const total = taxableAmount + iva;
 
                 document.getElementById('subtotal').textContent = formatCurrency(subtotal);
                 document.getElementById('iva').textContent = formatCurrency(iva);
@@ -311,16 +519,16 @@
             };
 
             const createRow = () => {
-                const fila = document.createElement('tr');
-                fila.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors group align-top';
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors group align-top';
                 
                 row.innerHTML = `
                     <td class="p-2 align-top"><input type="number" class="qty w-full text-center font-bold text-gray-700 bg-transparent focus:bg-white border-transparent focus:border-blue-300 rounded p-1" value="1" min="1" oninput="this.value = Math.abs(this.value)"></td>
-                    <td class="p-2 align-top"><textarea class="w-full bg-transparent resize-y overflow-hidden border-transparent focus:bg-white focus:border-blue-300 rounded p-1" rows="1" placeholder="Descripción..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></td>
+                    <td class="p-2 align-top"><textarea class="desc w-full bg-transparent resize-none overflow-hidden border-transparent focus:bg-white focus:border-blue-300 rounded p-1" rows="1" placeholder="Descripción..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></td>
                     <td class="p-2 align-top"><input type="number" class="price w-full text-right bg-transparent border-transparent focus:bg-white focus:border-blue-300 rounded p-1" placeholder="0" min="0"></td>
                     <td class="p-2 align-top"><input type="text" class="total-neto input-readonly-clean w-full text-right font-mono text-gray-700 font-bold bg-transparent border-none" value="$0" readonly tabindex="-1"></td>
                     <td class="p-2 align-top text-center no-print pt-2">
-                        <button class="delete-row text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                        <button type="button" class="delete-row text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </button>
                     </td>
@@ -333,17 +541,16 @@
                 });
             };
 
-            // Detectores de eventos
             discountInput.addEventListener('input', calculateTotals);
 
             itemsBody.addEventListener('click', (e) => {
                 if (e.target.closest('.delete-row')) {
-                    const fila = e.target.closest('tr');
-                    Si (itemsBody.children.length > 1) {
+                    const row = e.target.closest('tr');
+                    if (itemsBody.children.length > 1) {
                         row.remove();
                     } else {
                         row.querySelector('.qty').value = 1;
-                        row.querySelector('textarea').value = '';
+                        row.querySelector('.desc').value = '';
                         row.querySelector('.price').value = '';
                     }
                     calculateTotals();
@@ -352,42 +559,180 @@
 
             addRowBtn.addEventListener('click', createRow);
 
-            // Inicialización
+            // Fecha de hoy
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('fecha').value = today;
             
-            // Fila inicial única (CAMBIO SOLICITADO)
             createRow();
             calculateTotals();
         });
 
-        // Función de impresión con nombre dinámico y actualización de folio
-        function printCotizacion() {
-            const numeroInput = document.getElementById('cotización_n');
-            const cliente = document.getElementById('cliente').value || 'Cliente';
-            const safeCliente = cliente.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim();
-            
-            const originalTitle = document.title;
-            // CAMBIO: Nombre del archivo PDF formateado como solicitado
-            document.title = `cotización Nº${numeroInput.value} - ${safeCliente}`;
-            
-            setTimeout(() => {
-                window.print();
-                
-                // --- ACTUALIZAR CONTADOR PARA LA PRÓXIMA ---
-                // Solo incrementamos si se imprimió correctamente
-                // Extraemos el número actual del input (ej: "2025-01" -> 1)
-                const partes = numeroInput.value.split('-');
-                if(parts.length === 2) {
-                    const currentNum = parseInt(parts[1]);
-                    if (!isNaN(currentNum)) {
-                        // Guardamos el SIGUIENTE número (actual + 1)
-                        localStorage.setItem('easycool_cot_num', currentNum + 1);
-                    }
+        // Genera el nombre exacto: cotización (número) (nombre del cliente)
+        function getCotizacionFileName() {
+            const numero = (document.getElementById('cotizacion_n').value || '').trim();
+            const cliente = (document.getElementById('cliente').value || 'Cliente').trim();
+            const safeCliente = cliente.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim() || 'Cliente';
+            return `cotización ${numero} ${safeCliente}`.replace(/\s+/g, ' ').trim();
+        }
+
+        // Construye y abre la Vista Previa
+        function openPreview() {
+            // Encabezado
+            document.getElementById('prev-folio').textContent = document.getElementById('cotizacion_n').value || '---';
+            const rawDate = document.getElementById('fecha').value;
+            const formattedDate = rawDate ? new Date(rawDate + 'T00:00:00').toLocaleDateString('es-CL') : '---';
+            document.getElementById('prev-fecha').textContent = formattedDate;
+
+            // Cliente
+            document.getElementById('prev-cliente').textContent = document.getElementById('cliente').value.trim() || 'Cliente';
+            const rutVal = document.getElementById('rut_cliente').value.trim();
+            const dirVal = document.getElementById('direccion').value.trim();
+            document.getElementById('prev-rut').textContent = rutVal ? `RUT: ${rutVal}` : '';
+            document.getElementById('prev-direccion').textContent = dirVal;
+
+            // Condiciones
+            document.getElementById('prev-validez').textContent = document.getElementById('cond_validez').value.trim() || '---';
+            document.getElementById('prev-pago').textContent = document.getElementById('cond_pago').value.trim() || '---';
+            document.getElementById('prev-plazo').textContent = document.getElementById('cond_plazo').value.trim() || 'A convenir';
+
+            // Ítems
+            const prevBody = document.getElementById('prev-items-body');
+            prevBody.innerHTML = '';
+            let subtotal = 0;
+
+            document.querySelectorAll('#items-body tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.qty').value) || 0;
+                const desc = row.querySelector('.desc').value.trim();
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                const rowTotal = qty * price;
+
+                // Omitir filas totalmente vacías en la vista previa
+                if (!desc && price === 0) return;
+
+                subtotal += rowTotal;
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 align-top';
+                tr.innerHTML = `
+                    <td class="p-2 text-center font-bold text-gray-700">${qty}</td>
+                    <td class="p-2 text-gray-800 whitespace-pre-wrap">${escapeHtml(desc || '---')}</td>
+                    <td class="p-2 text-right font-mono text-gray-700">${formatCurrency(price)}</td>
+                    <td class="p-2 text-right font-mono font-bold text-gray-800">${formatCurrency(rowTotal)}</td>
+                `;
+                prevBody.appendChild(tr);
+            });
+
+            if (prevBody.children.length === 0) {
+                prevBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">Sin ítems ingresados</td></tr>`;
+            }
+
+            // Observaciones
+            const obs = document.getElementById('observaciones').value.trim();
+            document.getElementById('prev-observaciones').textContent = obs || 'Sin observaciones adicionales.';
+
+            // Totales
+            const descuento = parseFloat(document.getElementById('descuento').value) || 0;
+            const taxableAmount = Math.max(0, subtotal - descuento);
+            const iva = taxableAmount * 0.19;
+            const total = taxableAmount + iva;
+
+            document.getElementById('prev-subtotal').textContent = formatCurrency(subtotal);
+            const descRow = document.getElementById('prev-descuento-row');
+            if (descuento > 0) {
+                descRow.classList.remove('hidden');
+                document.getElementById('prev-descuento').textContent = `-${formatCurrency(descuento)}`;
+            } else {
+                descRow.classList.add('hidden');
+            }
+            document.getElementById('prev-iva').textContent = formatCurrency(iva);
+            document.getElementById('prev-total').textContent = formatCurrency(total);
+
+            // Mostrar nombre del archivo
+            document.getElementById('preview-filename-label').textContent = `${getCotizacionFileName()}.pdf`;
+
+            // Cambiar de vista
+            document.getElementById('editor-wrapper').classList.add('hidden');
+            document.getElementById('preview-wrapper').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function closePreview() {
+            document.getElementById('preview-wrapper').classList.add('hidden');
+            document.getElementById('editor-wrapper').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function incrementFolioCounter() {
+            const numeroInput = document.getElementById('cotizacion_n');
+            const parts = numeroInput.value.split('-');
+            if (parts.length === 2) {
+                const currentNum = parseInt(parts[1], 10);
+                if (!isNaN(currentNum)) {
+                    localStorage.setItem('easycool_cot_num', currentNum + 1);
                 }
-                
-                setTimeout(() => { document.title = originalTitle; }, 500);
-            }, 100);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-msg');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.remove('opacity-0');
+            setTimeout(() => toast.classList.add('opacity-0'), 3500);
+        }
+
+        // Descarga directa de PDF desde la Vista Previa
+        async function downloadPDF() {
+            const btn = document.getElementById('btn-download-pdf');
+            const btnText = document.getElementById('btn-pdf-text');
+            const sheet = document.getElementById('preview-sheet');
+            const fileName = getCotizacionFileName();
+
+            if (typeof html2pdf === 'undefined') {
+                showToast('No se cargó el generador PDF. Usando impresión...');
+                printCotizacion();
+                return;
+            }
+
+            try {
+                btn.disabled = true;
+                btnText.textContent = 'Generando...';
+                sheet.classList.add('exporting-pdf');
+
+                const opt = {
+                    margin: [0.5, 0.5, 0.5, 0.5],
+                    filename: `${fileName}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                    jsPDF: { unit: 'cm', format: 'letter', orientation: 'portrait' }
+                };
+
+                await html2pdf().set(opt).from(sheet).save();
+                incrementFolioCounter();
+                showToast(`Guardado como: ${fileName}.pdf`);
+            } catch (error) {
+                console.error('Error al generar PDF:', error);
+                showToast('Error al generar PDF. Intenta con el botón Imprimir.');
+            } finally {
+                sheet.classList.remove('exporting-pdf');
+                btn.disabled = false;
+                btnText.textContent = 'Guardar PDF';
+            }
+        }
+
+        // Impresión nativa desde la Vista Previa
+        function printCotizacion() {
+            const originalTitle = document.title;
+            const fileName = getCotizacionFileName();
+            document.title = fileName;
+
+            const restoreTitle = () => {
+                document.title = originalTitle;
+                window.removeEventListener('afterprint', restoreTitle);
+            };
+            window.addEventListener('afterprint', restoreTitle);
+
+            window.print();
+            incrementFolioCounter();
         }
     </script>
 </body>
