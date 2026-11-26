@@ -62,6 +62,12 @@
                 min-height: auto !important;
             }
 
+            /* Evitar cortes incómodos de bloques al imprimir */
+            .avoid-break {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
             /* Colores forzados para impresión */
             .bg-blue-600 { background-color: #2563eb !important; color: white !important; }
             .bg-gray-50 { background-color: #f9fafb !important; }
@@ -88,6 +94,14 @@
             outline: none;
             border-color: #3B82F6;
             box-shadow: 0 0 0 2px #93C5FD;
+        }
+
+        /* Estilo letra chica para Observaciones Técnicas */
+        #observaciones {
+            font-size: 9.5px;
+            line-height: 1.35;
+            overflow: hidden;
+            box-sizing: border-box;
         }
         
         /* Clase para totales (Solo lectura, aspecto limpio) */
@@ -117,6 +131,7 @@
             box-shadow: none !important;
             border-radius: 0 !important;
             min-height: auto !important;
+            padding: 1.5rem !important;
         }
     </style>
 </head>
@@ -131,9 +146,9 @@
             <!-- CONTENIDO SUPERIOR -->
             <div>
                 <!-- ENCABEZADO -->
-                <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-6">
+                <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-5">
                     <div class="w-2/3">
-                        <!-- NUEVO LOGO EASYCOOL HORIZONTAL -->
+                        <!-- LOGO EASYCOOL HORIZONTAL -->
                         <div class="flex flex-row items-center font-montserrat select-none gap-3 mb-2">
                             <div class="relative w-[46px] h-[46px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[9px] gap-[3.5px] shadow-sm">
                                 <div class="h-[6px] w-[28px] bg-[#F1F6FF] rounded-full"></div>
@@ -172,7 +187,7 @@
                 </header>
 
                 <!-- DATOS CLIENTE & CONDICIONES -->
-                <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5 bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <!-- Cliente -->
                     <div>
                         <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Cliente</h3>
@@ -199,7 +214,7 @@
                 </section>
 
                 <!-- TABLA DE ÍTEMS -->
-                <section class="mb-6">
+                <section class="mb-4">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-blue-600 text-white text-[10px] uppercase font-bold tracking-wider">
@@ -219,46 +234,46 @@
                     </button>
                 </section>
                 
-                <!-- TOTALES Y NOTAS -->
-                <section class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2">
-                    <!-- Notas (Izquierda) -->
-                    <div class="md:col-span-7">
-                        <div class="bg-yellow-50 p-3 border rounded border-yellow-200 h-full">
-                            <h4 class="font-bold text-[10px] text-gray-600 mb-1 uppercase">Observaciones Técnicas</h4>
-                            <textarea id="observaciones" class="w-full h-24 text-xs bg-transparent border-none p-0 text-gray-700 resize-none focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Cálculos (Derecha) -->
-                    <div class="md:col-span-5">
-                        <div class="bg-gray-50 p-3 border rounded border-gray-200">
-                            <div class="space-y-1 text-xs">
-                                <div class="flex justify-between text-gray-600">
-                                    <span>Subtotal neto:</span>
-                                    <span id="subtotal" class="font-mono font-medium">$0</span>
-                                </div>
-                                <div class="flex justify-between text-gray-600 items-center">
-                                    <span>Descuento (-):</span>
-                                    <div class="flex items-center gap-1 w-24 justify-end">
-                                        <input type="number" id="descuento" class="w-full text-right font-mono bg-white border border-gray-300 rounded px-1 py-0.5 text-xs focus:ring-1 focus:ring-blue-500" placeholder="0" min="0">
-                                    </div>
-                                </div>
-                                <div class="flex justify-between text-gray-600">
-                                    <span>IVA (19%):</span>
-                                    <span id="iva" class="font-mono font-medium">$0</span>
-                                </div>
-                                <div class="flex justify-between border-t border-gray-300 pt-2 mt-2">
-                                    <span class="font-bold text-sm text-gray-800">TOTAL A PAGAR:</span>
-                                    <span id="total" class="font-bold text-sm text-blue-600 font-mono">$0</span>
+                <!-- 1. BLOQUE DE TOTALES (INMEDIATAMENTE DESPUÉS DE LA TABLA) -->
+                <section class="flex justify-end mb-5">
+                    <div class="w-full sm:w-72 bg-gray-50 p-3.5 border rounded-lg border-gray-200">
+                        <div class="space-y-1.5 text-xs">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Subtotal neto:</span>
+                                <span id="subtotal" class="font-mono font-medium">$0</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 items-center">
+                                <span>Descuento (-):</span>
+                                <div class="flex items-center gap-1 w-24 justify-end">
+                                    <input type="number" id="descuento" class="w-full text-right font-mono bg-white border border-gray-300 rounded px-1 py-0.5 text-xs focus:ring-1 focus:ring-blue-500" placeholder="0" min="0">
                                 </div>
                             </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>IVA (19%):</span>
+                                <span id="iva" class="font-mono font-medium">$0</span>
+                            </div>
+                            <div class="flex justify-between border-t border-gray-300 pt-2 mt-2">
+                                <span class="font-bold text-sm text-gray-800">TOTAL A PAGAR:</span>
+                                <span id="total" class="font-bold text-sm text-blue-600 font-mono">$0</span>
+                            </div>
                         </div>
+                    </div>
+                </section>
+
+                <!-- 2. OBSERVACIONES TÉCNICAS (SIEMPRE DESPUÉS DEL TOTAL A PAGAR - LETRA CHICA) -->
+                <section class="mb-2">
+                    <div class="bg-yellow-50 p-2.5 border rounded-lg border-yellow-200">
+                        <h4 class="font-bold text-[9px] text-gray-600 mb-1 uppercase tracking-wide">Observaciones Técnicas</h4>
+                        <textarea id="observaciones" rows="1" oninput="autoResizeObservaciones()" class="w-full min-h-[75px] bg-transparent border-none p-0 text-gray-600 resize-none overflow-hidden focus:ring-0" placeholder="Escriba aquí alcances técnicos, requerimientos especiales o detalles de garantía...">1. Garantía de Instalación (1 Año): Cubre exclusivamente defectos técnicos de la instalación realizada (fugas en uniones flair, declive de drenaje, fijación de soportes).
+2. Garantía del Equipo (Fallas de Fábrica): Cubre defectos de fabricación durante el primer año (repuestos y mano de obra).
+3. Garantía Extendida (3 Años): Condicionada estrictamente a la realización de una Mantención Preventiva Anual obligatoria ejecutada por EasyCool. A partir del mes 13, cubre el compresor y mano de obra; repuestos (placas, motores) son costeados por el cliente. Si no se realiza la mantención anual, esta garantía caducará a los 12 meses.
+4. Exclusiones (Pérdida de Garantía): La garantía queda automáticamente anulada por: falta de mantenimiento preventivo (al no contar con informe técnico de respaldo emitido por Easy Cool), manipulación por terceros, alzas de voltaje, mala conexión a tierra en el domicilio, o uso indebido. Las visitas técnicas derivadas de estos problemas excluidos tendrán costo de diagnóstico.</textarea>
                     </div>
                 </section>
             </div>
 
             <!-- PIE DE PÁGINA -->
-            <footer class="mt-8 pt-4 border-t-2 border-gray-200 text-center">
+            <footer class="mt-6 pt-4 border-t-2 border-gray-200 text-center">
                 <div class="flex flex-col items-center gap-2 mb-2">
                     <p class="text-[10px] font-bold text-gray-600">Síguenos en nuestras redes:</p>
                     <a href="https://www.instagram.com/easycoolclimatizacion" target="_blank" class="text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline">
@@ -305,16 +320,16 @@
         <div id="preview-sheet" class="w-full bg-white p-8 sm:p-10 rounded-xl shadow-2xl min-h-[27.94cm] flex flex-col justify-between">
             <div>
                 <!-- ENCABEZADO PREVIEW -->
-                <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-6">
+                <header class="flex justify-between items-start border-b-2 border-blue-600 pb-3 mb-4">
                     <div class="w-2/3">
-                        <div class="flex flex-row items-center font-montserrat select-none gap-3 mb-2">
-                            <div class="relative w-[46px] h-[46px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[9px] gap-[3.5px] shadow-sm">
-                                <div class="h-[6px] w-[28px] bg-[#F1F6FF] rounded-full"></div>
-                                <div class="h-[6px] w-[22px] bg-[#E4EEFF] rounded-full"></div>
-                                <div class="h-[6px] w-[17px] bg-[#D2E3FF] rounded-full"></div>
+                        <div class="flex flex-row items-center font-montserrat select-none gap-3 mb-1.5">
+                            <div class="relative w-[44px] h-[44px] bg-[#4981F3] rounded-full flex flex-col justify-center items-end pr-[8.5px] gap-[3px] shadow-sm">
+                                <div class="h-[5.5px] w-[26px] bg-[#F1F6FF] rounded-full"></div>
+                                <div class="h-[5.5px] w-[20px] bg-[#E4EEFF] rounded-full"></div>
+                                <div class="h-[5.5px] w-[15px] bg-[#D2E3FF] rounded-full"></div>
                             </div>
                             <div class="flex flex-col items-start mt-0.5">
-                                <div class="text-[#212B3B] font-[900] text-[20px] tracking-[-0.01em] leading-none mb-1">
+                                <div class="text-[#212B3B] font-[900] text-[19px] tracking-[-0.01em] leading-none mb-1">
                                     EASYCOOL
                                 </div>
                                 <p class="text-[#9FA5B1] font-[500] text-[10px] tracking-[0.01em] leading-none">
@@ -324,14 +339,13 @@
                         </div>
                         <div class="text-[10px] text-gray-500 leading-tight">
                             <p class="font-bold text-gray-700">Climatización EasyCool</p>
-                            <p>RUT: 77.448.234-2</p>
-                            <p>Providencia, Santiago</p>
+                            <p>RUT: 77.448.234-2 | Providencia, Santiago</p>
                             <p>📞 +569 5777 6174 | ✉️ ventas@easycoolclimatizacion.com</p>
                         </div>
                     </div>
                     <div class="w-1/3 text-right">
                         <h1 class="text-xl font-bold text-gray-800 uppercase">COTIZACIÓN</h1>
-                        <div class="mt-2 flex flex-col items-end gap-1">
+                        <div class="mt-1.5 flex flex-col items-end gap-0.5">
                             <div class="text-sm font-bold text-red-600">
                                 <span class="text-xs text-gray-500 mr-1">N°</span><span id="prev-folio"></span>
                             </div>
@@ -342,19 +356,19 @@
                     </div>
                 </header>
 
-                <!-- CLIENTE Y CONDICIONES PREVIEW -->
-                <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <!-- CLIENTE Y CONDICIONES PREVIEW (SIEMPRE EN 2 COLUMNAS PARA AHORRAR ESPACIO EN PDF) -->
+                <section class="grid grid-cols-2 gap-6 mb-4 bg-gray-50 p-3.5 rounded-lg border border-gray-200 avoid-break">
                     <div>
-                        <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Cliente</h3>
-                        <div class="space-y-1">
+                        <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-1.5 border-b border-gray-300 pb-1">Cliente</h3>
+                        <div class="space-y-0.5">
                             <p id="prev-cliente" class="font-bold text-gray-800 text-sm"></p>
                             <p id="prev-rut" class="text-xs text-gray-600"></p>
                             <p id="prev-direccion" class="text-xs text-gray-600"></p>
                         </div>
                     </div>
                     <div>
-                        <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-2 border-b border-gray-300 pb-1">Condiciones Comerciales</h3>
-                        <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs items-center">
+                        <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-1.5 border-b border-gray-300 pb-1">Condiciones Comerciales</h3>
+                        <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-xs items-center">
                             <span class="text-gray-500 font-medium">Validez:</span>
                             <span id="prev-validez" class="text-gray-800 font-medium"></span>
                             
@@ -368,7 +382,7 @@
                 </section>
 
                 <!-- TABLA PREVIEW -->
-                <section class="mb-6">
+                <section class="mb-4">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-blue-600 text-white text-[10px] uppercase font-bold tracking-wider">
@@ -384,43 +398,42 @@
                     </table>
                 </section>
 
-                <!-- TOTALES Y NOTAS PREVIEW -->
-                <section class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-2">
-                    <div class="md:col-span-7">
-                        <div id="prev-notes-box" class="bg-yellow-50 p-3 border rounded border-yellow-200 h-full">
-                            <h4 class="font-bold text-[10px] text-gray-600 mb-1 uppercase">Observaciones Técnicas</h4>
-                            <p id="prev-observaciones" class="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed"></p>
-                        </div>
-                    </div>
-
-                    <div class="md:col-span-5">
-                        <div class="bg-gray-50 p-3 border rounded border-gray-200">
-                            <div class="space-y-1.5 text-xs">
-                                <div class="flex justify-between text-gray-600">
-                                    <span>Subtotal neto:</span>
-                                    <span id="prev-subtotal" class="font-mono font-medium">$0</span>
-                                </div>
-                                <div id="prev-descuento-row" class="flex justify-between text-gray-600">
-                                    <span>Descuento (-):</span>
-                                    <span id="prev-descuento" class="font-mono font-medium text-red-600">-$0</span>
-                                </div>
-                                <div class="flex justify-between text-gray-600">
-                                    <span>IVA (19%):</span>
-                                    <span id="prev-iva" class="font-mono font-medium">$0</span>
-                                </div>
-                                <div class="flex justify-between border-t border-gray-300 pt-2 mt-2">
-                                    <span class="font-bold text-sm text-gray-800">TOTAL A PAGAR:</span>
-                                    <span id="prev-total" class="font-bold text-sm text-blue-600 font-mono">$0</span>
-                                </div>
+                <!-- 1. TOTALES PREVIEW (INMEDIATAMENTE DESPUÉS DE LA TABLA DE ÍTEMS) -->
+                <section class="flex justify-end mb-4 avoid-break">
+                    <div class="w-64 sm:w-72 bg-gray-50 p-3 border rounded-lg border-gray-200">
+                        <div class="space-y-1 text-xs">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Subtotal neto:</span>
+                                <span id="prev-subtotal" class="font-mono font-medium">$0</span>
+                            </div>
+                            <div id="prev-descuento-row" class="flex justify-between text-gray-600">
+                                <span>Descuento (-):</span>
+                                <span id="prev-descuento" class="font-mono font-medium text-red-600">-$0</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>IVA (19%):</span>
+                                <span id="prev-iva" class="font-mono font-medium">$0</span>
+                            </div>
+                            <div class="flex justify-between border-t border-gray-300 pt-1.5 mt-1.5">
+                                <span class="font-bold text-sm text-gray-800">TOTAL A PAGAR:</span>
+                                <span id="prev-total" class="font-bold text-sm text-blue-600 font-mono">$0</span>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                <!-- 2. OBSERVACIONES TÉCNICAS PREVIEW (DESPUÉS DEL TOTAL A PAGAR - LETRA CHICA) -->
+                <section class="mb-2 avoid-break">
+                    <div id="prev-notes-box" class="bg-yellow-50 p-2.5 border rounded-lg border-yellow-200 overflow-visible h-auto">
+                        <h4 class="font-bold text-[8.5px] text-gray-600 mb-1 uppercase tracking-wide">Observaciones Técnicas</h4>
+                        <p id="prev-observaciones" class="text-[8.5px] text-gray-600 whitespace-pre-wrap break-words leading-tight overflow-visible h-auto"></p>
                     </div>
                 </section>
             </div>
 
             <!-- PIE DE PÁGINA PREVIEW -->
-            <footer class="mt-8 pt-4 border-t-2 border-gray-200 text-center">
-                <div class="flex flex-col items-center gap-2 mb-2">
+            <footer class="mt-5 pt-3 border-t-2 border-gray-200 text-center avoid-break">
+                <div class="flex flex-col items-center gap-1.5 mb-1.5">
                     <p class="text-[10px] font-bold text-gray-600">Síguenos en nuestras redes:</p>
                     <a href="https://www.instagram.com/easycoolclimatizacion" target="_blank" class="text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline">
                         📸 Instagram: @easycoolclimatizacion
@@ -432,7 +445,7 @@
                         </a>
                     </div>
                 </div>
-                <p class="text-[8px] text-gray-400 mt-2">EasyCool Climatización - Documento generado digitalmente.</p>
+                <p class="text-[8px] text-gray-400 mt-1.5">EasyCool Climatización - Documento generado digitalmente.</p>
             </footer>
         </div>
 
@@ -457,37 +470,69 @@
     <div id="toast-msg" class="fixed top-5 right-5 z-50 bg-gray-900 text-white text-xs font-medium px-4 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 no-print"></div>
 
     <script>
+        /**
+         * Formatea un valor numérico a moneda chilena (CLP).
+         */
         const formatCurrency = (value) => {
             return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
         };
 
+        /**
+         * Escapa caracteres HTML para evitar inyección de código en la vista previa.
+         */
         const escapeHtml = (text) => {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         };
 
+        /**
+         * Ajusta dinámicamente la altura del cuadro de Observaciones Técnicas
+         * para mostrar siempre el texto completo sin barra de desplazamiento.
+         */
+        function autoResizeObservaciones() {
+            const obsTextarea = document.getElementById('observaciones');
+            if (!obsTextarea) return;
+            obsTextarea.style.height = 'auto';
+            obsTextarea.style.height = (obsTextarea.scrollHeight + 4) + 'px';
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             // --- LÓGICA DE FOLIO AUTOMÁTICO INTELIGENTE ---
+            // En 2026 inicia desde 2026-2216; al cambiar de año calendario reinicia automáticamente en AÑO-001 (ej: 2027-001)
             const folioInput = document.getElementById('cotizacion_n');
             const currentYear = new Date().getFullYear();
+            const BASE_YEAR = 2026;
+            const BASE_FOLIO = 2216;
             
-            const lastYear = localStorage.getItem('easycool_cot_year');
-            let nextNum = parseInt(localStorage.getItem('easycool_cot_num') || '1', 10);
+            const lastYear = parseInt(localStorage.getItem('easycool_cot_year'), 10);
+            const storedNum = parseInt(localStorage.getItem('easycool_cot_num'), 10);
+            let nextNum;
 
-            if (lastYear && parseInt(lastYear, 10) !== currentYear) {
-                nextNum = 1;
+            if (isNaN(lastYear) || lastYear !== currentYear) {
+                // Primer uso o cambio de año calendario
+                nextNum = (currentYear === BASE_YEAR) ? BASE_FOLIO : 1;
+            } else {
+                // Mismo año calendario
+                nextNum = isNaN(storedNum) ? ((currentYear === BASE_YEAR) ? BASE_FOLIO : 1) : storedNum;
+                if (currentYear === BASE_YEAR && nextNum < BASE_FOLIO) {
+                    nextNum = BASE_FOLIO;
+                }
             }
 
-            const formattedNum = nextNum.toString().padStart(2, '0');
+            const formattedNum = nextNum.toString().padStart(3, '0');
             folioInput.value = `${currentYear}-${formattedNum}`;
             localStorage.setItem('easycool_cot_year', currentYear);
+            localStorage.setItem('easycool_cot_num', nextNum);
             // --- FIN LÓGICA FOLIO ---
 
             const itemsBody = document.getElementById('items-body');
             const addRowBtn = document.getElementById('addRow');
             const discountInput = document.getElementById('descuento');
 
+            /**
+             * Recalcula subtotal neto, descuento, IVA (19%) y total a pagar.
+             */
             const calculateTotals = () => {
                 let subtotal = 0;
                 const rows = itemsBody.querySelectorAll('tr');
@@ -517,6 +562,9 @@
                 document.getElementById('total').textContent = formatCurrency(total);
             };
 
+            /**
+             * Crea una nueva fila editable en la tabla de ítems.
+             */
             const createRow = () => {
                 const row = document.createElement('tr');
                 row.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors group align-top';
@@ -527,7 +575,7 @@
                     <td class="p-2 align-top"><input type="number" class="price w-full text-right bg-transparent border-transparent focus:bg-white focus:border-blue-300 rounded p-1" placeholder="0" min="0"></td>
                     <td class="p-2 align-top"><input type="text" class="total-neto input-readonly-clean w-full text-right font-mono text-gray-700 font-bold bg-transparent border-none" value="$0" readonly tabindex="-1"></td>
                     <td class="p-2 align-top text-center no-print pt-2">
-                        <button type="button" class="delete-row text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer">
+                        <button type="button" class="delete-row text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" title="Eliminar ítem">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </button>
                     </td>
@@ -558,20 +606,28 @@
 
             addRowBtn.addEventListener('click', createRow);
 
-            // Fecha de hoy
+            // Fecha de hoy por defecto
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('fecha').value = today;
+
+            // Ajustar altura inicial del campo de Observaciones Técnicas para mostrar todo el texto completo
+            autoResizeObservaciones();
+            window.addEventListener('load', autoResizeObservaciones);
+            window.addEventListener('resize', autoResizeObservaciones);
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(autoResizeObservaciones);
+            }
             
             createRow();
             calculateTotals();
         });
 
-        // Genera el nombre exacto: cotización (número) (nombre del cliente)
+        // Genera el nombre exacto: Cotización N°2026-2216 Nombre del cliente
         function getCotizacionFileName() {
             const numero = (document.getElementById('cotizacion_n').value || '').trim();
             const cliente = (document.getElementById('cliente').value || 'Cliente').trim();
             const safeCliente = cliente.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim() || 'Cliente';
-            return `cotización ${numero} ${safeCliente}`.replace(/\s+/g, ' ').trim();
+            return `Cotización N°${numero} ${safeCliente}`.replace(/\s+/g, ' ').trim();
         }
 
         // Construye y abre la Vista Previa
@@ -657,6 +713,7 @@
         function closePreview() {
             document.getElementById('preview-wrapper').classList.add('hidden');
             document.getElementById('editor-wrapper').classList.remove('hidden');
+            autoResizeObservaciones();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -664,9 +721,19 @@
             const numeroInput = document.getElementById('cotizacion_n');
             const parts = numeroInput.value.split('-');
             if (parts.length === 2) {
+                const folioYear = parseInt(parts[0], 10);
                 const currentNum = parseInt(parts[1], 10);
-                if (!isNaN(currentNum)) {
-                    localStorage.setItem('easycool_cot_num', currentNum + 1);
+                const currentYear = new Date().getFullYear();
+
+                if (!isNaN(folioYear) && !isNaN(currentNum)) {
+                    if (folioYear === currentYear) {
+                        localStorage.setItem('easycool_cot_year', currentYear);
+                        localStorage.setItem('easycool_cot_num', currentNum + 1);
+                    } else {
+                        // Si cambió el año calendario mientras la cotización estaba abierta
+                        localStorage.setItem('easycool_cot_year', currentYear);
+                        localStorage.setItem('easycool_cot_num', 1);
+                    }
                 }
             }
         }
