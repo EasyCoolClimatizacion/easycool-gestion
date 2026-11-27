@@ -1,530 +1,2829 @@
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- === NÚCLEO PWA === -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <!-- === METADATOS PWA === -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#ffffff">
-    <meta name="apple-mobile-web-app-title" content="EasyCool Mantención">
-    <!-- Icono genérico para la PWA (base64) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❄️</text></svg>">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-title" content="EasyCool Pro">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 110 110%22><circle cx=%2255%22 cy=%2255%22 r=%2255%22 fill=%22%234981F3%22/><rect x=%2223%22 y=%2226%22 width=%2267%22 height=%2214%22 rx=%227%22 fill=%22%23F1F6FF%22/><rect x=%2237%22 y=%2248%22 width=%2253%22 height=%2214%22 rx=%227%22 fill=%22%23E4EEFF%22/><rect x=%2250%22 y=%2270%22 width=%2240%22 height=%2214%22 rx=%227%22 fill=%22%23D2E3FF%22/></svg>">
 
-    <title>EasyCool - Informe Multi-Equipo</title>
+    <title>EasyCool Pro - Informes Técnicos HVAC</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-    
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
-        
-        /* Edición Visual */
-        [contenteditable="true"]:hover { outline: 2px dashed #a5b4fc; cursor: text; }
-        [contenteditable="true"]:focus { outline: 2px solid #6366f1; background-color: #eef2ff; }
-        
-        canvas.signature-pad { background-color: #fff; border-bottom: 2px solid #000; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
-        .file-label { font-size: 0.75rem; color: #4b5563; margin-bottom: 0.25rem; display: block; font-weight: 600; }
-        .equipment-card { border-left: 4px solid #3b82f6; transition: all 0.3s ease; }
-        
-        /* Animaciones IA */
-        .ai-loading { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; opacity: 0.7; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#4981F3',
+                            dark: '#212B3B',
+                            gray: '#9FA5B1',
+                            bar1: '#F1F6FF',
+                            bar2: '#E4EEFF',
+                            bar3: '#D2E3FF'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
-        /* === ESTILOS DE IMPRESIÓN PROFESIONAL (Carta Chile) === */
+    <style>
+        /* Fallback de fuente y estilos base offline */
+        :root {
+            --ec-navy: #1e3a8a;
+            --ec-blue: #2563eb;
+            --ec-slate: #f1f5f9;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        /* Edición visual en vista de reporte */
+        [contenteditable="true"]:hover {
+            outline: 2px dashed #93c5fd;
+            border-radius: 4px;
+            cursor: text;
+        }
+        [contenteditable="true"]:focus {
+            outline: 2px solid #2563eb;
+            background-color: #eff6ff;
+            border-radius: 4px;
+        }
+
+        /* Canvas de firma HD */
+        canvas.signature-pad {
+            background-color: #ffffff;
+            border-bottom: 2px solid #334155;
+            cursor: crosshair;
+            touch-action: none;
+            display: block;
+        }
+        .sig-box-frame {
+            border: 1px dashed #cbd5e1;
+            border-bottom: 2px solid #334155;
+            border-radius: 0.5rem 0.5rem 0 0;
+            background-color: #ffffff;
+        }
+        canvas.signature-zoom-pad {
+            background-color: #ffffff;
+            cursor: crosshair;
+            touch-action: none;
+            display: block;
+        }
+
+        /* Tarjetas de equipo */
+        .equipment-card {
+            border-left: 5px solid #2563eb;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .equipment-card.sem-verde { border-left-color: #16a34a; }
+        .equipment-card.sem-amarillo { border-left-color: #d97706; }
+        .equipment-card.sem-rojo { border-left-color: #dc2626; }
+
+        /* Animación carga IA */
+        .ai-pulse {
+            animation: pulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.45; }
+        }
+
+        /* Scrollbar sutil */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+
+        /* Barra inferior adaptada a gestos de navegación Android / Samsung Galaxy */
+        .safe-bottom-bar {
+            padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        }
+
+        /* === ESTILOS DE IMPRESIÓN PROFESIONAL (Tamaño Carta Chile) === */
         @media print {
-            /* Tamaño Carta (Letter): 21.59cm x 27.94cm */
-            @page { size: letter; margin: 1cm; }
-            
-            body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 11px; }
-            .no-print { display: none !important; }
-            .printable-section { 
-                display: block !important; 
-                width: 100% !important; 
-                max-width: 100% !important; 
-                box-shadow: none !important; 
-                border: none !important; 
-                padding: 0 !important; 
-                margin: 0 !important; 
+            @page {
+                size: letter portrait;
+                margin: 1cm 1cm 1.1cm 1cm;
             }
-            .page-break-inside-avoid { page-break-inside: avoid; }
-            .equipment-section { 
-                page-break-inside: avoid; 
-                border: 1px solid #e5e7eb;
-                margin-bottom: 20px; 
-                border-radius: 6px;
-                overflow: hidden;
+            html, body {
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                font-size: 10.5px;
             }
-            /* Ajustes de texto para impresión */
-            h1 { font-size: 18px !important; }
-            h2 { font-size: 14px !important; }
-            p, td, th { font-size: 10px !important; }
-            .bg-blue-600 { background-color: #2563eb !important; color: white !important; }
-            .bg-gray-100 { background-color: #f3f4f6 !important; }
-            .bg-blue-50 { background-color: #eff6ff !important; }
-            .bg-green-100 { background-color: #dcfce7 !important; border: 1px solid #bbf7d0 !important; }
-            .bg-yellow-50 { background-color: #fefce8 !important; border: 1px solid #fef08a !important; }
-            
-            /* Forzar visualización de enlaces en PDF */
-            a { text-decoration: none !important; color: #2563eb !important; }
+            .no-print {
+                display: none !important;
+            }
+            .printable-section {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: auto !important;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .page-break-inside-avoid,
+            .break-inside-avoid {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            .equipment-section {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                border: 1px solid #cbd5e1 !important;
+                margin-bottom: 14px !important;
+                border-radius: 8px !important;
+                overflow: hidden !important;
+            }
+            .signatures-footer-wrap {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            .sig-box-frame {
+                border: none !important;
+                border-bottom: 1.5px solid #1e293b !important;
+                border-radius: 0 !important;
+            }
+            .sig-print-area {
+                height: 115px !important;
+            }
+            .easycool-logo, .easycool-logo * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            a {
+                text-decoration: none !important;
+                color: #1d4ed8 !important;
+            }
         }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body class="pb-24 sm:pb-12">
 
-    <!-- =========== PANTALLA 1: FORMULARIO =========== -->
-    <div id="form-section">
-        <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-2xl mb-8 no-print">
-            
-            <!-- CABECERA OFICIAL (LOGO ORIGINAL) -->
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <div>
-                    <!-- LOGO RESTAURADO -->
-                    <svg viewBox="0 0 250 50" class="h-12 w-auto"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
-                </div>
-                <div class="text-right">
-                    <p class="text-xs text-gray-400" id="current-date-display">25-11-2025</p>
-                    <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10 mt-1">✨ AI Powered</span>
-                </div>
-            </div>
-            
-            <!-- DATOS CLIENTE -->
-            <div class="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h3 class="text-sm font-bold text-gray-700 uppercase mb-3 border-b pb-1">Datos del Cliente</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input id="gen-cliente-nombre" type="text" placeholder="Nombre Completo" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm">
-                    <input id="gen-cliente-rut" type="text" placeholder="RUT" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm">
-                    <input id="gen-cliente-direccion" type="text" placeholder="Dirección" class="block w-full rounded border-gray-300 shadow-sm p-2 text-sm md:col-span-2">
-                </div>
-            </div>
+    <!-- =========== TOAST NOTIFICACIONES =========== -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-xs w-full pointer-events-none no-print"></div>
 
-            <!-- CONTENEDOR DE EQUIPOS -->
-            <div id="equipments-container">
-                <!-- Los equipos se agregan aquí dinámicamente -->
-            </div>
-
-            <!-- BOTONES ACCIÓN -->
-            <button onclick="addEquipmentForm()" class="w-full py-3 border-2 border-dashed border-blue-300 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors mb-8 flex justify-center items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                AGREGAR OTRO EQUIPO
-            </button>
-            
-            <button onclick="generateReport()" class="w-full bg-gray-900 text-white font-bold py-4 px-6 rounded-lg hover:bg-black transition-colors shadow-lg flex items-center justify-center gap-2">
-                <span>📄</span> GENERAR INFORME CONSOLIDADO
-            </button>
-
-            <div class="mt-8 text-center pt-6 border-t">
-                <button onclick="downloadApp()" class="text-xs text-blue-500 underline">📥 Descargar App</button>
+    <!-- =========== MODAL CONFIRMACIÓN PERSONALIZADO (SIN ALERT/CONFIRM) =========== -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[90] hidden items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200">
+            <h3 id="confirm-title" class="text-lg font-bold text-slate-900 mb-2">Confirmar acción</h3>
+            <p id="confirm-message" class="text-sm text-slate-600 mb-6"></p>
+            <div class="flex justify-end gap-3">
+                <button id="confirm-cancel-btn" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition">Cancelar</button>
+                <button id="confirm-ok-btn" type="button" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition">Confirmar</button>
             </div>
         </div>
     </div>
 
-    <!-- =========== PANTALLA 2: INFORME FINAL (CARTA) =========== -->
-    <!-- max-w ajustado para carta aprox 21.6cm -->
-    <div id="report-section" class="max-w-[21.5cm] mx-auto bg-white p-8 shadow-2xl printable-section hidden min-h-[27.9cm] relative flex flex-col justify-between">
-        
-        <!-- WRAPPER PARA CONTENIDO PRINCIPAL -->
+    <!-- =========== MODAL DIRECTORIO DE CLIENTES Y RESPALDO JSON =========== -->
+    <div id="clients-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[80] hidden items-center justify-center p-3 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[88vh] flex flex-col border border-slate-200 overflow-hidden">
+            <div class="p-4 sm:p-5 bg-slate-900 text-white flex justify-between items-center">
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold">Directorio de Clientes y Catastro</h3>
+                    <p class="text-xs text-slate-300">Precarga clientes recurrentes y sus equipos en 1 clic</p>
+                </div>
+                <button type="button" onclick="closeModal('clients-modal')" class="p-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white">✕</button>
+            </div>
+            <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap gap-2 justify-between items-center">
+                <button type="button" onclick="saveCurrentClientToDirectory()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm transition">
+                    💾 Guardar Cliente + Equipos Actuales
+                </button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="exportBackupJSON()" class="px-3 py-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition">
+                        📤 Exportar JSON
+                    </button>
+                    <label class="px-3 py-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl cursor-pointer transition">
+                        📥 Importar JSON
+                        <input type="file" accept=".json" class="hidden" onchange="importBackupJSON(this)">
+                    </label>
+                </div>
+            </div>
+            <div id="clients-list" class="p-4 overflow-y-auto space-y-3 flex-1">
+                <!-- Lista dinámica de clientes -->
+            </div>
+        </div>
+    </div>
+
+    <!-- =========== MODAL CONFIGURACIÓN (TÉCNICOS, FOLIO, API KEY SEGURA) =========== -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[80] hidden items-center justify-center p-3 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[88vh] flex flex-col border border-slate-200 overflow-hidden">
+            <div class="p-4 sm:p-5 bg-slate-900 text-white flex justify-between items-center">
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold">Configuración EasyCool Pro</h3>
+                    <p class="text-xs text-slate-300">Técnicos, correlativo de folios y clave IA local</p>
+                </div>
+                <button type="button" onclick="closeModal('settings-modal')" class="p-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white">✕</button>
+            </div>
+            <div class="p-5 overflow-y-auto space-y-6">
+                <!-- Correlativo Folio -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Correlativo de Folios</h4>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1">
+                            <label class="block text-xs text-slate-500 mb-1">Próximo número de folio automático</label>
+                            <input id="cfg-next-folio" type="number" min="1" class="w-full rounded-xl border border-slate-300 p-2 text-sm font-semibold">
+                        </div>
+                        <button type="button" onclick="saveFolioConfig()" class="mt-5 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700">Guardar</button>
+                    </div>
+                </div>
+
+                <!-- Técnicos -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Técnicos Responsables</h4>
+                    <div id="cfg-tech-list" class="space-y-2 mb-3"></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-200">
+                        <input id="cfg-new-tech-name" type="text" placeholder="Nombre técnico" class="rounded-xl border border-slate-300 p-2 text-xs">
+                        <input id="cfg-new-tech-rut" type="text" placeholder="RUT (ej: 15.963.315-2)" oninput="formatRutInput(this)" class="rounded-xl border border-slate-300 p-2 text-xs">
+                        <button type="button" onclick="addTechnician()" class="bg-slate-800 hover:bg-black text-white text-xs font-bold rounded-xl py-2 px-3">+ Agregar Técnico</button>
+                    </div>
+                </div>
+
+                <!-- Seguridad API Key Gemini -->
+                <div class="bg-purple-50 p-4 rounded-xl border border-purple-200">
+                    <h4 class="text-xs font-bold text-purple-900 uppercase mb-1">✨ Clave API de Gemini (Opcional / Uso Externo)</h4>
+                    <p class="text-xs text-purple-700 mb-2">Tu clave ya no se guarda en el código HTML por seguridad. Si usas esta app fuera de este entorno (en tu servidor o celular), pega aquí tu clave rotada; se guardará solo en este dispositivo.</p>
+                    <div class="flex gap-2">
+                        <input id="cfg-api-key" type="password" placeholder="AIza... (dejar vacío para usar entorno integrado)" class="flex-1 rounded-xl border border-purple-300 p-2 text-xs bg-white">
+                        <button type="button" onclick="saveApiKeyConfig()" class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-xl">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========== MODAL ZOOM DE FIRMA (PANTALLA AMPLIA PARA CELULAR/TABLET) =========== -->
+    <div id="signature-zoom-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs z-[95] hidden items-center justify-center p-2 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full flex flex-col border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 sm:px-5 sm:py-4 bg-slate-900 text-white flex justify-between items-center gap-3">
+                <div>
+                    <h3 id="sig-zoom-title" class="text-sm sm:text-base font-bold">Ampliar Firma</h3>
+                    <p class="text-[11px] text-slate-300">Firma cómodamente con tu dedo o lápiz táctil (puedes girar el teléfono en horizontal)</p>
+                </div>
+                <button type="button" onclick="closeSignatureZoom()" class="p-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white">✕</button>
+            </div>
+            <div class="p-3 sm:p-5 bg-slate-100">
+                <div class="relative bg-white rounded-xl border-2 border-dashed border-blue-300 overflow-hidden shadow-inner">
+                    <canvas id="sig-zoom-canvas" class="signature-zoom-pad w-full h-64 sm:h-80"></canvas>
+                    <div class="pointer-events-none absolute bottom-8 left-6 right-6 border-b border-slate-300"></div>
+                    <span class="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Firme sobre la línea</span>
+                </div>
+            </div>
+            <div class="p-3 sm:p-4 bg-white border-t border-slate-200 flex flex-wrap justify-between items-center gap-2">
+                <button type="button" onclick="clearZoomCanvas()" class="px-4 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs sm:text-sm font-bold transition">
+                    🗑 Limpiar trazo
+                </button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeSignatureZoom()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold transition">
+                        Cancelar
+                    </button>
+                    <button type="button" onclick="applyZoomedSignature()" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold shadow-md transition">
+                        ✓ Guardar Firma en Informe
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========== PANTALLA 1: FORMULARIO MULTI-EQUIPO =========== -->
+    <div id="form-section" class="px-2 sm:px-6 pt-3 sm:pt-6 no-print">
+        <div class="max-w-5xl mx-auto bg-white p-4 sm:p-7 rounded-2xl shadow-xl border border-slate-200">
+
+            <!-- CABECERA OFICIAL EASYCOOL + BARRA DE ACCIONES -->
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6 border-b border-slate-200 pb-4">
+                <div class="flex items-center justify-between">
+                    <!-- Nuevo Logo Horizontal EasyCool -->
+                    <div class="easycool-logo flex flex-row items-center font-montserrat select-none gap-3 sm:gap-3.5">
+                        <div class="relative w-[52px] h-[52px] sm:w-[58px] sm:h-[58px] bg-brand-blue rounded-full flex flex-col justify-center items-end pr-[9.5px] sm:pr-[10.5px] gap-[3.8px] sm:gap-[4.2px] shadow-sm shrink-0">
+                            <div class="h-[6.6px] sm:h-[7.4px] w-[31.6px] sm:w-[35.3px] bg-brand-bar1 rounded-full"></div>
+                            <div class="h-[6.6px] sm:h-[7.4px] w-[25px] sm:w-[28px] bg-brand-bar2 rounded-full"></div>
+                            <div class="h-[6.6px] sm:h-[7.4px] w-[19px] sm:w-[21px] bg-brand-bar3 rounded-full"></div>
+                        </div>
+                        <div class="flex flex-col items-start">
+                            <span class="text-brand-dark font-[900] text-[20px] sm:text-[23px] tracking-[-0.01em] leading-none mb-0.5">
+                                EASYCOOL
+                            </span>
+                            <span class="text-brand-gray font-[500] text-[10px] sm:text-[11px] tracking-[0.01em] leading-none mt-0.5">
+                                Climatización
+                            </span>
+                        </div>
+                    </div>
+                    <div class="md:hidden text-right">
+                        <span id="autosave-badge-mobile" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 border border-emerald-200">● Borrador listo</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <span id="autosave-badge" class="hidden md:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 border border-emerald-200 mr-1">● Guardado automático</span>
+                    <button type="button" onclick="openClientsModal()" class="px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition flex items-center gap-1.5">
+                        <span>🏢</span> Clientes
+                    </button>
+                    <button type="button" onclick="openSettingsModal()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold transition flex items-center gap-1.5">
+                        <span>⚙️</span> Config
+                    </button>
+                    <button type="button" onclick="confirmNewReport()" class="px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold transition flex items-center gap-1.5">
+                        <span>🆕</span> Nuevo
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 1: DATOS DE LA ORDEN DE TRABAJO Y CLIENTE -->
+            <div class="mb-7 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-3 border-b border-slate-200 pb-2">
+                    <h2 class="text-xs sm:text-sm font-extrabold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                        Datos de la Orden de Trabajo y Cliente
+                    </h2>
+                    <button type="button" onclick="saveCurrentClientToDirectory()" class="text-xs font-semibold text-blue-600 hover:text-blue-800 underline">
+                        + Guardar en Directorio
+                    </button>
+                </div>
+
+                <!-- Fila OT -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">N° Folio OT</label>
+                        <input id="gen-folio" type="text" oninput="scheduleAutoSave()" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-red-600 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Fecha Servicio</label>
+                        <input id="gen-fecha" type="date" onchange="scheduleAutoSave()" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Tipo de Mantenimiento</label>
+                        <select id="gen-tipo-servicio" onchange="handleServiceTypeChange()" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Preventivo Nivel 2 (Estándar ASHRAE 180)">Preventivo Nivel 2 (Estándar)</option>
+                            <option value="Preventivo Nivel 1 (Básico / Operacional)">Preventivo Nivel 1 (Básico)</option>
+                            <option value="Preventivo Nivel 3 (Profundo / Overhaul)">Preventivo Nivel 3 (Profundo)</option>
+                            <option value="Mantenimiento Predictivo">Mantenimiento Predictivo</option>
+                            <option value="Mantenimiento Correctivo / Diagnóstico">Correctivo / Diagnóstico</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Técnico Responsable</label>
+                        <select id="gen-tecnico" onchange="scheduleAutoSave()" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <!-- Poblado dinámicamente -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Guía Interna Exclusiva para el Técnico (NO aparece en el PDF) -->
+                <div id="tech-service-guide" class="mb-4 rounded-xl border border-l-4 p-3 transition-all duration-200 no-print"></div>
+
+                <!-- Fila Cliente -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Cliente / Razón Social *</label>
+                        <input id="gen-cliente-nombre" type="text" oninput="scheduleAutoSave()" placeholder="Nombre completo o Empresa" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-[11px] font-bold text-slate-600">RUT</label>
+                            <span id="rut-status" class="text-[10px] font-bold"></span>
+                        </div>
+                        <input id="gen-cliente-rut" type="text" oninput="handleClientRutInput(this)" placeholder="Ej: 76.123.456-K" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Contacto / WhatsApp Cliente</label>
+                        <div class="flex items-center w-full rounded-xl border border-slate-300 bg-white overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                            <span class="bg-slate-100 text-slate-700 font-bold text-sm px-3 py-2 border-r border-slate-300 select-none shrink-0">+569</span>
+                            <input id="gen-cliente-contacto" type="tel" inputmode="numeric" maxlength="9" oninput="handleClientPhoneInput(this)" placeholder="1234 5678" class="w-full bg-white px-3 py-2 text-sm outline-none">
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 lg:col-span-3">
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Dirección / Sucursal</label>
+                        <input id="gen-cliente-direccion" type="text" oninput="scheduleAutoSave()" placeholder="Dirección completa, comuna, piso u oficina" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: CONTENEDOR DINÁMICO DE EQUIPOS -->
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xs sm:text-sm font-extrabold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                    Equipos Intervenidos (<span id="eq-total-badge">0</span>)
+                </h2>
+                <span class="text-[11px] text-slate-500 hidden sm:inline">Las fotos se comprimen automáticamente para PDF liviano</span>
+            </div>
+
+            <div id="equipments-container" class="space-y-6 mb-6">
+                <!-- Tarjetas de equipo renderizadas dinámicamente -->
+            </div>
+
+            <!-- BOTONES DE ACCIÓN PRINCIPALES -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <button type="button" onclick="addEquipment()" class="w-full py-3.5 px-4 border-2 border-dashed border-blue-400 bg-blue-50/50 text-blue-700 font-bold rounded-2xl hover:bg-blue-50 transition flex justify-center items-center gap-2 text-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                    AGREGAR OTRO EQUIPO
+                </button>
+                <button type="button" onclick="generateReport()" class="w-full bg-slate-900 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-2xl transition shadow-lg flex items-center justify-center gap-2 text-sm">
+                    <span>📄</span> GENERAR INFORME CONSOLIDADO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========== PANTALLA 2: INFORME FINAL (FORMATO CARTA CHILE) =========== -->
+    <div id="report-section" class="max-w-[21.5cm] mx-auto bg-white p-5 sm:p-8 sm:my-6 rounded-none sm:rounded-2xl shadow-2xl printable-section hidden min-h-[27.9cm] relative flex flex-col justify-between">
         <div>
-            <!-- HEADER INFORME (COMPLETO) -->
-            <header class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-6">
-                <div class="w-2/3">
-                    <svg viewBox="0 0 250 50" class="h-12 w-auto mb-2"><g transform="translate(0, -2.5) scale(0.9)"><rect y="5" width="50" height="10" rx="5" fill="#3B82F6" opacity="0.8"></rect><rect x="5" y="20" width="45" height="10" rx="5" fill="#60A5FA" opacity="0.9"></rect><rect x="10" y="35" width="40" height="10" rx="5" fill="#93C5FD"></rect></g><text x="60" y="22" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#1f2937">EASYCOOL</text><text x="60" y="40" font-family="Inter, sans-serif" font-size="14" font-weight="400" fill="#6b7280">Climatización</text></svg>
-                    <div class="text-[10px] text-gray-500 leading-tight">
-                        <p class="font-bold text-gray-700">EasyCool Climatización</p>
-                        <p>RUT: 77.448.234-2</p>
-                        <p>Providencia, Santiago</p>
+            <!-- HEADER CORPORATIVO EASYCOOL -->
+            <header class="flex justify-between items-start border-b-2 border-blue-700 pb-4 mb-5">
+                <div class="w-2/3 pr-4">
+                    <!-- Nuevo Logo Horizontal EasyCool (Versión Certificado PDF) -->
+                    <div class="easycool-logo flex flex-row items-center font-montserrat select-none gap-3 mb-2">
+                        <div class="relative w-[50px] h-[50px] bg-brand-blue rounded-full flex flex-col justify-center items-end pr-[9px] gap-[3.6px] shadow-xs shrink-0">
+                            <div class="h-[6.4px] w-[30.5px] bg-brand-bar1 rounded-full"></div>
+                            <div class="h-[6.4px] w-[24px] bg-brand-bar2 rounded-full"></div>
+                            <div class="h-[6.4px] w-[18.2px] bg-brand-bar3 rounded-full"></div>
+                        </div>
+                        <div class="flex flex-col items-start">
+                            <span class="text-brand-dark font-[900] text-[20px] tracking-[-0.01em] leading-none mb-0.5">
+                                EASYCOOL
+                            </span>
+                            <span class="text-brand-gray font-[500] text-[10px] tracking-[0.01em] leading-none mt-0.5">
+                                Climatización
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-slate-600 leading-snug">
+                        <p class="font-bold text-slate-800">EasyCool Climatización</p>
+                        <p>RUT: 77.448.234-2 • Providencia, Santiago</p>
                         <p>📞 +569 5777 6174 | ✉️ ventas@easycoolclimatizacion.com</p>
                     </div>
                 </div>
                 <div class="w-1/3 text-right">
-                    <h1 class="text-xl font-bold text-gray-800 uppercase">INFORME TÉCNICO</h1>
-                    <div class="mt-1">
-                        <p id="rep-fecha" class="text-xs text-gray-600 mb-1">25-11-2025</p>
-                        <p id="rep-folio-numero" class="text-sm font-bold text-red-600 border border-red-200 bg-red-50 px-2 py-1 inline-block rounded">Folio: #2100</p>
+                    <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 uppercase tracking-tight leading-none">INFORME DE MANTENIMIENTO</h1>
+                    <p id="rep-tipo-servicio" class="text-[10px] font-semibold text-blue-700 mt-1"></p>
+                    <div class="mt-2 inline-block text-right">
+                        <p id="rep-fecha" class="text-[11px] text-slate-600 mb-1"></p>
+                        <p id="rep-folio-numero" class="text-xs font-extrabold text-red-700 border border-red-200 bg-red-50 px-2.5 py-1 inline-block rounded-lg">Folio: #2100</p>
                     </div>
                 </div>
             </header>
 
             <main>
                 <!-- DATOS CLIENTE -->
-                <section class="mb-6 bg-gray-50 border border-gray-200 rounded p-3 flex justify-between items-center">
-                    <div class="w-1/2 border-r border-gray-300 pr-4">
-                        <span class="text-[10px] font-bold text-gray-500 uppercase block">Cliente</span>
-                        <p id="rep-cliente-nombre" contenteditable="true" class="text-sm font-bold text-gray-900 leading-tight"></p>
-                        <p id="rep-cliente-rut" contenteditable="true" class="text-xs text-gray-600"></p>
+                <section class="mb-4 bg-slate-50 border border-slate-200 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 page-break-inside-avoid">
+                    <div class="sm:border-r sm:border-slate-300 sm:pr-3">
+                        <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">Cliente / Razón Social</span>
+                        <p id="rep-cliente-nombre" contenteditable="true" oninput="syncPdfDocumentTitle()" class="text-sm font-bold text-slate-900 leading-tight"></p>
+                        <div class="flex flex-wrap gap-x-3 text-[11px] text-slate-600 mt-0.5">
+                            <span id="rep-cliente-rut" contenteditable="true"></span>
+                            <span id="rep-cliente-contacto" contenteditable="true"></span>
+                        </div>
                     </div>
-                    <div class="w-1/2 pl-4">
-                        <span class="text-[10px] font-bold text-gray-500 uppercase block">Dirección</span>
-                        <p id="rep-cliente-direccion" contenteditable="true" class="text-xs text-gray-700 leading-tight"></p>
+                    <div class="sm:pl-1">
+                        <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">Dirección / Sucursal</span>
+                        <p id="rep-cliente-direccion" contenteditable="true" class="text-xs text-slate-800 leading-snug font-medium mt-0.5"></p>
                     </div>
                 </section>
 
-                <!-- EQUIPOS -->
-                <div id="report-equipments-container" class="space-y-6"></div>
+                <!-- RESUMEN EJECUTIVO (SEMÁFORO GLOBAL) -->
+                <section id="rep-executive-summary" class="mb-5 page-break-inside-avoid"></section>
 
-                <!-- FIRMAS -->
-                <div class="grid grid-cols-2 gap-12 mt-12 pt-4 border-t border-gray-300 break-inside-avoid">
-                    <div class="text-center">
-                        <canvas id="sig-canvas-mant-tech" class="signature-pad mb-2 mx-auto h-16 w-48 border-b border-gray-400"></canvas>
-                        <button onclick="clearCanvas('sig-canvas-mant-tech')" class="text-[10px] text-red-500 no-print block mx-auto">Borrar</button>
-                        <p class="text-xs font-bold text-gray-900">José Guerrero</p>
-                        <p class="text-[10px] text-gray-500">Técnico EasyCool | RUT: 15.963.315-2</p>
-                    </div>
-                    <div class="text-center">
-                        <canvas id="sig-canvas-mant-client" class="signature-pad mb-2 mx-auto h-16 w-48 border-b border-gray-400"></canvas>
-                        <button onclick="clearCanvas('sig-canvas-mant-client')" class="text-[10px] text-red-500 no-print block mx-auto">Borrar</button>
-                        <p class="text-xs font-bold text-gray-900" id="mant-sig-client-name" contenteditable="true">Firma Cliente</p>
-                        <p class="text-[10px] text-gray-500" id="mant-sig-client-rut"></p>
-                    </div>
-                </div>
+                <!-- DETALLE DE EQUIPOS -->
+                <div id="report-equipments-container" class="space-y-5"></div>
             </main>
         </div>
-        
-        <!-- FOOTER RESTAURADO (SOCIAL & LEGAL) -->
-        <footer class="mt-8 pt-4 border-t-2 border-gray-200 text-center page-break-inside-avoid">
-            <div class="flex flex-col items-center gap-2 mb-2">
-                <p class="text-[10px] font-bold text-gray-600">Síguenos en nuestras redes:</p>
-                <a href="https://www.instagram.com/easycoolclimatizacion" target="_blank" class="text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline">
-                    📸 Instagram: @easycoolclimatizacion
-                </a>
-                <div class="bg-yellow-50 border border-yellow-200 rounded px-3 py-1 w-full max-w-xs text-center">
-                    <p class="text-[9px] font-bold text-gray-700">Tu opinión nos ayuda a seguir creciendo</p>
-                    <a href="https://g.page/r/Ccgzu2uxiaSiEBI/review" target="_blank" class="text-[10px] font-bold text-blue-700 hover:underline">
-                        ⭐⭐⭐⭐⭐ ¡Califícanos en Google!
-                    </a>
+
+        <!-- FIRMAS Y PIE DE PÁGINA (AGRUPADO PARA EVITAR CORTES EN IMPRESIÓN) -->
+        <div class="signatures-footer-wrap mt-8 pt-5 border-t border-slate-300">
+            <!-- FIRMAS HD CON ESPACIO AMPLIO Y MODO ZOOM -->
+            <div class="grid grid-cols-2 gap-6 sm:gap-10 mb-6">
+                <div class="text-center">
+                    <div class="sig-box-frame mx-auto w-full max-w-[300px] overflow-hidden">
+                        <canvas id="sig-canvas-mant-tech" class="signature-pad sig-print-area w-full h-28 sm:h-32"></canvas>
+                    </div>
+                    <div class="flex justify-center items-center gap-2 mt-2 no-print">
+                        <button type="button" onclick="openSignatureZoom('tech')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[11px] font-bold transition">
+                            🔍 Ampliar / Zoom Firma
+                        </button>
+                        <button type="button" onclick="clearCanvas('sig-canvas-mant-tech', 'tech')" class="px-2 py-1 rounded-lg text-[11px] font-semibold text-red-600 hover:bg-red-50 transition">
+                            Borrar
+                        </button>
+                    </div>
+                    <p id="rep-tech-name" class="text-xs font-bold text-slate-900 mt-2">José Guerrero</p>
+                    <p id="rep-tech-rut" class="text-[10px] text-slate-500">Técnico EasyCool | RUT: 15.963.315-2</p>
+                </div>
+                <div class="text-center">
+                    <div class="sig-box-frame mx-auto w-full max-w-[300px] overflow-hidden">
+                        <canvas id="sig-canvas-mant-client" class="signature-pad sig-print-area w-full h-28 sm:h-32"></canvas>
+                    </div>
+                    <div class="flex justify-center items-center gap-2 mt-2 no-print">
+                        <button type="button" onclick="openSignatureZoom('client')" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold shadow-xs transition">
+                            🔍 Ampliar / Zoom Firma
+                        </button>
+                        <button type="button" onclick="clearCanvas('sig-canvas-mant-client', 'client')" class="px-2 py-1 rounded-lg text-[11px] font-semibold text-red-600 hover:bg-red-50 transition">
+                            Borrar
+                        </button>
+                    </div>
+                    <p id="mant-sig-client-name" contenteditable="true" class="text-xs font-bold text-slate-900 mt-2">Recepción Conforme</p>
+                    <p id="mant-sig-client-rut" contenteditable="true" class="text-[10px] text-slate-500">Cliente / Representante</p>
                 </div>
             </div>
-            <p class="text-[8px] text-gray-400 mt-2">EasyCool Climatización - Documento generado digitalmente.</p>
-        </footer>
+
+            <!-- FOOTER OFICIAL -->
+            <footer class="pt-3 border-t border-slate-200 text-center">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-2 mb-2 px-2">
+                    <div class="text-left">
+                        <p class="text-[9px] font-bold text-slate-600">Síguenos en redes sociales:</p>
+                        <a href="https://www.instagram.com/easycoolclimatizacion" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-blue-700 hover:underline">
+                            📸 Instagram: @easycoolclimatizacion
+                        </a>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 text-center">
+                        <p class="text-[9px] font-bold text-slate-700 leading-tight">Tu opinión nos ayuda a seguir mejorando</p>
+                        <a href="https://g.page/r/Ccgzu2uxiaSiEBI/review" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-blue-700 hover:underline">
+                            ⭐⭐⭐⭐⭐ ¡Califícanos en Google!
+                        </a>
+                    </div>
+                </div>
+                <p class="text-[8px] text-slate-400">EasyCool Climatización — Informe de mantenimiento generado digitalmente bajo pauta ASHRAE 180 / TC 9.9. Las recargas de refrigerante y reparaciones correctivas se cotizan aparte previo diagnóstico.</p>
+            </footer>
+        </div>
     </div>
 
-    <!-- Botones Flotantes -->
-    <div class="fixed bottom-0 left-0 w-full bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] no-print z-50 hidden" id="mant-print-actions">
-         <div class="max-w-4xl mx-auto flex gap-3">
-             <button onclick="editReport()" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-lg">✏️ Editar Datos</button>
-            <button onclick="printReport()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg">🖨️ Imprimir / Guardar PDF</button>
+    <!-- =========== BARRA FLOTANTE DE ACCIONES EN VISTA REPORTE =========== -->
+    <div id="mant-print-actions" class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur border-t border-slate-200 p-3 safe-bottom-bar shadow-[0_-6px_15px_-3px_rgba(0,0,0,0.1)] no-print z-50 hidden">
+        <div class="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button type="button" onclick="editReport()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2.5 px-3 rounded-xl text-xs sm:text-sm transition">
+                ✏️ Editar Datos
+            </button>
+            <button type="button" onclick="copyReportSummary()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold py-2.5 px-3 rounded-xl text-xs sm:text-sm transition">
+                📋 Copiar Resumen
+            </button>
+            <button type="button" onclick="shareWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs sm:text-sm transition">
+                💬 WhatsApp
+            </button>
+            <button type="button" onclick="printReport()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-3 rounded-xl shadow-md text-xs sm:text-sm transition">
+                🖨️ Guardar PDF
+            </button>
         </div>
     </div>
 
 <script>
-    // --- API GEMINI CONFIG ---
-    // Pega tu API Key aquí para activar la IA
-    const apiKey = "AIzaSyCXlCWMUyaylWCmIDGVTHHigtfPlVXkkDU"; 
-    
-    // --- UTILS ---
-    function downloadApp() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([document.documentElement.outerHTML], {type:'text/html'})); a.download='index.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-    const getFolio = () => { let f = parseInt(localStorage.getItem('ec_fol') || '2100'); localStorage.setItem('ec_fol', f+1); return f; }
-    const today = () => new Date().toLocaleDateString('es-CL');
-    document.getElementById('current-date-display').innerText = today();
+// ============================================================================
+// CONFIGURACIÓN GLOBAL, MODELO DE DATOS HVAC Y UTILIDADES SEGURAS
+// ============================================================================
 
-    let equipmentCount = 0;
+// Clave vacía para entorno Canvas (se inyecta automáticamente en ejecución).
+// En uso externo (hosting propio/móvil), el usuario puede guardar su clave rotada en Configuración -> localStorage.
+const apiKey = "";
+const GEMINI_MODEL = "gemini-3-flash-preview";
+const APP_DEFAULT_TITLE = "EasyCool Pro - Informes Técnicos HVAC";
 
-    // --- FUNCIÓN DE IMPRESIÓN INTELIGENTE (NOMBRE DE ARCHIVO CORREGIDO) ---
-    function printReport() {
-        const folioElement = document.getElementById('rep-folio-numero');
-        const clienteElement = document.getElementById('rep-cliente-nombre');
-        
-        // Obtener texto crudo
-        let folioText = folioElement ? folioElement.innerText : "0000";
-        let clienteText = clienteElement ? clienteElement.innerText : "Cliente";
+const STORAGE_KEYS = {
+    DRAFT: "ec_pro_draft_v2",
+    FOLIO: "ec_pro_next_folio",
+    CLIENTS: "ec_pro_clients_v2",
+    TECHS: "ec_pro_techs_v2",
+    API_KEY: "ec_pro_custom_api_key"
+};
 
-        // Limpiar folio: Extraer solo números (Ej: de "Folio: #2100" -> "2100")
-        let folio = folioText.replace(/[^0-9]/g, ''); 
-        if (!folio) folio = "0000";
+const DEFAULT_TECHS = [
+    { name: "José Guerrero", rut: "15.963.315-2" }
+];
 
-        // Limpiar cliente: Permitir letras, números y espacios
-        let safeCliente = clienteText.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s-]/g, '').trim();
-        if (!safeCliente) safeCliente = "Cliente";
+// Definición técnica ASHRAE 180 / TC 9.9 por familia de equipos
+const HVAC_FAMILIES = {
+    split: {
+        label: "Split (Muro / Piso-Cielo / Cassette / Ducto)",
+        shortLabel: "Split DX",
+        subtypes: ["Split Muro", "Split Piso-Cielo", "Split Cassette", "Split Ducto"],
+        capacities: ["9.000 BTU", "12.000 BTU", "18.000 BTU", "24.000 BTU", "36.000 BTU", "48.000 BTU", "60.000 BTU"],
+        checklist: [
+            "Lavado y desinfección de filtros de aire",
+            "Limpieza química serpentín evaporador (biodegradable)",
+            "Limpieza y sanitización de turbina / rodete interior",
+            "Revisión de bandeja, sifón y prueba de drenaje (1L agua)",
+            "Limpieza bomba de condensado y flotador (Cassette/Ext.)",
+            "Revisión aislación de ductos y dampers (Ducto)",
+            "Lavado a contracorriente serpentín condensador exterior",
+            "Chequeo ventilador exterior, rodamientos y soportes",
+            "Inspección visual de fugas (aceite) y aislación cañerías",
+            "Reapriete eléctrico, borneras y estado tarjeta/capacitores"
+        ]
+    },
+    fancoil: {
+        label: "Fan Coil (Agua Helada / Caliente)",
+        shortLabel: "Fan Coil",
+        subtypes: ["Fan Coil Ducto", "Fan Coil Cassette", "Fan Coil Consola / Piso-Techo", "Fan Coil 4 Tubos"],
+        capacities: ["1 TR (12k BTU)", "1.5 TR (18k BTU)", "2 TR (24k BTU)", "3 TR (36k BTU)", "4 TR (48k BTU)", "5 TR (60k BTU)"],
+        checklist: [
+            "Limpieza o recambio de filtro de aire de retorno",
+            "Limpieza controlada de serpentín de agua helada",
+            "Limpieza de rodetes, vibración y rodamientos motor",
+            "Cierre válvulas, desmontaje y limpieza de filtro 'Y'",
+            "Purga de aire del serpentín hidrónico",
+            "Prueba válvula motorizada 2/3 vías o PICV (0% a 100%)",
+            "Revisión aislación elastomérica y flexibles (sin microfugas)",
+            "Limpieza bandeja primaria/auxiliar y prueba de drenaje",
+            "Reapriete eléctrico y prueba velocidades / señal 0-10V",
+            "Contraste termostato ambiente y comunicación BMS"
+        ]
+    },
+    rooftop: {
+        label: "Compacto / Rooftop (5 a 40 TR)",
+        shortLabel: "Rooftop",
+        subtypes: ["Rooftop 5-10 TR", "Rooftop 12.5-20 TR", "Rooftop 25-40 TR", "Compacto Vertical / Industrial"],
+        capacities: ["5 TR", "7.5 TR", "10 TR", "12.5 TR", "15 TR", "20 TR", "25 TR", "30 TR", "40 TR"],
+        checklist: [
+            "Revisión/cambio bancos de filtros (G4 + MERV 8-13) sin by-pass",
+            "Limpieza, lubricación y prueba damper aire exterior (economizador)",
+            "Inspección correas, tensión y alineación coplanar de poleas",
+            "Revisión rodamientos/descansos y lubricación controlada",
+            "Limpieza turbina centrífuga y estado junta flexible",
+            "Lavado a contracorriente serpentines condensador y evaporador",
+            "Chequeo visor de líquido, nivel aceite y etapas compresión",
+            "Limpieza bandeja, sifón presión negativa y sellos puertas",
+            "Reapriete potencia trifásica, contactores y monitor de fase",
+            "Termografía tablero / Medición aislamiento (Megado)"
+        ]
+    },
+    precision: {
+        label: "Precisión (CRAC / CRAH / InRow — Salas Críticas)",
+        shortLabel: "Precisión",
+        subtypes: ["CRAC Expansión Directa", "CRAH Agua Helada", "InRow DX", "InRow Agua Helada"],
+        capacities: ["Hasta 15 kW", "20 kW", "30 kW", "45 kW", "60 kW", "80 kW", "100+ kW"],
+        checklist: [
+            "Verificación respaldo N+1 activo e historial de alarmas",
+            "Inspección/cambio filtros alta eficiencia (MERV 8-13) + aspirado HEPA",
+            "Limpieza ventiladores EC, chequeo señal 0-10V/Modbus y RPM",
+            "Inspección cilindro humidificador, solenoides y filtro agua",
+            "Prueba deshumidificación, resistencias recalentamiento y seguridades",
+            "Contraste sensores T° y HR contra patrón calibrado",
+            "Revisión circuito DX (condensador/VEE) o Hidrónico (filtro Y/válvula)",
+            "Prueba física detector/cuerda de fuga de agua y alarma BMS",
+            "Limpieza bandeja y prueba bomba condensado redundante",
+            "Reapriete eléctrico, termografía, ATS y prueba relevo Teamwork"
+        ]
+    }
+};
 
-        // Construir el nombre del archivo deseado
-        const filename = `Informe mantenimiento Nº${folio} ${safeCliente}`;
-        
-        // Guardar título original
-        const originalTitle = document.title;
-        
-        // Cambiar título (Esto define el nombre del PDF en el navegador)
-        document.title = filename;
+const PHOTO_CATEGORIES = [
+    { key: "antesDespues", label: "Antes / Después" },
+    { key: "filtros", label: "Filtros / Serpentín" },
+    { key: "exterior", label: "U. Ext. / Tablero / Hidrónica" },
+    { key: "hallazgos", label: "Evidencia Hallazgos" }
+];
 
-        // Pequeño retraso para asegurar que el navegador detecte el cambio de título
-        setTimeout(() => {
-            window.print();
-            
-            // Restaurar título original después de imprimir
-            setTimeout(() => {
-                document.title = originalTitle;
-            }, 500);
-        }, 100);
+// Guías internas exclusivas para el técnico (NUNCA se incluyen en el PDF del cliente)
+const SERVICE_TYPE_GUIDES = {
+    "Preventivo Nivel 1 (Básico / Operacional)": {
+        title: "Guía Nivel 1 (Básico / Operacional)",
+        body: "Solo higiene superficial y control rápido. Lavar filtros de malla, limpiar carcasas exteriores, revisar visualmente que el drenaje escurra y tomar temperaturas (ΔT). No desarmar turbina ni aplicar lavado químico. Ideal para visitas intermedias de contrato.",
+        boxClass: "bg-sky-50/70 border-sky-200 border-l-sky-500 text-slate-700",
+        titleClass: "text-sky-900"
+    },
+    "Preventivo Nivel 2 (Estándar ASHRAE 180)": {
+        title: "Guía Nivel 2 (Estándar Completo)",
+        body: "Servicio base comercial/corporativo. Aplicar lavado químico biodegradable en evaporador y condensador, desinfectar bandeja y turbina, probar drenaje con 1 L de agua (y bomba en Cassette), reapretar borneras eléctricas y registrar V, A y ΔT. No conectar manómetros en Inverter si ΔT y amperaje están normales; recarga de gas siempre se cotiza aparte.",
+        boxClass: "bg-blue-50/70 border-blue-200 border-l-blue-600 text-slate-700",
+        titleClass: "text-blue-900"
+    },
+    "Preventivo Nivel 3 (Profundo / Overhaul)": {
+        title: "Guía Nivel 3 (Profundo / Desarme)",
+        body: "Intervención mayor para equipos muy incrustados, con hongos en turbina o grasa. Instalar funda recolectora, desmontar tapas/panel/turbina según corresponda, lavar con hidrolavadora a presión controlada y desincrustante, destapar drenaje completo y revisar desgaste de capacitores, correas o rodamientos. Tomar fotos de Antes y Después obligatorias.",
+        boxClass: "bg-indigo-50/70 border-indigo-200 border-l-indigo-700 text-slate-700",
+        titleClass: "text-indigo-900"
+    },
+    "Mantenimiento Predictivo": {
+        title: "Guía Predictivo (Diagnóstico Avanzado)",
+        body: "Enfoque instrumental sin detención mayor. Ejecutar termografía en tableros de fuerza/contactores, medir voltajes entre fases para calcular desbalance NEMA (< 2%), realizar megado de compresores/motores si corresponde y contrastar sensores (T°/HR en Precisión). Priorizar semáforo Amarillo/Rojo ante cualquier anomalía incipiente.",
+        boxClass: "bg-purple-50/70 border-purple-200 border-l-purple-600 text-slate-700",
+        titleClass: "text-purple-900"
+    },
+    "Mantenimiento Correctivo / Diagnóstico": {
+        title: "Guía Correctivo / Diagnóstico",
+        body: "Atención enfocada en la falla reportada. Identificar causa raíz (eléctrica, drenaje, control, hidrónica o fuga frigorífica), registrar evidencia fotográfica del componente dañado y anotar claramente en Observaciones si quedó reparado o si requiere cotización de repuestos/recarga (si hay fuga, indicar prueba con nitrógeno y vacío).",
+        boxClass: "bg-amber-50/80 border-amber-200 border-l-amber-500 text-slate-800",
+        titleClass: "text-amber-900"
+    }
+};
+
+// Estado en memoria de la aplicación
+let appState = {
+    folio: "2100",
+    folioIncremented: false,
+    fecha: "",
+    tipoServicio: "Preventivo Nivel 2 (Estándar ASHRAE 180)",
+    tecnicoIdx: 0,
+    cliente: { nombre: "", rut: "", contacto: "", direccion: "" },
+    equipments: [],
+    signatures: { tech: "", client: "" }
+};
+
+let autoSaveTimer = null;
+let confirmCallback = null;
+let activeZoomRole = null;
+
+// --- SANITIZACIÓN HTML SEGURA ---
+function escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+// --- NOTIFICACIONES TOAST (SIN ALERT) ---
+function showToast(message, type = "info") {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+    const styles = {
+        success: "bg-emerald-600 text-white border-emerald-700",
+        error: "bg-red-600 text-white border-red-700",
+        warning: "bg-amber-500 text-white border-amber-600",
+        info: "bg-slate-800 text-white border-slate-900"
+    };
+    const toast = document.createElement("div");
+    toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl shadow-lg border text-xs font-semibold transition-all duration-300 ${styles[type] || styles.info}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(-6px)";
+        setTimeout(() => toast.remove(), 300);
+    }, 3200);
+}
+
+// --- MODAL DE CONFIRMACIÓN (SIN CONFIRM) ---
+function openConfirmModal(title, message, onConfirm, danger = false) {
+    document.getElementById("confirm-title").textContent = title;
+    document.getElementById("confirm-message").textContent = message;
+    const okBtn = document.getElementById("confirm-ok-btn");
+    okBtn.className = danger
+        ? "px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition"
+        : "px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition";
+    confirmCallback = onConfirm;
+    const modal = document.getElementById("confirm-modal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
+
+function closeConfirmModal() {
+    const modal = document.getElementById("confirm-modal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    confirmCallback = null;
+}
+
+document.getElementById("confirm-cancel-btn").addEventListener("click", closeConfirmModal);
+document.getElementById("confirm-ok-btn").addEventListener("click", () => {
+    const cb = confirmCallback;
+    closeConfirmModal();
+    if (cb) cb();
+});
+
+function closeModal(id) {
+    const m = document.getElementById(id);
+    m.classList.add("hidden");
+    m.classList.remove("flex");
+}
+
+function openModal(id) {
+    const m = document.getElementById(id);
+    m.classList.remove("hidden");
+    m.classList.add("flex");
+}
+
+// --- FORMATO Y VALIDACIÓN RUT CHILENO (MÓDULO 11) ---
+function cleanRut(val) {
+    return (val || "").replace(/[^0-9kK]/g, "").toUpperCase();
+}
+
+function formatRutString(val) {
+    const clean = cleanRut(val);
+    if (clean.length <= 1) return clean;
+    const body = clean.slice(0, -1);
+    const dv = clean.slice(-1);
+    const formattedBody = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return `${formattedBody}-${dv}`;
+}
+
+function validateRutChile(val) {
+    const clean = cleanRut(val);
+    if (clean.length < 8) return null; // Aún incompleto
+    const body = clean.slice(0, -1);
+    const dv = clean.slice(-1);
+    if (!/^\d+$/.test(body)) return false;
+    let sum = 0;
+    let mult = 2;
+    for (let i = body.length - 1; i >= 0; i--) {
+        sum += parseInt(body[i], 10) * mult;
+        mult = mult === 7 ? 2 : mult + 1;
+    }
+    const res = 11 - (sum % 11);
+    const expected = res === 11 ? "0" : res === 10 ? "K" : String(res);
+    return dv === expected;
+}
+
+function formatRutInput(el) {
+    el.value = formatRutString(el.value);
+}
+
+function handleClientRutInput(el) {
+    el.value = formatRutString(el.value);
+    updateRutStatusBadge(el.value);
+    scheduleAutoSave();
+}
+
+// Formato automático para los 8 dígitos posteriores al prefijo fijo +569
+function formatChileMobileBody(val) {
+    let digits = String(val || "").replace(/\D/g, "");
+    if (digits.startsWith("569") && digits.length > 8) {
+        digits = digits.slice(3);
+    } else if (digits.startsWith("9") && digits.length === 9) {
+        digits = digits.slice(1);
+    }
+    digits = digits.slice(0, 8);
+    if (digits.length > 4) {
+        return `${digits.slice(0, 4)} ${digits.slice(4)}`;
+    }
+    return digits;
+}
+
+function handleClientPhoneInput(el) {
+    el.value = formatChileMobileBody(el.value);
+    scheduleAutoSave();
+}
+
+function updateRutStatusBadge(val) {
+    const badge = document.getElementById("rut-status");
+    if (!val || !val.trim()) {
+        badge.textContent = "";
+        return;
+    }
+    const valid = validateRutChile(val);
+    if (valid === null) {
+        badge.textContent = "Incompleto";
+        badge.className = "text-[10px] font-bold text-slate-400";
+    } else if (valid) {
+        badge.textContent = "✓ RUT válido";
+        badge.className = "text-[10px] font-bold text-emerald-600";
+    } else {
+        badge.textContent = "✕ Dígito verificador incorrecto";
+        badge.className = "text-[10px] font-bold text-red-600";
+    }
+}
+
+// --- FECHA FORMATO CHILE ---
+function getTodayISO() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+}
+
+function formatDateCL(isoStr) {
+    if (!isoStr) return new Date().toLocaleDateString("es-CL");
+    const parts = isoStr.split("-");
+    if (parts.length !== 3) return isoStr;
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+// --- GESTIÓN DE FOLIOS (SIN SALTOS AL EDITAR) ---
+function getNextStoredFolio() {
+    let f = parseInt(localStorage.getItem(STORAGE_KEYS.FOLIO) || "2100", 10);
+    if (isNaN(f) || f < 1) f = 2100;
+    return f;
+}
+
+function advanceStoredFolio(usedFolioStr) {
+    const numeric = parseInt(String(usedFolioStr).replace(/[^0-9]/g, ""), 10);
+    const currentNext = getNextStoredFolio();
+    if (!isNaN(numeric) && numeric >= currentNext) {
+        localStorage.setItem(STORAGE_KEYS.FOLIO, String(numeric + 1));
+    }
+}
+
+// --- GESTIÓN DE TÉCNICOS ---
+function getTechnicians() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.TECHS));
+        if (Array.isArray(saved) && saved.length > 0) return saved;
+    } catch (e) {}
+    return [...DEFAULT_TECHS];
+}
+
+function populateTechSelect(selectedIdx = 0) {
+    const techs = getTechnicians();
+    const sel = document.getElementById("gen-tecnico");
+    sel.innerHTML = techs.map((t, i) =>
+        `<option value="${i}">${escapeHtml(t.name)} (${escapeHtml(t.rut)})</option>`
+    ).join("");
+    sel.value = String(Math.min(selectedIdx, techs.length - 1));
+}
+
+// --- GUÍA INTERNA DINÁMICA PARA EL TÉCNICO (SOLO FORMULARIO) ---
+function updateTechServiceGuide() {
+    const sel = document.getElementById("gen-tipo-servicio");
+    const box = document.getElementById("tech-service-guide");
+    if (!sel || !box) return;
+    const guide = SERVICE_TYPE_GUIDES[sel.value] || SERVICE_TYPE_GUIDES["Preventivo Nivel 2 (Estándar ASHRAE 180)"];
+    box.className = `mb-4 rounded-xl border border-l-4 p-3 transition-all duration-200 no-print ${guide.boxClass}`;
+    box.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-1.5 mb-1">
+            <span class="text-xs font-extrabold ${guide.titleClass}">🔒 ${escapeHtml(guide.title)}</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">Solo técnico • No aparece en PDF</span>
+        </div>
+        <p class="text-[11.5px] leading-relaxed">${escapeHtml(guide.body)}</p>
+    `;
+}
+
+function handleServiceTypeChange() {
+    updateTechServiceGuide();
+    scheduleAutoSave();
+}
+
+// ============================================================================
+// CREACIÓN Y RENDERIZADO DINÁMICO DE EQUIPOS
+// ============================================================================
+
+function createDefaultEquipment(family = "split") {
+    const spec = HVAC_FAMILIES[family] || HVAC_FAMILIES.split;
+    const checklist = {};
+    spec.checklist.forEach((_, idx) => { checklist[idx] = "OK"; });
+    return {
+        uid: "eq_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+        family: family,
+        subtype: spec.subtypes[0],
+        marca: "",
+        modelo: "",
+        capacidad: "",
+        serie: "",
+        ubicacion: "",
+        loto: "Sí",
+        semaphore: "VERDE",
+        proximaMantencion: "Trimestral (3 meses)",
+        checklist: checklist,
+        params: {
+            // Split
+            modo: "Frío", gas: "R-410A", pBaja: "", pAlta: "", voltaje: "220", amp: "", tRet: "", tIny: "",
+            // Fan Coil
+            fluido: "Agua Helada", tAguaEnt: "", tAguaSal: "", dpPt: "",
+            // Rooftop
+            vL12: "", vL23: "", vL31: "", ampComp: "", ampVent: "", shSc: "", megado: "",
+            // Precisión
+            tCtrl: "", tPat: "", hrCtrl: "", hrPat: "", ampHum: "", dpPiso: "", relevoN1: ""
+        },
+        hallazgos: "",
+        photos: { antesDespues: [], filtros: [], exterior: [], hallazgos: [] }
+    };
+}
+
+function addEquipment(templateEq = null) {
+    const eq = templateEq ? JSON.parse(JSON.stringify(templateEq)) : createDefaultEquipment("split");
+    if (templateEq) {
+        eq.uid = "eq_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+    }
+    appState.equipments.push(eq);
+    renderAllEquipments();
+    scheduleAutoSave();
+    showToast(`Equipo #${appState.equipments.length} agregado`, "info");
+}
+
+function duplicateEquipment(uid) {
+    const src = appState.equipments.find(e => e.uid === uid);
+    if (!src) return;
+    const clone = JSON.parse(JSON.stringify(src));
+    clone.uid = "eq_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+    clone.serie = "";
+    clone.ubicacion = src.ubicacion ? `${src.ubicacion} (copia)` : "";
+    clone.photos = { antesDespues: [], filtros: [], exterior: [], hallazgos: [] };
+    clone.hallazgos = "";
+    appState.equipments.push(clone);
+    renderAllEquipments();
+    scheduleAutoSave();
+    showToast("Equipo duplicado (sin fotos ni serie)", "success");
+}
+
+function removeEquipment(uid) {
+    if (appState.equipments.length <= 1) {
+        showToast("Debe existir al menos un equipo en el informe", "warning");
+        return;
+    }
+    openConfirmModal(
+        "Eliminar equipo",
+        "¿Seguro que deseas eliminar este equipo y todas sus fotos del borrador actual?",
+        () => {
+            appState.equipments = appState.equipments.filter(e => e.uid !== uid);
+            renderAllEquipments();
+            scheduleAutoSave();
+            showToast("Equipo eliminado", "info");
+        },
+        true
+    );
+}
+
+function changeEquipmentFamily(uid, newFamily) {
+    const eq = appState.equipments.find(e => e.uid === uid);
+    if (!eq || eq.family === newFamily) return;
+    const spec = HVAC_FAMILIES[newFamily];
+    eq.family = newFamily;
+    eq.subtype = spec.subtypes[0];
+    eq.checklist = {};
+    spec.checklist.forEach((_, idx) => { eq.checklist[idx] = "OK"; });
+    renderAllEquipments();
+    scheduleAutoSave();
+}
+
+function updateEqField(uid, field, value) {
+    const eq = appState.equipments.find(e => e.uid === uid);
+    if (!eq) return;
+    eq[field] = value;
+    if (field === "semaphore") {
+        renderSingleCardAppearance(uid);
+    }
+    scheduleAutoSave();
+}
+
+function updateEqParam(uid, paramKey, value) {
+    const eq = appState.equipments.find(e => e.uid === uid);
+    if (!eq) return;
+    eq.params[paramKey] = value;
+    updateAutoMetricsUI(uid);
+    scheduleAutoSave();
+}
+
+function setChecklistState(uid, idx, state) {
+    const eq = appState.equipments.find(e => e.uid === uid);
+    if (!eq) return;
+    eq.checklist[idx] = state;
+    renderAllEquipments();
+    scheduleAutoSave();
+}
+
+function markAllChecklistOK(uid) {
+    const eq = appState.equipments.find(e => e.uid === uid);
+    if (!eq) return;
+    const spec = HVAC_FAMILIES[eq.family];
+    spec.checklist.forEach((_, idx) => { eq.checklist[idx] = "OK"; });
+    renderAllEquipments();
+    scheduleAutoSave();
+    showToast("Checklist marcado como OK", "success");
+}
+
+function renderSingleCardAppearance(uid) {
+    const eq = appState.equipments.find(e => e.uid === uid);
+    const card = document.getElementById(`card-${uid}`);
+    if (!eq || !card) return;
+    card.classList.remove("sem-verde", "sem-amarillo", "sem-rojo");
+    card.classList.add(eq.semaphore === "ROJO" ? "sem-rojo" : eq.semaphore === "AMARILLO" ? "sem-amarillo" : "sem-verde");
+}
+
+// --- CÁLCULOS TÉCNICOS AUTOMÁTICOS POR FAMILIA ---
+function computeEquipmentMetrics(eq) {
+    const p = eq.params;
+    const n = (v) => (v !== "" && v !== null && v !== undefined && !isNaN(parseFloat(v))) ? parseFloat(v) : null;
+
+    const metrics = {
+        dtAir: null,
+        dtAirStatus: "neutral",
+        dtAirMsg: "",
+        dtWater: null,
+        dtWaterStatus: "neutral",
+        vUnbalance: null,
+        vUnbalanceStatus: "neutral",
+        errT: null,
+        errTStatus: "neutral",
+        errHR: null,
+        errHRStatus: "neutral",
+        relevoStatus: "neutral"
+    };
+
+    const tRet = n(p.tRet);
+    const tIny = n(p.tIny);
+    if (tRet !== null && tIny !== null) {
+        if (eq.family === "split" && p.modo === "Calor") {
+            // Modo Calor: Inyección - Retorno
+            metrics.dtAir = +(tIny - tRet).toFixed(1);
+            if (metrics.dtAir <= 0) { metrics.dtAirStatus = "bad"; metrics.dtAirMsg = "No calefacciona"; }
+            else if (metrics.dtAir < 12) { metrics.dtAirStatus = "warn"; metrics.dtAirMsg = "Bajo rendimiento"; }
+            else { metrics.dtAirStatus = "ok"; metrics.dtAirMsg = "Rango óptimo"; }
+        } else {
+            // Modo Frío / General: Retorno - Inyección
+            metrics.dtAir = +(tRet - tIny).toFixed(1);
+            if (metrics.dtAir <= 0) { metrics.dtAirStatus = "bad"; metrics.dtAirMsg = "¡Inversión / No enfría!"; }
+            else if (metrics.dtAir < 8) { metrics.dtAirStatus = "warn"; metrics.dtAirMsg = "Bajo ΔT (revisar)"; }
+            else if (metrics.dtAir > 18 && eq.family !== "precision") { metrics.dtAirStatus = "warn"; metrics.dtAirMsg = "ΔT alto (bajo flujo)"; }
+            else { metrics.dtAirStatus = "ok"; metrics.dtAirMsg = "Rango óptimo"; }
+        }
     }
 
-    // --- DIAGNÓSTICO IA ---
-    async function diagnoseEquipment(id) {
-        const resultDiv = document.getElementById(`ai-result-${id}`);
-        const resultText = document.getElementById(`ai-text-${id}`);
-        const hallazgosInput = document.querySelector(`#eq-form-${id} .eq-hallazgos`);
-        
-        const form = document.getElementById(`eq-form-${id}`);
-        const gas = form.querySelector('.eq-gas').value;
-        const pBaja = form.querySelector('.eq-p-baja').value;
-        const pAlta = form.querySelector('.eq-p-alta').value;
-        const tAmb = form.querySelector('.eq-t-amb').value;
-        const tIny = form.querySelector('.eq-t-iny').value;
-        const obs = hallazgosInput.value;
-        
-        resultDiv.classList.remove('hidden');
-        resultText.innerHTML = '<span class="ai-loading">✨ Analizando parámetros...</span>';
-
-        const prompt = `Analiza para informe técnico: Gas ${gas}, P.Baja ${pBaja}, P.Alta ${pAlta}, T.Amb ${tAmb}, T.Iny ${tIny}. Obs: ${obs}. Calcula Delta T. Da diagnóstico de 1 linea.`;
-
-        try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            const data = await response.json();
-            const aiText = data.candidates[0].content.parts[0].text;
-            
-            resultText.innerHTML = `<div class="font-bold text-purple-800">IA:</div><div class="text-xs">${aiText}</div>
-                <button onclick="copyToHallazgos(${id}, this)" data-text="${encodeURIComponent(aiText)}" class="mt-1 text-[9px] bg-purple-600 text-white px-2 py-1 rounded">Copiar</button>`;
-        } catch (e) { resultText.innerHTML = 'Error IA.'; }
+    if (eq.family === "fancoil") {
+        const te = n(p.tAguaEnt);
+        const ts = n(p.tAguaSal);
+        if (te !== null && ts !== null) {
+            metrics.dtWater = +(ts - te).toFixed(1);
+            if (metrics.dtWater >= 4 && metrics.dtWater <= 7) metrics.dtWaterStatus = "ok";
+            else if (metrics.dtWater <= 0) metrics.dtWaterStatus = "bad";
+            else metrics.dtWaterStatus = "warn";
+        }
     }
 
-    function copyToHallazgos(id, btn) {
-        const text = decodeURIComponent(btn.getAttribute('data-text'));
-        const hallazgosBox = document.querySelector(`#eq-form-${id} .eq-hallazgos`);
-        hallazgosBox.value = hallazgosBox.value + " " + text.replace(/\*\*/g, '');
+    if (eq.family === "rooftop") {
+        const l1 = n(p.vL12), l2 = n(p.vL23), l3 = n(p.vL31);
+        if (l1 !== null && l2 !== null && l3 !== null && (l1 + l2 + l3) > 0) {
+            const avg = (l1 + l2 + l3) / 3;
+            const maxDev = Math.max(Math.abs(l1 - avg), Math.abs(l2 - avg), Math.abs(l3 - avg));
+            metrics.vUnbalance = +((maxDev / avg) * 100).toFixed(2);
+            metrics.vUnbalanceStatus = metrics.vUnbalance > 2.0 ? "bad" : metrics.vUnbalance > 1.5 ? "warn" : "ok";
+        }
     }
 
-    // --- AGREGAR FORMULARIO (CAMPOS DE IMAGENES RESTAURADOS) ---
-    function addEquipmentForm() {
-        equipmentCount++;
-        const container = document.getElementById('equipments-container');
-        const id = equipmentCount;
-        
-        const html = `
-        <div class="equipment-card bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6 relative" id="eq-form-${id}">
-            <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">EQ #${id}</div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 mt-4">
-                <input class="eq-marca w-full rounded border-gray-300 p-2 text-sm" placeholder="Marca (Ej: Midea)">
-                <input class="eq-tipo w-full rounded border-gray-300 p-2 text-sm" placeholder="Tipo (Split/Piso)">
-                <input class="eq-serie w-full rounded border-gray-300 p-2 text-sm" placeholder="Nº Serie">
-            </div>
+    if (eq.family === "precision") {
+        const tc = n(p.tCtrl), tp = n(p.tPat);
+        if (tc !== null && tp !== null) {
+            metrics.errT = +(tc - tp).toFixed(2);
+            metrics.errTStatus = Math.abs(metrics.errT) > 0.5 ? "warn" : "ok";
+        }
+        const hc = n(p.hrCtrl), hp = n(p.hrPat);
+        if (hc !== null && hp !== null) {
+            metrics.errHR = +(hc - hp).toFixed(1);
+            metrics.errHRStatus = Math.abs(metrics.errHR) > 3.0 ? "warn" : "ok";
+        }
+        const rel = n(p.relevoN1);
+        if (rel !== null) {
+            metrics.relevoStatus = rel > 60 ? "bad" : "ok";
+        }
+    }
 
-            <div class="mb-4 bg-gray-50 p-2 rounded">
-                <label class="text-xs font-bold text-gray-500 block mb-1">CHECKLIST MANTENCIÓN</label>
-                <div class="grid grid-cols-2 gap-2 text-sm">
-                    ${["Filtros", "U. Interior", "U. Exterior", "Eléctrico", "Drenaje"].map(i => 
-                        `<label class="flex items-center gap-2"><input type="checkbox" checked class="eq-check" value="${i}"> ${i}</label>`
-                    ).join('')}
-                </div>
-            </div>
+    return metrics;
+}
 
-            <!-- FOTOS SEPARADAS POR CATEGORÍA (RESTAURADO) -->
-            <div class="mb-4 border-t pt-2">
-                <label class="text-xs font-bold text-blue-600">REGISTRO FOTOGRÁFICO</label>
-                <div class="grid grid-cols-2 gap-2 mt-1">
-                    <div>
-                        <label class="block text-[10px] text-gray-500">1. Filtros / Limpieza</label>
-                        <input type="file" multiple accept="image/*" class="block w-full text-xs" onchange="previewMulti(this, 'prev-filtros-${id}')">
-                        <div id="prev-filtros-${id}" class="flex flex-wrap gap-1 mt-1"></div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-gray-500">2. U. Interior</label>
-                        <input type="file" multiple accept="image/*" class="block w-full text-xs" onchange="previewMulti(this, 'prev-int-${id}')">
-                        <div id="prev-int-${id}" class="flex flex-wrap gap-1 mt-1"></div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-gray-500">3. U. Exterior</label>
-                        <input type="file" multiple accept="image/*" class="block w-full text-xs" onchange="previewMulti(this, 'prev-ext-${id}')">
-                        <div id="prev-ext-${id}" class="flex flex-wrap gap-1 mt-1"></div>
-                    </div>
-                </div>
-            </div>
+function statusPillClasses(st) {
+    if (st === "ok") return "bg-emerald-100 text-emerald-800 border-emerald-300";
+    if (st === "warn") return "bg-amber-100 text-amber-800 border-amber-300";
+    if (st === "bad") return "bg-red-100 text-red-800 border-red-300";
+    return "bg-slate-100 text-slate-500 border-slate-200";
+}
 
-            <div class="mb-4 border-t pt-2">
-                <div class="flex justify-between mb-1">
-                    <label class="text-xs font-bold text-gray-500">PARAMETROS</label>
-                    <button onclick="diagnoseEquipment(${id})" class="text-[10px] bg-purple-100 text-purple-700 px-2 rounded border border-purple-200">✨ IA</button>
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <select class="eq-gas w-full rounded p-1 border text-xs"><option value="" disabled selected>Gas</option><option value="R410A">R410A</option><option value="R32">R32</option><option value="R22">R22</option><option value="R404A">R404A</option></select>
-                    <input class="eq-p-baja w-full rounded p-1 border text-xs" placeholder="P. Baja">
-                    <input class="eq-p-alta w-full rounded p-1 border text-xs" placeholder="P. Alta">
-                    <input class="eq-amp w-full rounded p-1 border text-xs" placeholder="Amp">
-                    <input class="eq-t-amb w-full rounded p-1 border text-xs" type="number" placeholder="T.Amb">
-                    <input class="eq-t-iny w-full rounded p-1 border text-xs" type="number" placeholder="T.Iny">
-                </div>
-                <div id="ai-result-${id}" class="hidden mt-1 p-2 bg-purple-50 rounded text-xs">
-                    <div id="ai-text-${id}"></div>
-                </div>
-            </div>
+function updateAutoMetricsUI(uid) {
+    const eq = appState.equipments.find(e => e.uid === uid);
+    const box = document.getElementById(`metrics-${uid}`);
+    if (!eq || !box) return;
+    box.innerHTML = buildAutoMetricsBadges(eq);
+}
 
-            <div class="mt-2 border-t pt-2">
-                <label class="text-xs font-bold text-red-600">OBSERVACIONES / HALLAZGOS</label>
-                <textarea class="eq-hallazgos w-full rounded border-red-200 p-1 text-sm h-12" placeholder="Detalles..."></textarea>
-                <input type="file" multiple accept="image/*" class="mt-1 text-xs" onchange="previewMulti(this, 'prev-hall-${id}')">
-                <div id="prev-hall-${id}" class="flex flex-wrap gap-1 mt-1"></div>
+function buildAutoMetricsBadges(eq) {
+    const m = computeEquipmentMetrics(eq);
+    let html = "";
+    if (m.dtAir !== null) {
+        html += `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold ${statusPillClasses(m.dtAirStatus)}">ΔT Aire: ${m.dtAir > 0 ? "+" : ""}${m.dtAir}°C ${m.dtAirMsg ? `(${m.dtAirMsg})` : ""}</span>`;
+    }
+    if (m.dtWater !== null) {
+        html += `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold ${statusPillClasses(m.dtWaterStatus)}">ΔT Agua: ${m.dtWater}°C ${m.dtWaterStatus === "ok" ? "(Óptimo)" : "(Revisar caudal/filtro Y)"}</span>`;
+    }
+    if (m.vUnbalance !== null) {
+        html += `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold ${statusPillClasses(m.vUnbalanceStatus)}">Desbalance NEMA: ${m.vUnbalance}% ${m.vUnbalance > 2 ? "(¡Crítico >2%!)" : "(OK <2%)"}</span>`;
+    }
+    if (m.errT !== null) {
+        html += `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold ${statusPillClasses(m.errTStatus)}">Error Sensor T°: ${m.errT > 0 ? "+" : ""}${m.errT}°C</span>`;
+    }
+    if (m.errHR !== null) {
+        html += `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold ${statusPillClasses(m.errHRStatus)}">Error Sensor HR: ${m.errHR > 0 ? "+" : ""}${m.errHR}%</span>`;
+    }
+    return html || `<span class="text-[11px] text-slate-400 italic">Ingresa temperaturas/voltajes para calcular indicadores automáticos</span>`;
+}
+
+// --- RENDER DE PARÁMETROS ESPECÍFICOS POR FAMILIA ---
+function buildParamsFieldsHTML(eq) {
+    const u = eq.uid;
+    const p = eq.params;
+    const inp = (key, ph, type = "text") =>
+        `<input type="${type}" step="any" value="${escapeHtml(p[key])}" oninput="updateEqParam('${u}','${key}',this.value)" placeholder="${ph}" class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none">`;
+
+    if (eq.family === "split") {
+        return `
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Modo Operación</label>
+                <select onchange="updateEqParam('${u}','modo',this.value)" class="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs">
+                    <option value="Frío" ${p.modo === "Frío" ? "selected" : ""}>❄️ Frío</option>
+                    <option value="Calor" ${p.modo === "Calor" ? "selected" : ""}>☀️ Calor</option>
+                </select>
             </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Refrigerante</label>
+                <select onchange="updateEqParam('${u}','gas',this.value)" class="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs">
+                    ${["R-410A", "R-32", "R-22", "R-407C", "R-404A", "Otro"].map(g => `<option value="${g}" ${p.gas === g ? "selected" : ""}>${g}</option>`).join("")}
+                </select>
+            </div>
+            <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Voltaje (V)</label>${inp("voltaje", "220 / 380", "number")}</div>
+            <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Amperaje (A)</label>${inp("amp", "Ej: 4.8", "number")}</div>
+            <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">P. Baja (PSI)</label>${inp("pBaja", "115-140")}</div>
+            <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">P. Alta (PSI)</label>${inp("pAlta", "Opcional")}</div>
+            <div><label class="block text-[10px] font-bold text-blue-700 mb-0.5">T° Retorno (°C)</label>${inp("tRet", "Ej: 23.5", "number")}</div>
+            <div><label class="block text-[10px] font-bold text-blue-700 mb-0.5">T° Inyección (°C)</label>${inp("tIny", "Ej: 11.0", "number")}</div>
         </div>`;
-        container.insertAdjacentHTML('beforeend', html);
     }
 
-    window.previewMulti = function(input, divId) {
-        const div = document.getElementById(divId);
-        div.innerHTML = '';
-        Array.from(input.files).forEach(file => {
-            const r = new FileReader();
-            r.onload = (e) => { div.innerHTML += `<img src="${e.target.result}" class="w-12 h-12 object-cover border rounded">`; }
-            r.readAsDataURL(file);
-        });
+    if (eq.family === "fancoil") {
+        return `
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Fluido Hidrónico</label>
+                <select onchange="updateEqParam('${u}','fluido',this.value)" class="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs">
+                    <option value="Agua Helada" ${p.fluido === "Agua Helada" ? "selected" : ""}>Agua Helada</option>
+                    <option value="Agua Caliente" ${p.fluido === "Agua Caliente" ? "selected" : ""}>Agua Caliente</option>
+                    <option value="4 Tubos (Frío/Calor)" ${p.fluido === "4 Tubos (Frío/Calor)" ? "selected" : ""}>4 Tubos</option>
+                </select>
+            </div>
+            <div><label class="block text-[10px] font-bold text-cyan-700 mb-0.5">T° Entrada Agua (°C)</label>${inp("tAguaEnt", "Ej: 7.0", "number")}</div>
+            <div><label class="block text-[10px] font-bold text-cyan-700 mb-0.5">T° Salida Agua (°C)</label>${inp("tAguaSal", "Ej: 12.5", "number")}</div>
+            <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Dif. Presión P/T</label>${inp("dpPt", "kPa / PSI")}</div>
+            <div><label class="block text-[10px] font-bold text-blue-700 mb-0.5">T° Retorno Aire (°C)</label>${inp("tRet", "Ej: 22.0", "number")}</div>
+            <div><label class="block text-[10px] font-bold text-blue-700 mb-0.5">T° Inyección Aire (°C)</label>${inp("tIny", "Ej: 12.0", "number")}</div>
+            <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Voltaje Motor (V)</label>${inp("voltaje", "220", "number")}</div>
+            <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Amperaje Motor (A)</label>${inp("amp", "Ej: 1.2", "number")}</div>
+        </div>`;
     }
 
-    // --- GENERAR REPORTE (CON FOTOS SEPARADAS) ---
-    function generateReport() {
-        // Transferencia de datos básicos
-        document.getElementById('rep-cliente-nombre').innerText = document.getElementById('gen-cliente-nombre').value || 'Sin Nombre';
-        document.getElementById('rep-cliente-rut').innerText = document.getElementById('gen-cliente-rut').value;
-        document.getElementById('rep-cliente-direccion').innerText = document.getElementById('gen-cliente-direccion').value;
-        document.getElementById('rep-fecha').innerText = today();
-        document.getElementById('rep-folio-numero').innerText = '#' + getFolio();
-        document.getElementById('mant-sig-client-name').innerText = document.getElementById('gen-cliente-nombre').value || 'Cliente';
-        document.getElementById('mant-sig-client-rut').innerText = document.getElementById('gen-cliente-rut').value;
+    if (eq.family === "rooftop") {
+        return `
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div><label class="block text-[10px] font-bold text-indigo-700 mb-0.5">Voltaje L1-L2 (V)</label>${inp("vL12", "380", "number")}</div>
+            <div><label class="block text-[10px] font-bold text-indigo-700 mb-0.5">Voltaje L2-L3 (V)</label>${inp("vL23", "382", "number")}</div>
+            <div><label class="block text-[10px] font-bold text-indigo-700 mb-0.5">Voltaje L3-L1 (V)</label>${inp("vL31", "379", "number")}</div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Refrigerante</label>
+                <select onchange="updateEqParam('${u}','gas',this.value)" class="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs">
+                    ${["R-410A", "R-407C", "R-22", "R-32"].map(g => `<option value="${g}" ${p.gas === g ? "selected" : ""}>${g}</option>`).join("")}
+                </select>
+            </div>
+            <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Amp. Compresor (A)</label>${inp("ampComp", "Ej: 18.5")}</div>
+            <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Amp. Ventilador (A)</label>${inp("ampVent", "Ej: 4.2")}</div>
+            <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">SH / SC (°C)</label>${inp("shSc", "Ej: 6.5 / 7.0")}</div>
+            <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Megado (MΩ)</label>${inp("megado", "> 50 MΩ")}</div>
+            <div><label class="block text-[10px] font-bold text-blue-700 mb-0.5">T° Retorno (°C)</label>${inp("tRet", "Ej: 24.0", "number")}</div>
+            <div><label class="block text-[10px] font-bold text-blue-700 mb-0.5">T° Inyección (°C)</label>${inp("tIny", "Ej: 12.0", "number")}</div>
+        </div>`;
+    }
 
-        // Renderizado de Equipos
-        const container = document.getElementById('report-equipments-container');
-        container.innerHTML = '';
+    // Precisión (CRAC / CRAH / InRow)
+    return `
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div><label class="block text-[10px] font-bold text-purple-700 mb-0.5">T° Controlador (°C)</label>${inp("tCtrl", "Ej: 22.0", "number")}</div>
+        <div><label class="block text-[10px] font-bold text-purple-700 mb-0.5">T° Patrón (°C)</label>${inp("tPat", "Ej: 21.8", "number")}</div>
+        <div><label class="block text-[10px] font-bold text-purple-700 mb-0.5">HR Controlador (%)</label>${inp("hrCtrl", "Ej: 48", "number")}</div>
+        <div><label class="block text-[10px] font-bold text-purple-700 mb-0.5">HR Patrón (%)</label>${inp("hrPat", "Ej: 47", "number")}</div>
+        <div><label class="block text-[10px] font-bold text-blue-700 mb-0.5">T° Retorno Real (°C)</label>${inp("tRet", "Ej: 29.0", "number")}</div>
+        <div><label class="block text-[10px] font-bold text-blue-700 mb-0.5">T° Inyección Real (°C)</label>${inp("tIny", "Ej: 18.0", "number")}</div>
+        <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Amp. Humidificador (A)</label>${inp("ampHum", "Ej: 9.5")}</div>
+        <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Presión Piso (Pa)</label>${inp("dpPiso", "15 - 35 Pa")}</div>
+        <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Relevo N+1 (seg)</label>${inp("relevoN1", "< 60 s", "number")}</div>
+        <div><label class="block text-[10px] font-bold text-slate-500 mb-0.5">Voltaje / Amp (V/A)</label>${inp("amp", "380V / 14A")}</div>
+    </div>`;
+}
 
-        for(let i=1; i<=equipmentCount; i++) {
-            const form = document.getElementById(`eq-form-${i}`);
-            if(!form) continue;
+// --- RENDER PRINCIPAL DE TODAS LAS TARJETAS DE EQUIPOS ---
+function renderAllEquipments() {
+    const container = document.getElementById("equipments-container");
+    document.getElementById("eq-total-badge").textContent = appState.equipments.length;
 
-            const marca = form.querySelector('.eq-marca').value || '-';
-            const tipo = form.querySelector('.eq-tipo').value || '-';
-            const serie = form.querySelector('.eq-serie').value || '-';
-            
-            const checks = Array.from(form.querySelectorAll('.eq-check:checked')).map(c => 
-                `<span class="inline-block bg-green-100 text-green-800 text-[9px] px-1 rounded mr-1 mb-1 border border-green-200">✓ ${c.value}</span>`
-            ).join('');
+    container.innerHTML = appState.equipments.map((eq, index) => {
+        const num = index + 1;
+        const spec = HVAC_FAMILIES[eq.family] || HVAC_FAMILIES.split;
+        const semClass = eq.semaphore === "ROJO" ? "sem-rojo" : eq.semaphore === "AMARILLO" ? "sem-amarillo" : "sem-verde";
 
-            const gas = form.querySelector('.eq-gas').value || '-';
-            const pb = form.querySelector('.eq-p-baja').value || '-';
-            const pa = form.querySelector('.eq-p-alta').value || '-';
-            const amp = form.querySelector('.eq-amp').value || '-';
-            const ta = form.querySelector('.eq-t-amb').value;
-            const ti = form.querySelector('.eq-t-iny').value;
-            const dt = (ta && ti) ? Math.abs(ta - ti).toFixed(1) + '°C' : '-';
+        // Conteo checklist
+        const states = Object.values(eq.checklist);
+        const okCount = states.filter(s => s === "OK").length;
+        const obsCount = states.filter(s => s === "OBS").length;
+        const critCount = states.filter(s => s === "CRÍTICO").length;
 
-            // --- PROCESAR FOTOS POR CATEGORÍA ---
-            const getImgsHtml = (divId, label) => {
-                const div = document.getElementById(divId);
-                if(!div || div.querySelectorAll('img').length === 0) return '';
-                let html = `<div class="mb-2"><p class="text-[9px] font-bold text-gray-500 mb-1">${label}</p><div class="flex flex-wrap gap-1">`;
-                div.querySelectorAll('img').forEach(img => {
-                    html += `<img src="${img.src}" class="h-16 w-auto object-cover border border-gray-300 rounded">`;
-                });
-                html += `</div></div>`;
-                return html;
-            };
-
-            const imgFiltros = getImgsHtml(`prev-filtros-${i}`, 'FILTROS / LIMPIEZA');
-            const imgInt = getImgsHtml(`prev-int-${i}`, 'UNIDAD INTERIOR');
-            const imgExt = getImgsHtml(`prev-ext-${i}`, 'UNIDAD EXTERIOR');
-            const imgHall = getImgsHtml(`prev-hall-${i}`, 'EVIDENCIA HALLAZGOS');
-            
-            const hasImages = imgFiltros || imgInt || imgExt || imgHall;
-
-            const obs = form.querySelector('.eq-hallazgos').value;
-
-            // HTML ESTRUCTURADO PARA IMPRESIÓN
-            const cardHtml = `
-            <div class="equipment-section border border-gray-300 rounded overflow-hidden page-break-inside-avoid shadow-sm">
-                <!-- Header Card -->
-                <div class="bg-blue-600 text-white p-2 flex justify-between items-center text-xs">
-                    <div class="font-bold uppercase">EQUIPO #${i} | ${marca}</div>
-                    <div class="opacity-90">${tipo} | SN: ${serie}</div>
-                </div>
-                
-                <div class="p-3 bg-white">
-                    <!-- Fila 1: Datos Técnicos -->
-                    <table class="w-full text-[10px] mb-3 border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 text-gray-500 border-b border-gray-200">
-                                <th class="p-1 text-left">GAS</th>
-                                <th class="p-1 text-center">P.BAJA</th>
-                                <th class="p-1 text-center">P.ALTA</th>
-                                <th class="p-1 text-center">AMP</th>
-                                <th class="p-1 text-center font-bold text-blue-600">DELTA T</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="text-gray-800">
-                                <td class="p-1 border-b text-left font-bold">${gas}</td>
-                                <td class="p-1 border-b text-center">${pb}</td>
-                                <td class="p-1 border-b text-center">${pa}</td>
-                                <td class="p-1 border-b text-center">${amp}</td>
-                                <td class="p-1 border-b text-center font-bold bg-blue-50">${dt}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- Fila 2: Checklist y Observaciones -->
-                    <div class="flex gap-4 border-b border-gray-100 pb-2 mb-2">
-                        <div class="w-1/2">
-                            <p class="text-[9px] font-bold text-gray-500 mb-1 uppercase">Mantenimiento Realizado</p>
-                            <div class="leading-tight">${checks}</div>
-                        </div>
-                        <div class="w-1/2">
-                             ${obs ? `<div class="bg-red-50 p-2 rounded border border-red-100 h-full">
-                                <p class="text-[9px] font-bold text-red-600 mb-1">OBSERVACIONES</p>
-                                <p class="text-[10px] text-gray-800 italic" contenteditable="true">${obs}</p>
-                             </div>` : ''}
-                        </div>
-                    </div>
-
-                    <!-- Fila 3: Registro Fotográfico Organizado -->
-                    ${hasImages ? `<div class="mt-2">
-                        <p class="text-[9px] font-bold text-blue-600 border-b border-blue-100 mb-2 pb-1">REGISTRO FOTOGRÁFICO</p>
-                        <div class="grid grid-cols-4 gap-2">
-                            <div class="col-span-1">${imgFiltros}</div>
-                            <div class="col-span-1">${imgInt}</div>
-                            <div class="col-span-1">${imgExt}</div>
-                            <div class="col-span-1">${imgHall}</div>
-                        </div>
-                    </div>` : ''}
+        const checklistHTML = spec.checklist.map((itemText, i) => {
+            const cur = eq.checklist[i] || "OK";
+            const btn = (val, lbl, activeCls) => `
+                <button type="button" onclick="setChecklistState('${eq.uid}', ${i}, '${val}')"
+                    class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition ${cur === val ? activeCls : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"}">
+                    ${lbl}
+                </button>`;
+            return `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 py-1.5 border-b border-slate-100 last:border-0">
+                <span class="text-xs text-slate-700 leading-snug"><strong class="text-slate-400 mr-1">${i + 1}.</strong>${escapeHtml(itemText)}</span>
+                <div class="flex items-center gap-1 shrink-0">
+                    ${btn("OK", "OK", "bg-emerald-600 text-white border-emerald-600")}
+                    ${btn("OBS", "OBS", "bg-amber-500 text-white border-amber-500")}
+                    ${btn("CRÍTICO", "CRÍT", "bg-red-600 text-white border-red-600")}
+                    ${btn("N/A", "N/A", "bg-slate-500 text-white border-slate-500")}
                 </div>
             </div>`;
+        }).join("");
 
-            container.insertAdjacentHTML('beforeend', cardHtml);
+        const photosHTML = PHOTO_CATEGORIES.map(cat => {
+            const list = eq.photos[cat.key] || [];
+            const thumbs = list.map((src, pIdx) => `
+                <div class="relative group w-16 h-16">
+                    <img src="${src}" class="w-16 h-16 object-cover rounded-lg border border-slate-300 shadow-xs">
+                    <button type="button" onclick="deletePhoto('${eq.uid}','${cat.key}',${pIdx})"
+                        class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center shadow hover:bg-red-700" title="Eliminar foto">✕</button>
+                </div>`).join("");
+            return `
+            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-[11px] font-bold text-slate-700">${cat.label}</span>
+                    <span class="text-[10px] text-slate-400">${list.length} foto(s)</span>
+                </div>
+                <label class="inline-flex items-center justify-center w-full py-1.5 px-2 bg-white hover:bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-[11px] font-semibold cursor-pointer transition mb-2">
+                    📷 Subir / Tomar Foto
+                    <input type="file" multiple accept="image/*" class="hidden" onchange="handlePhotoUpload(this, '${eq.uid}', '${cat.key}')">
+                </label>
+                <div class="flex flex-wrap gap-2">${thumbs}</div>
+            </div>`;
+        }).join("");
+
+        return `
+        <div id="card-${eq.uid}" class="equipment-card ${semClass} bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+            <!-- Cabecera Tarjeta Equipo -->
+            <div class="bg-slate-800 text-white px-4 py-2.5 flex flex-wrap justify-between items-center gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="bg-blue-600 text-white text-xs font-extrabold px-2.5 py-0.5 rounded-lg">EQUIPO #${num}</span>
+                    <span class="text-xs font-semibold text-slate-200">${escapeHtml(spec.shortLabel)}</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="duplicateEquipment('${eq.uid}')" class="px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-[11px] font-semibold text-slate-100 transition">❐ Duplicar</button>
+                    <button type="button" onclick="removeEquipment('${eq.uid}')" class="px-2.5 py-1 rounded-lg bg-red-600/90 hover:bg-red-600 text-[11px] font-semibold text-white transition">🗑 Eliminar</button>
+                </div>
+            </div>
+
+            <div class="p-4 sm:p-5 space-y-5">
+                <!-- Selector de Familia de Equipo -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1.5">Familia de Equipo (adapta checklist y parámetros)</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        ${Object.entries(HVAC_FAMILIES).map(([fKey, fObj]) => `
+                            <button type="button" onclick="changeEquipmentFamily('${eq.uid}','${fKey}')"
+                                class="py-2 px-2.5 rounded-xl border text-xs font-bold transition text-center ${eq.family === fKey ? "bg-blue-600 text-white border-blue-600 shadow-sm" : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"}">
+                                ${escapeHtml(fObj.shortLabel)}
+                            </button>
+                        `).join("")}
+                    </div>
+                </div>
+
+                <!-- Identificación del Activo -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Subtipo</label>
+                        <select onchange="updateEqField('${eq.uid}','subtype',this.value)" class="w-full rounded-xl border border-slate-300 bg-white px-2.5 py-2 text-xs font-semibold">
+                            ${spec.subtypes.map(st => `<option value="${escapeHtml(st)}" ${eq.subtype === st ? "selected" : ""}>${escapeHtml(st)}</option>`).join("")}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Marca</label>
+                        <input type="text" value="${escapeHtml(eq.marca)}" oninput="updateEqField('${eq.uid}','marca',this.value)" placeholder="Ej: Midea, Daikin, Liebert" class="w-full rounded-xl border border-slate-300 px-2.5 py-2 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Modelo</label>
+                        <input type="text" value="${escapeHtml(eq.modelo)}" oninput="updateEqField('${eq.uid}','modelo',this.value)" placeholder="Modelo unidad" class="w-full rounded-xl border border-slate-300 px-2.5 py-2 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Capacidad</label>
+                        <input list="cap-list-${eq.family}" type="text" value="${escapeHtml(eq.capacidad)}" oninput="updateEqField('${eq.uid}','capacidad',this.value)" placeholder="Ej: 18.000 BTU / 10 TR" class="w-full rounded-xl border border-slate-300 px-2.5 py-2 text-xs">
+                        <datalist id="cap-list-${eq.family}">${spec.capacities.map(c => `<option value="${escapeHtml(c)}">`).join("")}</datalist>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Tag / Ubicación Exacta</label>
+                        <input type="text" value="${escapeHtml(eq.ubicacion)}" oninput="updateEqField('${eq.uid}','ubicacion',this.value)" placeholder="Ej: Sala Servidores Piso 2" class="w-full rounded-xl border border-slate-300 px-2.5 py-2 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-0.5">N° de Serie</label>
+                        <input type="text" value="${escapeHtml(eq.serie)}" oninput="updateEqField('${eq.uid}','serie',this.value)" placeholder="Nº Serie" class="w-full rounded-xl border border-slate-300 px-2.5 py-2 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Seguridad Eléctrica (LOTO)</label>
+                        <select onchange="updateEqField('${eq.uid}','loto',this.value)" class="w-full rounded-xl border border-slate-300 bg-white px-2.5 py-2 text-xs">
+                            <option value="Sí" ${eq.loto === "Sí" ? "selected" : ""}>✓ LOTO Aplicado (Desenergizado)</option>
+                            <option value="N/A" ${eq.loto === "N/A" ? "selected" : ""}>N/A (Solo inspección visual)</option>
+                            <option value="No" ${eq.loto === "No" ? "selected" : ""}>No aplicado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Próxima Mantención Sugerida</label>
+                        <select onchange="updateEqField('${eq.uid}','proximaMantencion',this.value)" class="w-full rounded-xl border border-slate-300 bg-white px-2.5 py-2 text-xs">
+                            ${["Mensual (1 mes)", "Bimestral (2 meses)", "Trimestral (3 meses)", "Semestral (6 meses)", "Anual (12 meses)"].map(f =>
+                                `<option value="${f}" ${eq.proximaMantencion === f ? "selected" : ""}>${f}</option>`
+                            ).join("")}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Checklist Técnico Dinámico -->
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-2 pb-1.5 border-b border-slate-200">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-extrabold text-slate-800 uppercase">Checklist Técnico</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-600">
+                                ${okCount} OK ${obsCount ? `• ${obsCount} OBS` : ""} ${critCount ? `• ${critCount} CRÍT` : ""}
+                            </span>
+                        </div>
+                        <button type="button" onclick="markAllChecklistOK('${eq.uid}')" class="text-[11px] font-bold text-emerald-700 hover:underline">✓ Marcar todos OK</button>
+                    </div>
+                    <div>${checklistHTML}</div>
+                </div>
+
+                <!-- Parámetros Medidos + Indicadores Automáticos + IA -->
+                <div class="bg-blue-50/40 p-3.5 rounded-xl border border-blue-100">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-2.5">
+                        <span class="text-xs font-extrabold text-slate-800 uppercase">Parámetros Medidos</span>
+                        <button type="button" onclick="diagnoseEquipmentAI('${eq.uid}')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-[11px] font-bold shadow-xs transition flex items-center gap-1">
+                            <span>✨</span> Diagnóstico Técnico IA
+                        </button>
+                    </div>
+                    ${buildParamsFieldsHTML(eq)}
+                    <div id="metrics-${eq.uid}" class="mt-3 flex flex-wrap gap-2 items-center">
+                        ${buildAutoMetricsBadges(eq)}
+                    </div>
+                    <div id="ai-box-${eq.uid}" class="hidden mt-3 p-3 bg-purple-50 border border-purple-200 rounded-xl text-xs text-slate-800"></div>
+                </div>
+
+                <!-- Semáforo de Estado Final + Observaciones + Redactor IA -->
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-extrabold text-slate-700 uppercase mb-1.5">Semáforo de Estado de Entrega</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <button type="button" onclick="updateEqField('${eq.uid}','semaphore','VERDE'); renderAllEquipments();"
+                                class="p-2.5 rounded-xl border-2 text-left transition ${eq.semaphore === "VERDE" ? "bg-emerald-50 border-emerald-600 ring-1 ring-emerald-500" : "bg-white border-slate-200 hover:bg-slate-50"}">
+                                <div class="text-xs font-extrabold text-emerald-800">🟢 VERDE — Operativo</div>
+                                <div class="text-[10px] text-slate-500">Parámetros normales, sin observaciones</div>
+                            </button>
+                            <button type="button" onclick="updateEqField('${eq.uid}','semaphore','AMARILLO'); renderAllEquipments();"
+                                class="p-2.5 rounded-xl border-2 text-left transition ${eq.semaphore === "AMARILLO" ? "bg-amber-50 border-amber-500 ring-1 ring-amber-400" : "bg-white border-slate-200 hover:bg-slate-50"}">
+                                <div class="text-xs font-extrabold text-amber-800">🟡 AMARILLO — Correctivo</div>
+                                <div class="text-[10px] text-slate-500">Operativo con desgaste / cotizar mejora</div>
+                            </button>
+                            <button type="button" onclick="updateEqField('${eq.uid}','semaphore','ROJO'); renderAllEquipments();"
+                                class="p-2.5 rounded-xl border-2 text-left transition ${eq.semaphore === "ROJO" ? "bg-red-50 border-red-600 ring-1 ring-red-500" : "bg-white border-slate-200 hover:bg-slate-50"}">
+                                <div class="text-xs font-extrabold text-red-800">🔴 ROJO — Crítico</div>
+                                <div class="text-[10px] text-slate-500">Falla activa o riesgo operacional</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex flex-wrap justify-between items-center gap-2 mb-1">
+                            <label class="text-[11px] font-extrabold text-slate-700 uppercase">Observaciones, Hallazgos y Recomendaciones</label>
+                            <button type="button" onclick="polishObservationsAI('${eq.uid}')" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-[11px] font-bold transition">
+                                ✨ Redactar Profesionalmente
+                            </button>
+                        </div>
+                        <textarea id="obs-${eq.uid}" oninput="updateEqField('${eq.uid}','hallazgos',this.value)" rows="3"
+                            placeholder="Anota hallazgos rápidos (ej: 'cap hinchado, drenaje tapado') y usa 'Redactar Profesionalmente' para convertirlo en texto técnico comercial..."
+                            class="w-full rounded-xl border border-slate-300 p-2.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none">${escapeHtml(eq.hallazgos)}</textarea>
+                    </div>
+                </div>
+
+                <!-- Registro Fotográfico Organizado con Compresión -->
+                <div class="border-t border-slate-200 pt-3">
+                    <span class="text-xs font-extrabold text-blue-700 uppercase block mb-2">Registro Fotográfico (Compresión Automática HD)</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                        ${photosHTML}
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join("");
+}
+
+// ============================================================================
+// COMPRESIÓN AUTOMÁTICA DE IMÁGENES EN CLIENTE
+// ============================================================================
+
+function compressImageFile(file, maxWidth = 1000, quality = 0.75) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("Error leyendo archivo"));
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onerror = () => reject(new Error("Imagen inválida"));
+            img.onload = () => {
+                let w = img.width;
+                let h = img.height;
+                if (w > maxWidth) {
+                    h = Math.round((h * maxWidth) / w);
+                    w = maxWidth;
+                }
+                const canvas = document.createElement("canvas");
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext("2d");
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL("image/jpeg", quality));
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function handlePhotoUpload(input, uid, catKey) {
+    const eq = appState.equipments.find(e => e.uid === uid);
+    if (!eq || !input.files || input.files.length === 0) return;
+
+    const files = Array.from(input.files);
+    showToast(`Comprimiendo ${files.length} foto(s)...`, "info");
+
+    for (const file of files) {
+        try {
+            const compressedDataUrl = await compressImageFile(file, 1000, 0.75);
+            eq.photos[catKey].push(compressedDataUrl);
+        } catch (err) {
+            showToast(`No se pudo procesar ${file.name}`, "error");
+        }
+    }
+    input.value = "";
+    renderAllEquipments();
+    scheduleAutoSave();
+    showToast("Fotos agregadas y optimizadas", "success");
+}
+
+function deletePhoto(uid, catKey, photoIdx) {
+    const eq = appState.equipments.find(e => e.uid === uid);
+    if (!eq || !eq.photos[catKey]) return;
+    eq.photos[catKey].splice(photoIdx, 1);
+    renderAllEquipments();
+    scheduleAutoSave();
+}
+
+// ============================================================================
+// INTEGRACIÓN GEMINI API (CON BACKOFF EXPONENCIAL Y SIN CLAVE EXPUESTA)
+// ============================================================================
+
+function getEffectiveApiKey() {
+    const custom = localStorage.getItem(STORAGE_KEYS.API_KEY);
+    return (custom && custom.trim()) ? custom.trim() : apiKey;
+}
+
+async function callGeminiAPI(systemInstruction, userPrompt) {
+    const key = getEffectiveApiKey();
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(key)}`;
+    const payload = {
+        contents: [{ parts: [{ text: userPrompt }] }],
+        systemInstruction: { parts: [{ text: systemInstruction }] }
+    };
+
+    const delays = [1000, 2000, 4000];
+    let lastError = null;
+
+    for (let attempt = 0; attempt <= delays.length; attempt++) {
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!text) throw new Error("Respuesta vacía del modelo.");
+                return text.trim();
+            }
+
+            if (response.status === 429 || response.status >= 500) {
+                lastError = new Error(`Servicio ocupado (HTTP ${response.status})`);
+                if (attempt < delays.length) {
+                    await new Promise(r => setTimeout(r, delays[attempt]));
+                    continue;
+                }
+            } else {
+                let errDetail = `Error HTTP ${response.status}`;
+                try {
+                    const errJson = await response.json();
+                    if (errJson?.error?.message) errDetail = errJson.error.message;
+                } catch (_) {}
+                throw new Error(errDetail);
+            }
+        } catch (err) {
+            lastError = err;
+            if (attempt < delays.length && !navigator.onLine) {
+                throw new Error("Sin conexión a internet para consultar IA.");
+            }
+            if (attempt < delays.length) {
+                await new Promise(r => setTimeout(r, delays[attempt]));
+            }
+        }
+    }
+    throw lastError || new Error("No se pudo conectar con Gemini.");
+}
+
+async function diagnoseEquipmentAI(uid) {
+    const eq = appState.equipments.find(e => e.uid === uid);
+    const box = document.getElementById(`ai-box-${uid}`);
+    if (!eq || !box) return;
+
+    box.classList.remove("hidden");
+    box.innerHTML = `<div class="ai-pulse font-semibold text-purple-700">✨ Analizando parámetros técnicos, checklist y saltos térmicos...</div>`;
+
+    const spec = HVAC_FAMILIES[eq.family];
+    const m = computeEquipmentMetrics(eq);
+    const issues = [];
+    spec.checklist.forEach((txt, i) => {
+        if (eq.checklist[i] === "OBS" || eq.checklist[i] === "CRÍTICO") {
+            issues.push(`[${eq.checklist[i]}] ${txt}`);
+        }
+    });
+
+    const sysPrompt = "Eres un ingeniero especialista senior en climatización HVAC en Chile (ASHRAE 180 / TC 9.9). Redacta diagnósticos técnicos precisos, concisos (máximo 3-4 líneas), sin formato markdown exagerado, orientados a un certificado profesional para clientes comerciales y corporativos.";
+    const userPrompt = `Analiza este equipo y entrega diagnóstico técnico + semáforo sugerido (VERDE, AMARILLO o ROJO) + acción recomendada:
+- Familia/Subtipo: ${spec.label} / ${eq.subtype}
+- Marca/Capacidad: ${eq.marca || "No indicada"} / ${eq.capacidad || "No indicada"}
+- Parámetros medidos: ${JSON.stringify(eq.params)}
+- Indicadores calculados: ΔT Aire=${m.dtAir ?? "N/D"}°C, ΔT Agua=${m.dtWater ?? "N/D"}°C, Desbalance NEMA=${m.vUnbalance ?? "N/D"}%, Error T°=${m.errT ?? "N/D"}°C, Error HR=${m.errHR ?? "N/D"}%
+- Ítems checklist con OBS/CRÍTICO: ${issues.length ? issues.join("; ") : "Ninguno"}
+- Notas de terreno: ${eq.hallazgos || "Ninguna"}`;
+
+    try {
+        const aiText = await callGeminiAPI(sysPrompt, userPrompt);
+        const cleanText = aiText.replace(/\*\*/g, "");
+        box.innerHTML = `
+            <div class="font-bold text-purple-900 mb-1">✨ Diagnóstico Técnico Sugerido:</div>
+            <p class="text-xs text-slate-800 whitespace-pre-line mb-2">${escapeHtml(cleanText)}</p>
+            <div class="flex gap-2">
+                <button type="button" onclick="appendAIToObs('${uid}')" data-ai="${encodeURIComponent(cleanText)}" id="ai-btn-${uid}"
+                    class="px-3 py-1.5 bg-purple-700 hover:bg-purple-800 text-white text-[11px] font-bold rounded-lg transition">
+                    + Insertar en Observaciones
+                </button>
+                <button type="button" onclick="document.getElementById('ai-box-${uid}').classList.add('hidden')"
+                    class="px-2.5 py-1.5 bg-white border border-purple-200 text-purple-700 text-[11px] font-semibold rounded-lg">
+                    Cerrar
+                </button>
+            </div>`;
+    } catch (err) {
+        box.innerHTML = `<div class="text-red-700 font-semibold">⚠️ No se pudo completar el análisis IA: ${escapeHtml(err.message)}</div>`;
+    }
+}
+
+function appendAIToObs(uid) {
+    const btn = document.getElementById(`ai-btn-${uid}`);
+    const eq = appState.equipments.find(e => e.uid === uid);
+    if (!btn || !eq) return;
+    const text = decodeURIComponent(btn.getAttribute("data-ai"));
+    eq.hallazgos = eq.hallazgos ? `${eq.hallazgos.trim()}\n${text}` : text;
+    const ta = document.getElementById(`obs-${uid}`);
+    if (ta) ta.value = eq.hallazgos;
+    scheduleAutoSave();
+    showToast("Diagnóstico agregado a Observaciones", "success");
+}
+
+async function polishObservationsAI(uid) {
+    const eq = appState.equipments.find(e => e.uid === uid);
+    const ta = document.getElementById(`obs-${uid}`);
+    if (!eq || !ta) return;
+
+    const rawText = ta.value.trim();
+    if (!rawText) {
+        showToast("Escribe primero algunas notas rápidas en Observaciones", "warning");
+        return;
+    }
+
+    const originalPlaceholder = ta.value;
+    ta.disabled = true;
+    ta.classList.add("ai-pulse");
+    showToast("Redactando observación en lenguaje técnico profesional...", "info");
+
+    const sysPrompt = "Eres el jefe técnico de EasyCool Climatización en Chile. Reescribe notas rápidas de terreno en un párrafo técnico impecable, claro y profesional para un informe de mantenimiento HVAC dirigido a clientes comerciales/corporativos. Si detectas fallas o repuestos desgastados, sugiere sutilmente realizar un mantenimiento correctivo programado previa cotización. Devuelve solo el texto redactado, sin títulos ni comillas.";
+    const userPrompt = `Equipo: ${eq.subtype} (${eq.marca || "HVAC"} ${eq.capacidad || ""}). Semáforo: ${eq.semaphore}. Notas del técnico: "${rawText}"`;
+
+    try {
+        const polished = await callGeminiAPI(sysPrompt, userPrompt);
+        eq.hallazgos = polished.replace(/\*\*/g, "");
+        ta.value = eq.hallazgos;
+        scheduleAutoSave();
+        showToast("Texto profesional aplicado", "success");
+    } catch (err) {
+        ta.value = originalPlaceholder;
+        showToast(`Error IA: ${err.message}`, "error");
+    } finally {
+        ta.disabled = false;
+        ta.classList.remove("ai-pulse");
+    }
+}
+
+// ============================================================================
+// GENERACIÓN DEL CERTIFICADO CONSOLIDADO (VISTA CARTA CHILE)
+// ============================================================================
+
+function syncHeaderInputsToState() {
+    appState.folio = document.getElementById("gen-folio").value.trim() || String(getNextStoredFolio());
+    appState.fecha = document.getElementById("gen-fecha").value || getTodayISO();
+    appState.tipoServicio = document.getElementById("gen-tipo-servicio").value;
+    appState.tecnicoIdx = parseInt(document.getElementById("gen-tecnico").value || "0", 10);
+    const mobileBody = formatChileMobileBody(document.getElementById("gen-cliente-contacto").value);
+    appState.cliente = {
+        nombre: document.getElementById("gen-cliente-nombre").value.trim(),
+        rut: document.getElementById("gen-cliente-rut").value.trim(),
+        contacto: mobileBody ? `+569 ${mobileBody}` : "",
+        direccion: document.getElementById("gen-cliente-direccion").value.trim()
+    };
+}
+
+function buildReportParamsTable(eq) {
+    const p = eq.params;
+    const m = computeEquipmentMetrics(eq);
+    const v = (val, suf = "") => (val !== "" && val !== null && val !== undefined) ? `${escapeHtml(val)}${suf}` : "—";
+
+    let cols = [];
+    if (eq.family === "split") {
+        cols = [
+            { h: "MODO", val: v(p.modo) },
+            { h: "GAS", val: v(p.gas) },
+            { h: "VOLT / AMP", val: `${v(p.voltaje, "V")} / ${v(p.amp, "A")}` },
+            { h: "P.BAJA / P.ALTA", val: `${v(p.pBaja)} / ${v(p.pAlta)}` },
+            { h: "T° RET / INY", val: `${v(p.tRet, "°C")} / ${v(p.tIny, "°C")}` },
+            { h: "ΔT AIRE", val: m.dtAir !== null ? `${m.dtAir}°C` : "—", highlight: m.dtAirStatus }
+        ];
+    } else if (eq.family === "fancoil") {
+        cols = [
+            { h: "FLUIDO", val: v(p.fluido) },
+            { h: "AGUA ENT / SAL", val: `${v(p.tAguaEnt, "°C")} / ${v(p.tAguaSal, "°C")}` },
+            { h: "ΔT AGUA", val: m.dtWater !== null ? `${m.dtWater}°C` : "—", highlight: m.dtWaterStatus },
+            { h: "AIRE RET / INY", val: `${v(p.tRet, "°C")} / ${v(p.tIny, "°C")}` },
+            { h: "ΔT AIRE", val: m.dtAir !== null ? `${m.dtAir}°C` : "—", highlight: m.dtAirStatus },
+            { h: "MOTOR V / A", val: `${v(p.voltaje, "V")} / ${v(p.amp, "A")}` }
+        ];
+    } else if (eq.family === "rooftop") {
+        cols = [
+            { h: "VOLTAJES 3F (V)", val: `${v(p.vL12)} / ${v(p.vL23)} / ${v(p.vL31)}` },
+            { h: "DESBAL. NEMA", val: m.vUnbalance !== null ? `${m.vUnbalance}%` : "—", highlight: m.vUnbalanceStatus },
+            { h: "AMP COMP / VENT", val: `${v(p.ampComp, "A")} / ${v(p.ampVent, "A")}` },
+            { h: "GAS / SH-SC", val: `${v(p.gas)} (${v(p.shSc)})` },
+            { h: "MEGADO", val: v(p.megado, " MΩ") },
+            { h: "ΔT AIRE", val: m.dtAir !== null ? `${m.dtAir}°C` : "—", highlight: m.dtAirStatus }
+        ];
+    } else {
+        cols = [
+            { h: "T° CTRL / PAT", val: `${v(p.tCtrl, "°C")} / ${v(p.tPat, "°C")}`, sub: m.errT !== null ? `Err: ${m.errT}°C` : "", highlight: m.errTStatus },
+            { h: "HR CTRL / PAT", val: `${v(p.hrCtrl, "%")} / ${v(p.hrPat, "%")}`, sub: m.errHR !== null ? `Err: ${m.errHR}%` : "", highlight: m.errHRStatus },
+            { h: "ΔT AIRE", val: m.dtAir !== null ? `${m.dtAir}°C` : "—", highlight: m.dtAirStatus },
+            { h: "AMP HUMID.", val: v(p.ampHum, " A") },
+            { h: "PISO TÉC.", val: v(p.dpPiso, " Pa") },
+            { h: "RELEVO N+1", val: v(p.relevoN1, " s"), highlight: m.relevoStatus }
+        ];
+    }
+
+    const bgFor = (st) => {
+        if (st === "ok") return "bg-emerald-50 text-emerald-900 font-bold";
+        if (st === "warn") return "bg-amber-50 text-amber-900 font-bold";
+        if (st === "bad") return "bg-red-50 text-red-800 font-bold";
+        return "";
+    };
+
+    return `
+    <table class="w-full text-[10px] mb-3 border-collapse border border-slate-200 rounded overflow-hidden">
+        <thead>
+            <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                ${cols.map(c => `<th class="p-1.5 text-center font-bold">${c.h}</th>`).join("")}
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="text-slate-800">
+                ${cols.map(c => `<td class="p-1.5 text-center border-r border-slate-100 last:border-r-0 ${bgFor(c.highlight)}">
+                    <div>${c.val}</div>
+                    ${c.sub ? `<div class="text-[8.5px] opacity-80">${c.sub}</div>` : ""}
+                </td>`).join("")}
+            </tr>
+        </tbody>
+    </table>`;
+}
+
+function generateReport() {
+    syncHeaderInputsToState();
+
+    // Poblar encabezado
+    const cleanFolioNum = appState.folio.replace(/[^0-9A-Za-z-]/g, "") || "2100";
+    document.getElementById("rep-folio-numero").textContent = `Folio: #${cleanFolioNum}`;
+    document.getElementById("rep-fecha").textContent = `Fecha: ${formatDateCL(appState.fecha)}`;
+    document.getElementById("rep-tipo-servicio").textContent = appState.tipoServicio;
+
+    document.getElementById("rep-cliente-nombre").textContent = appState.cliente.nombre || "Cliente sin especificar";
+    document.getElementById("rep-cliente-rut").textContent = appState.cliente.rut ? `RUT: ${appState.cliente.rut}` : "";
+    document.getElementById("rep-cliente-contacto").textContent = appState.cliente.contacto ? `• Contacto: ${appState.cliente.contacto}` : "";
+    document.getElementById("rep-cliente-direccion").textContent = appState.cliente.direccion || "—";
+
+    // Técnico seleccionado
+    const techs = getTechnicians();
+    const tech = techs[appState.tecnicoIdx] || techs[0];
+    document.getElementById("rep-tech-name").textContent = tech.name;
+    document.getElementById("rep-tech-rut").textContent = `Técnico EasyCool | RUT: ${tech.rut}`;
+
+    document.getElementById("mant-sig-client-name").textContent = appState.cliente.nombre || "Recepción Conforme";
+    document.getElementById("mant-sig-client-rut").textContent = appState.cliente.rut ? `RUT: ${appState.cliente.rut}` : "Cliente / Representante";
+
+    // Resumen Ejecutivo (Semáforo Global)
+    const total = appState.equipments.length;
+    const verdes = appState.equipments.filter(e => e.semaphore === "VERDE").length;
+    const amarillos = appState.equipments.filter(e => e.semaphore === "AMARILLO").length;
+    const rojos = appState.equipments.filter(e => e.semaphore === "ROJO").length;
+
+    const execDiv = document.getElementById("rep-executive-summary");
+    let miniRoster = "";
+    if (total >= 2) {
+        miniRoster = `
+        <table class="w-full text-[9.5px] mt-2.5 border-collapse border border-slate-200">
+            <thead>
+                <tr class="bg-slate-100 text-slate-600">
+                    <th class="p-1 text-left">Eq.</th>
+                    <th class="p-1 text-left">Tipo / Capacidad</th>
+                    <th class="p-1 text-left">Ubicación / Tag</th>
+                    <th class="p-1 text-center">Estado Final</th>
+                    <th class="p-1 text-center">Próx. Mantención</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${appState.equipments.map((eq, i) => {
+                    const badgeCls = eq.semaphore === "ROJO" ? "bg-red-100 text-red-800" : eq.semaphore === "AMARILLO" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800";
+                    return `<tr class="border-t border-slate-100">
+                        <td class="p-1 font-bold">#${i + 1}</td>
+                        <td class="p-1">${escapeHtml(eq.subtype)} ${eq.marca ? `(${escapeHtml(eq.marca)})` : ""} ${escapeHtml(eq.capacidad)}</td>
+                        <td class="p-1">${escapeHtml(eq.ubicacion || "—")}</td>
+                        <td class="p-1 text-center"><span class="px-1.5 py-0.5 rounded font-bold ${badgeCls}">${eq.semaphore}</span></td>
+                        <td class="p-1 text-center text-slate-600">${escapeHtml(eq.proximaMantencion)}</td>
+                    </tr>`;
+                }).join("")}
+            </tbody>
+        </table>`;
+    }
+
+    execDiv.innerHTML = `
+    <div class="border border-slate-200 rounded-xl p-3 bg-white">
+        <div class="flex flex-wrap justify-between items-center gap-2">
+            <span class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Resumen Ejecutivo del Servicio</span>
+            <div class="flex flex-wrap gap-1.5 text-[10px] font-bold">
+                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">Total Equipos: ${total}</span>
+                <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">🟢 Operativos: ${verdes}</span>
+                ${amarillos ? `<span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200">🟡 Correctivo Prog.: ${amarillos}</span>` : ""}
+                ${rojos ? `<span class="px-2 py-0.5 rounded-md bg-red-100 text-red-800 border border-red-200">🔴 Críticos: ${rojos}</span>` : ""}
+            </div>
+        </div>
+        ${miniRoster}
+    </div>`;
+
+    // Renderizar tarjetas de cada equipo
+    const container = document.getElementById("report-equipments-container");
+    container.innerHTML = appState.equipments.map((eq, idx) => {
+        const num = idx + 1;
+        const spec = HVAC_FAMILIES[eq.family] || HVAC_FAMILIES.split;
+
+        const semStyles = {
+            VERDE: { bg: "bg-emerald-500", text: "🟢 VERDE — OPERATIVO", box: "bg-slate-50 border-slate-200 text-slate-800" },
+            AMARILLO: { bg: "bg-amber-500", text: "🟡 AMARILLO — CORRECTIVO PROG.", box: "bg-amber-50 border-amber-200 text-amber-950" },
+            ROJO: { bg: "bg-red-600", text: "🔴 ROJO — FALLA CRÍTICA", box: "bg-red-50 border-red-200 text-red-950" }
+        }[eq.semaphore] || { bg: "bg-emerald-500", text: "🟢 OPERATIVO", box: "bg-slate-50 border-slate-200" };
+
+        // Badges del checklist con estados diferenciados
+        const checklistBadges = spec.checklist.map((itemText, i) => {
+            const st = eq.checklist[i] || "OK";
+            if (st === "N/A") return "";
+            const cls = st === "OK"
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : st === "OBS"
+                ? "bg-amber-50 text-amber-900 border-amber-300 font-bold"
+                : "bg-red-50 text-red-800 border-red-300 font-bold";
+            const icon = st === "OK" ? "✓" : st === "OBS" ? "⚠ OBS:" : "✕ CRÍT:";
+            return `<span class="inline-block border rounded px-1.5 py-0.5 text-[8.8px] mr-1 mb-1 leading-tight ${cls}">${icon} ${escapeHtml(itemText)}</span>`;
+        }).join("");
+
+        // Cuadrícula fotográfica ADAPTABLE (solo categorías con fotos)
+        const activePhotoCats = PHOTO_CATEGORIES.filter(c => (eq.photos[c.key] || []).length > 0);
+        let photosSection = "";
+        if (activePhotoCats.length > 0) {
+            const gridCols = activePhotoCats.length === 1 ? "grid-cols-1" : activePhotoCats.length === 2 ? "grid-cols-2" : "grid-cols-3";
+            const imgHeight = activePhotoCats.length === 1 ? "h-32" : activePhotoCats.length === 2 ? "h-28" : "h-24";
+            photosSection = `
+            <div class="mt-2.5 pt-2 border-t border-slate-200">
+                <p class="text-[9px] font-extrabold text-blue-700 uppercase mb-1.5">Registro Fotográfico</p>
+                <div class="grid ${gridCols} gap-2.5">
+                    ${activePhotoCats.map(cat => `
+                        <div>
+                            <p class="text-[8.5px] font-bold text-slate-500 uppercase mb-1">${cat.label}</p>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${eq.photos[cat.key].map(src => `<img src="${src}" class="${imgHeight} w-auto max-w-full object-cover border border-slate-300 rounded-md">`).join("")}
+                            </div>
+                        </div>
+                    `).join("")}
+                </div>
+            </div>`;
         }
 
-        document.getElementById('form-section').classList.add('hidden');
-        document.getElementById('report-section').classList.remove('hidden');
-        document.getElementById('mant-print-actions').classList.remove('hidden');
-        initPad('sig-canvas-mant-tech'); initPad('sig-canvas-mant-client');
-        window.scrollTo(0,0);
+        return `
+        <div class="equipment-section border border-slate-300 rounded-xl overflow-hidden page-break-inside-avoid shadow-xs bg-white">
+            <!-- Encabezado Equipo -->
+            <div class="bg-blue-700 text-white px-3 py-2 flex flex-wrap justify-between items-center gap-2">
+                <div>
+                    <span class="font-extrabold text-xs uppercase">EQUIPO #${num} — ${escapeHtml(eq.subtype)}</span>
+                    <span class="text-[10px] text-blue-100 ml-1.5">
+                        ${[eq.marca, eq.modelo, eq.capacidad].filter(Boolean).map(escapeHtml).join(" • ")}
+                    </span>
+                </div>
+                <span class="${semStyles.bg} text-white text-[9.5px] font-extrabold px-2 py-0.5 rounded-md shadow-xs">
+                    ${semStyles.text}
+                </span>
+            </div>
+
+            <!-- Sub-barra identificación -->
+            <div class="bg-slate-50 border-b border-slate-200 px-3 py-1.5 flex flex-wrap justify-between gap-2 text-[9.5px] text-slate-600">
+                <span><strong>Ubicación/Tag:</strong> ${escapeHtml(eq.ubicacion || "No especificada")}</span>
+                <span><strong>N° Serie:</strong> ${escapeHtml(eq.serie || "—")}</span>
+                <span><strong>Bloqueo LOTO:</strong> ${escapeHtml(eq.loto)}</span>
+                <span><strong>Próx. Mantención:</strong> ${escapeHtml(eq.proximaMantencion)}</span>
+            </div>
+
+            <div class="p-3">
+                <!-- Parámetros -->
+                ${buildReportParamsTable(eq)}
+
+                <!-- Checklist -->
+                <div class="mb-2">
+                    <p class="text-[9px] font-extrabold text-slate-500 uppercase mb-1">Pauta Técnica Ejecutada</p>
+                    <div class="leading-tight">${checklistBadges || '<span class="text-[10px] text-slate-400">Sin ítems aplicables</span>'}</div>
+                </div>
+
+                <!-- Observaciones -->
+                ${eq.hallazgos ? `
+                <div class="mt-2 p-2.5 rounded-lg border ${semStyles.box}">
+                    <p class="text-[9px] font-extrabold uppercase mb-0.5 opacity-80">Observaciones, Hallazgos y Recomendaciones</p>
+                    <p class="text-[10px] whitespace-pre-line leading-snug" contenteditable="true">${escapeHtml(eq.hallazgos)}</p>
+                </div>` : ""}
+
+                <!-- Fotos adaptables -->
+                ${photosSection}
+            </div>
+        </div>`;
+    }).join("");
+
+    // Cambiar pantalla
+    document.getElementById("form-section").classList.add("hidden");
+    document.getElementById("report-section").classList.remove("hidden");
+    document.getElementById("mant-print-actions").classList.remove("hidden");
+
+    // Pre-asignar nombre de archivo PDF inmediatamente para Android / Samsung Print Spooler
+    syncPdfDocumentTitle();
+
+    // Inicializar firmas HD cuando ya son visibles en DOM
+    requestAnimationFrame(() => {
+        initHighDPISignaturePad("sig-canvas-mant-tech", "tech");
+        initHighDPISignaturePad("sig-canvas-mant-client", "client");
+    });
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    scheduleAutoSave();
+}
+
+function editReport() {
+    document.title = APP_DEFAULT_TITLE;
+    document.getElementById("report-section").classList.add("hidden");
+    document.getElementById("mant-print-actions").classList.add("hidden");
+    document.getElementById("form-section").classList.remove("hidden");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ============================================================================
+// FIRMAS TÁCTILES Y S-PEN HD (POINTER EVENTS + DEVICEPIXELRATIO + MODO ZOOM)
+// ============================================================================
+
+function ensureSignaturesObject() {
+    if (!appState.signatures || typeof appState.signatures !== "object") {
+        appState.signatures = { tech: "", client: "" };
+    }
+}
+
+function drawDataUrlOnCanvas(canvas, dataUrl) {
+    if (!canvas || !dataUrl) return;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
+    const img = new Image();
+    img.onload = () => {
+        const ctx = canvas.getContext("2d");
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Ajustar imagen proporcionalmente centrada dentro del canvas destino
+        const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+        const drawW = img.width * scale;
+        const drawH = img.height * scale;
+        const offsetX = (canvas.width - drawW) / 2;
+        const offsetY = (canvas.height - drawH) / 2;
+        ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+        ctx.restore();
+    };
+    img.src = dataUrl;
+}
+
+function initHighDPISignaturePad(id, roleKey) {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    ensureSignaturesObject();
+
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
+    // Tope de DPR en 3 para pantallas QHD+ (Samsung Galaxy S26 Ultra) sin sobrecargar memoria
+    const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
+
+    if (canvas.dataset.initDpr !== "true") {
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.lineWidth = 2.2;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = "#0f172a";
+
+        let drawing = false;
+        let activePointerId = null;
+
+        const getPos = (e) => {
+            const r = canvas.getBoundingClientRect();
+            return { x: e.clientX - r.left, y: e.clientY - r.top };
+        };
+
+        const start = (e) => {
+            if (e.pointerType === "mouse" && e.button !== 0) return;
+            e.preventDefault();
+            drawing = true;
+            activePointerId = e.pointerId;
+            if (canvas.setPointerCapture) {
+                try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            }
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            // Permite marcar puntos (ej. puntos de la "i" o tildes con S-Pen)
+            ctx.lineTo(pos.x + 0.1, pos.y + 0.1);
+            ctx.stroke();
+        };
+        const move = (e) => {
+            if (!drawing || e.pointerId !== activePointerId) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        };
+        const end = (e) => {
+            if (!drawing || e.pointerId !== activePointerId) return;
+            e.preventDefault();
+            drawing = false;
+            activePointerId = null;
+            if (roleKey) {
+                ensureSignaturesObject();
+                appState.signatures[roleKey] = canvas.toDataURL("image/png");
+                scheduleAutoSave();
+            }
+        };
+
+        // Pointer Events unificados: soporte nativo de baja latencia para S-Pen, dedo y mouse
+        canvas.addEventListener("pointerdown", start, { passive: false });
+        canvas.addEventListener("pointermove", move, { passive: false });
+        canvas.addEventListener("pointerup", end, { passive: false });
+        canvas.addEventListener("pointercancel", end, { passive: false });
+
+        canvas.dataset.initDpr = "true";
     }
 
-    function editReport() {
-        document.getElementById('report-section').classList.add('hidden');
-        document.getElementById('mant-print-actions').classList.add('hidden');
-        document.getElementById('form-section').classList.remove('hidden');
+    // Restaurar firma guardada si existe
+    if (roleKey && appState.signatures[roleKey]) {
+        drawDataUrlOnCanvas(canvas, appState.signatures[roleKey]);
+    }
+}
+
+function clearCanvas(id, roleKey = null) {
+    const c = document.getElementById(id);
+    if (c) {
+        const ctx = c.getContext("2d");
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.restore();
+    }
+    if (roleKey) {
+        ensureSignaturesObject();
+        appState.signatures[roleKey] = "";
+        scheduleAutoSave();
+    }
+}
+
+// --- MODAL ZOOM DE FIRMA ---
+function setupZoomCanvas() {
+    const canvas = document.getElementById("sig-zoom-canvas");
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
+    const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineWidth = 3.0;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#0f172a";
+
+    if (canvas.dataset.zoomEvents !== "true") {
+        let drawing = false;
+        let activePointerId = null;
+
+        const getPos = (e) => {
+            const r = canvas.getBoundingClientRect();
+            return { x: e.clientX - r.left, y: e.clientY - r.top };
+        };
+        const start = (e) => {
+            if (e.pointerType === "mouse" && e.button !== 0) return;
+            e.preventDefault();
+            drawing = true;
+            activePointerId = e.pointerId;
+            if (canvas.setPointerCapture) {
+                try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            }
+            const pos = getPos(e);
+            const c = canvas.getContext("2d");
+            c.beginPath();
+            c.moveTo(pos.x, pos.y);
+            c.lineTo(pos.x + 0.1, pos.y + 0.1);
+            c.stroke();
+        };
+        const move = (e) => {
+            if (!drawing || e.pointerId !== activePointerId) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            const c = canvas.getContext("2d");
+            c.lineTo(pos.x, pos.y);
+            c.stroke();
+        };
+        const end = (e) => {
+            if (!drawing || e.pointerId !== activePointerId) return;
+            e.preventDefault();
+            drawing = false;
+            activePointerId = null;
+        };
+
+        canvas.addEventListener("pointerdown", start, { passive: false });
+        canvas.addEventListener("pointermove", move, { passive: false });
+        canvas.addEventListener("pointerup", end, { passive: false });
+        canvas.addEventListener("pointercancel", end, { passive: false });
+
+        canvas.dataset.zoomEvents = "true";
+    }
+}
+
+function openSignatureZoom(roleKey) {
+    ensureSignaturesObject();
+    activeZoomRole = roleKey;
+    const titleEl = document.getElementById("sig-zoom-title");
+    titleEl.textContent = roleKey === "client"
+        ? "✍️ Firma del Cliente — Recepción Conforme (Zoom)"
+        : "✍️ Firma del Técnico Responsable (Zoom)";
+
+    openModal("signature-zoom-modal");
+
+    requestAnimationFrame(() => {
+        setupZoomCanvas();
+        const zoomCanvas = document.getElementById("sig-zoom-canvas");
+        if (appState.signatures[roleKey]) {
+            drawDataUrlOnCanvas(zoomCanvas, appState.signatures[roleKey]);
+        }
+    });
+}
+
+function clearZoomCanvas() {
+    const c = document.getElementById("sig-zoom-canvas");
+    if (!c) return;
+    const ctx = c.getContext("2d");
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.restore();
+}
+
+function closeSignatureZoom() {
+    activeZoomRole = null;
+    closeModal("signature-zoom-modal");
+}
+
+function applyZoomedSignature() {
+    if (!activeZoomRole) return;
+    const zoomCanvas = document.getElementById("sig-zoom-canvas");
+    const targetId = activeZoomRole === "client" ? "sig-canvas-mant-client" : "sig-canvas-mant-tech";
+    const targetCanvas = document.getElementById(targetId);
+
+    ensureSignaturesObject();
+    const dataUrl = zoomCanvas.toDataURL("image/png");
+    appState.signatures[activeZoomRole] = dataUrl;
+
+    initHighDPISignaturePad(targetId, activeZoomRole);
+    drawDataUrlOnCanvas(targetCanvas, dataUrl);
+    scheduleAutoSave();
+
+    closeSignatureZoom();
+    showToast("Firma aplicada en alta definición", "success");
+}
+
+// Reajustar canvas zoom si el usuario gira el celular mientras firma
+window.addEventListener("resize", () => {
+    const modal = document.getElementById("signature-zoom-modal");
+    if (modal && !modal.classList.contains("hidden") && activeZoomRole) {
+        const zoomCanvas = document.getElementById("sig-zoom-canvas");
+        const snapshot = zoomCanvas ? zoomCanvas.toDataURL("image/png") : "";
+        requestAnimationFrame(() => {
+            setupZoomCanvas();
+            if (snapshot) drawDataUrlOnCanvas(zoomCanvas, snapshot);
+        });
+    }
+});
+
+// ============================================================================
+// IMPRESIÓN PDF INTELIGENTE (ANDROID / SAMSUNG GALAXY), RESUMEN Y WHATSAPP
+// ============================================================================
+
+function getPdfFileName() {
+    const folioEl = document.getElementById("rep-folio-numero");
+    const clienteEl = document.getElementById("rep-cliente-nombre");
+    const formClienteEl = document.getElementById("gen-cliente-nombre");
+
+    // Extraer solo el código de folio (eliminando prefijos "Folio:" y "#")
+    const rawFolioText = folioEl ? folioEl.innerText : (appState.folio || "0000");
+    const cleanFolio = rawFolioText
+        .replace(/^\s*folio\s*:?\s*#?\s*/i, "")
+        .replace(/[^0-9A-Za-z-]/g, "")
+        .trim() || "0000";
+
+    // Priorizar el nombre en Cliente / Razón Social (respetando edición manual en el informe)
+    const reportClientText = clienteEl ? clienteEl.innerText.trim() : "";
+    const formClientText = (appState.cliente?.nombre || (formClienteEl ? formClienteEl.value.trim() : "")).trim();
+    const rawCliente = (reportClientText && reportClientText !== "Cliente sin especificar")
+        ? reportClientText
+        : (formClientText || "Cliente");
+
+    // Limpiar únicamente caracteres prohibidos en nombres de archivo Android/Windows
+    const safeCliente = rawCliente
+        .replace(/[\\/:*?"<>|]/g, "")
+        .replace(/\s+/g, " ")
+        .trim() || "Cliente";
+
+    return {
+        folio: cleanFolio,
+        cliente: safeCliente,
+        filename: `INFORME DE MANTENIMIENTO N°${cleanFolio} - ${safeCliente}`
+    };
+}
+
+function syncPdfDocumentTitle() {
+    const { filename } = getPdfFileName();
+    document.title = filename;
+    return filename;
+}
+
+function printReport() {
+    const { folio, filename } = getPdfFileName();
+
+    // Avanzar correlativo solo una vez por sesión al imprimir/guardar
+    if (!appState.folioIncremented) {
+        advanceStoredFolio(folio);
+        appState.folioIncremented = true;
+        saveDraftNow();
     }
 
-    function initPad(id) {
-        const c = document.getElementById(id); if(c.getAttribute('init')) return;
-        const ctx = c.getContext('2d'); ctx.lineWidth=2;
-        let p=false;
-        const pos=(e)=>{const r=c.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
-        const start=(e)=>{if(e.touches)e.preventDefault();p=true;ctx.beginPath();ctx.moveTo(pos(e).x,pos(e).y);}
-        const move=(e)=>{if(!p)return;if(e.touches)e.preventDefault();ctx.lineTo(pos(e).x,pos(e).y);ctx.stroke();}
-        const end=(e)=>{if(e.touches)e.preventDefault();p=false;}
-        c.addEventListener('mousedown',start);c.addEventListener('mousemove',move);c.addEventListener('mouseup',end);
-        c.addEventListener('touchstart',start,{passive:false});c.addEventListener('touchmove',move,{passive:false});c.addEventListener('touchend',end);
-        c.setAttribute('init','true');
-    }
-    function clearCanvas(id) { const c=document.getElementById(id); c.getContext('2d').clearRect(0,0,c.width,c.height); }
+    // Fijar título sincronizado sin restaurarlo por timer (Android Print Spooler es asíncrono)
+    document.title = filename;
+    showToast(`Guardando PDF: ${filename}`, "info");
 
-    addEquipmentForm();
+    // Invocar window.print() directo dentro del gesto táctil (óptimo para Chrome y Samsung Internet)
+    window.print();
+}
+
+function buildTextSummary() {
+    const folio = (appState.folio || "2100").replace(/[^0-9A-Za-z-]/g, "");
+    const total = appState.equipments.length;
+    const verdes = appState.equipments.filter(e => e.semaphore === "VERDE").length;
+    const amarillos = appState.equipments.filter(e => e.semaphore === "AMARILLO").length;
+    const rojos = appState.equipments.filter(e => e.semaphore === "ROJO").length;
+
+    const lines = [
+        `❄️ *EasyCool Climatización — Informe de Mantenimiento #${folio}*`,
+        `👤 Cliente: ${appState.cliente.nombre || "Cliente"}`,
+        `📅 Fecha: ${formatDateCL(appState.fecha)}`,
+        `🛠️ Servicio: ${appState.tipoServicio}`,
+        `📊 Equipos revisados: ${total} (🟢 ${verdes}${amarillos ? ` | 🟡 ${amarillos}` : ""}${rojos ? ` | 🔴 ${rojos}` : ""})`
+    ];
+
+    appState.equipments.forEach((eq, idx) => {
+        const icon = eq.semaphore === "ROJO" ? "🔴" : eq.semaphore === "AMARILLO" ? "🟡" : "🟢";
+        const desc = [eq.subtype, eq.marca, eq.capacidad].filter(Boolean).join(" ");
+        const loc = eq.ubicacion ? ` [${eq.ubicacion}]` : "";
+        lines.push(`${icon} Eq #${idx + 1}: ${desc}${loc} — ${eq.semaphore}`);
+    });
+
+    lines.push("");
+    lines.push("Adjuntamos el informe técnico en PDF para su respaldo.");
+    lines.push("⭐ ¿Nos ayudas con una calificación en Google? https://g.page/r/Ccgzu2uxiaSiEBI/review");
+    return lines.join("\n");
+}
+
+function copyReportSummary() {
+    const text = buildTextSummary();
+    try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, ta.value.length);
+        const ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        if (ok) {
+            showToast("Resumen copiado al portapapeles", "success");
+        } else {
+            showToast("No se pudo copiar automáticamente", "warning");
+        }
+    } catch (err) {
+        showToast("Error al copiar resumen", "error");
+    }
+}
+
+function shareWhatsApp() {
+    const text = buildTextSummary();
+    const digits = String(appState.cliente.contacto || "").replace(/\D/g, "");
+    const encoded = encodeURIComponent(text);
+    const url = (digits.length === 11 && digits.startsWith("569"))
+        ? `https://wa.me/${digits}?text=${encoded}`
+        : `https://wa.me/?text=${encoded}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+}
+
+// ============================================================================
+// AUTOGUARDADO DE BORRADOR Y NUEVO INFORME
+// ============================================================================
+
+function updateAutoSaveBadges(label) {
+    const desk = document.getElementById("autosave-badge");
+    const mob = document.getElementById("autosave-badge-mobile");
+    if (desk) desk.textContent = label;
+    if (mob) mob.textContent = label;
+}
+
+function saveDraftNow() {
+    try {
+        syncHeaderInputsToState();
+        localStorage.setItem(STORAGE_KEYS.DRAFT, JSON.stringify(appState));
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, "0");
+        const mm = String(now.getMinutes()).padStart(2, "0");
+        updateAutoSaveBadges(`● Guardado ${hh}:${mm}`);
+    } catch (err) {
+        // Fallback si el espacio de localStorage se llena por muchas fotos
+        try {
+            const lightCopy = JSON.parse(JSON.stringify(appState));
+            lightCopy.equipments.forEach(eq => {
+                eq.photos = { antesDespues: [], filtros: [], exterior: [], hallazgos: [] };
+            });
+            localStorage.setItem(STORAGE_KEYS.DRAFT, JSON.stringify(lightCopy));
+            updateAutoSaveBadges("● Guardado (sin fotos)");
+        } catch (_) {
+            updateAutoSaveBadges("● Sin espacio local");
+        }
+    }
+}
+
+function scheduleAutoSave() {
+    updateAutoSaveBadges("● Guardando...");
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(saveDraftNow, 450);
+}
+
+function applyStateToHeaderInputs() {
+    document.getElementById("gen-folio").value = appState.folio || String(getNextStoredFolio());
+    document.getElementById("gen-fecha").value = appState.fecha || getTodayISO();
+    document.getElementById("gen-tipo-servicio").value = appState.tipoServicio || "Preventivo Nivel 2 (Estándar ASHRAE 180)";
+    populateTechSelect(appState.tecnicoIdx || 0);
+    document.getElementById("gen-cliente-nombre").value = appState.cliente?.nombre || "";
+    document.getElementById("gen-cliente-rut").value = appState.cliente?.rut || "";
+    document.getElementById("gen-cliente-contacto").value = formatChileMobileBody(appState.cliente?.contacto || "");
+    document.getElementById("gen-cliente-direccion").value = appState.cliente?.direccion || "";
+    updateRutStatusBadge(appState.cliente?.rut || "");
+    updateTechServiceGuide();
+}
+
+function confirmNewReport() {
+    openConfirmModal(
+        "Iniciar nuevo informe",
+        "Se limpiarán los datos del cliente, equipos, fotos y firmas actuales para comenzar una nueva orden de trabajo. ¿Deseas continuar?",
+        () => {
+            document.title = APP_DEFAULT_TITLE;
+            appState = {
+                folio: String(getNextStoredFolio()),
+                folioIncremented: false,
+                fecha: getTodayISO(),
+                tipoServicio: "Preventivo Nivel 2 (Estándar ASHRAE 180)",
+                tecnicoIdx: 0,
+                cliente: { nombre: "", rut: "", contacto: "", direccion: "" },
+                equipments: [createDefaultEquipment("split")],
+                signatures: { tech: "", client: "" }
+            };
+            localStorage.removeItem(STORAGE_KEYS.DRAFT);
+            clearCanvas("sig-canvas-mant-tech", "tech");
+            clearCanvas("sig-canvas-mant-client", "client");
+            applyStateToHeaderInputs();
+            renderAllEquipments();
+            editReport();
+            saveDraftNow();
+            showToast(`Nuevo informe #${appState.folio} listo`, "success");
+        },
+        true
+    );
+}
+
+// ============================================================================
+// DIRECTORIO DE CLIENTES, CATASTRO Y RESPALDO JSON
+// ============================================================================
+
+function getClientsDirectory() {
+    try {
+        const list = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLIENTS));
+        if (Array.isArray(list)) return list;
+    } catch (_) {}
+    return [];
+}
+
+function saveClientsDirectory(list) {
+    localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(list));
+}
+
+function openClientsModal() {
+    renderClientsList();
+    openModal("clients-modal");
+}
+
+function renderClientsList() {
+    const container = document.getElementById("clients-list");
+    const clients = getClientsDirectory();
+    if (!clients.length) {
+        container.innerHTML = `
+            <div class="text-center py-8 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                <p class="text-sm font-bold text-slate-700 mb-1">Aún no hay clientes guardados</p>
+                <p class="text-xs text-slate-500">Completa los datos de un cliente y sus equipos, luego presiona "Guardar Cliente + Equipos Actuales" para reutilizar su catastro en futuras visitas.</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = clients.map((c, idx) => `
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+                <div class="text-sm font-extrabold text-slate-900">${escapeHtml(c.nombre)}</div>
+                <div class="text-xs text-slate-500">
+                    ${[c.rut ? `RUT: ${escapeHtml(c.rut)}` : "", c.contacto ? escapeHtml(c.contacto) : ""].filter(Boolean).join(" • ")}
+                </div>
+                <div class="text-[11px] text-slate-600 mt-0.5">${escapeHtml(c.direccion || "Sin dirección")}</div>
+                <span class="inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                    ${(c.equipments || []).length} equipo(s) en catastro
+                </span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button" onclick="loadClientFromDirectory(${idx})" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition">
+                    Cargar Visita
+                </button>
+                <button type="button" onclick="deleteClientFromDirectory(${idx})" class="px-2.5 py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold rounded-xl transition">
+                    🗑
+                </button>
+            </div>
+        </div>
+    `).join("");
+}
+
+function saveCurrentClientToDirectory() {
+    syncHeaderInputsToState();
+    if (!appState.cliente.nombre) {
+        showToast("Ingresa el nombre del cliente antes de guardarlo", "warning");
+        return;
+    }
+
+    const catastro = appState.equipments.map(eq => ({
+        family: eq.family,
+        subtype: eq.subtype,
+        marca: eq.marca,
+        modelo: eq.modelo,
+        capacidad: eq.capacidad,
+        serie: eq.serie,
+        ubicacion: eq.ubicacion,
+        proximaMantencion: eq.proximaMantencion,
+        gas: eq.params?.gas || "R-410A",
+        fluido: eq.params?.fluido || "Agua Helada"
+    }));
+
+    const entry = {
+        nombre: appState.cliente.nombre,
+        rut: appState.cliente.rut,
+        contacto: appState.cliente.contacto,
+        direccion: appState.cliente.direccion,
+        equipments: catastro,
+        updatedAt: new Date().toISOString()
+    };
+
+    const clients = getClientsDirectory();
+    const existingIdx = clients.findIndex(c =>
+        (entry.rut && c.rut && cleanRut(c.rut) === cleanRut(entry.rut)) ||
+        c.nombre.toLowerCase() === entry.nombre.toLowerCase()
+    );
+
+    if (existingIdx >= 0) {
+        clients[existingIdx] = entry;
+        showToast("Cliente y catastro actualizados", "success");
+    } else {
+        clients.unshift(entry);
+        showToast("Cliente guardado en el directorio", "success");
+    }
+
+    saveClientsDirectory(clients);
+    renderClientsList();
+}
+
+function loadClientFromDirectory(idx) {
+    const clients = getClientsDirectory();
+    const client = clients[idx];
+    if (!client) return;
+
+    openConfirmModal(
+        "Cargar cliente y catastro",
+        `Se precargarán los datos de "${client.nombre}" y sus ${(client.equipments || []).length} equipo(s) con el checklist limpio para una nueva visita.`,
+        () => {
+            appState.folio = String(getNextStoredFolio());
+            appState.folioIncremented = false;
+            appState.fecha = getTodayISO();
+            appState.cliente = {
+                nombre: client.nombre || "",
+                rut: client.rut || "",
+                contacto: client.contacto || "",
+                direccion: client.direccion || ""
+            };
+            appState.signatures = { tech: "", client: "" };
+
+            if (Array.isArray(client.equipments) && client.equipments.length > 0) {
+                appState.equipments = client.equipments.map(item => {
+                    const fresh = createDefaultEquipment(HVAC_FAMILIES[item.family] ? item.family : "split");
+                    fresh.subtype = item.subtype || fresh.subtype;
+                    fresh.marca = item.marca || "";
+                    fresh.modelo = item.modelo || "";
+                    fresh.capacidad = item.capacidad || "";
+                    fresh.serie = item.serie || "";
+                    fresh.ubicacion = item.ubicacion || "";
+                    fresh.proximaMantencion = item.proximaMantencion || fresh.proximaMantencion;
+                    if (item.gas) fresh.params.gas = item.gas;
+                    if (item.fluido) fresh.params.fluido = item.fluido;
+                    return fresh;
+                });
+            } else {
+                appState.equipments = [createDefaultEquipment("split")];
+            }
+
+            clearCanvas("sig-canvas-mant-tech", "tech");
+            clearCanvas("sig-canvas-mant-client", "client");
+            applyStateToHeaderInputs();
+            renderAllEquipments();
+            closeModal("clients-modal");
+            saveDraftNow();
+            showToast(`Catastro de ${client.nombre} cargado`, "success");
+        }
+    );
+}
+
+function deleteClientFromDirectory(idx) {
+    const clients = getClientsDirectory();
+    const target = clients[idx];
+    if (!target) return;
+    openConfirmModal(
+        "Eliminar cliente del directorio",
+        `¿Seguro que deseas eliminar a "${target.nombre}" de tu directorio local?`,
+        () => {
+            clients.splice(idx, 1);
+            saveClientsDirectory(clients);
+            renderClientsList();
+            showToast("Cliente eliminado del directorio", "info");
+        },
+        true
+    );
+}
+
+function exportBackupJSON() {
+    const payload = {
+        app: "EasyCool Pro HVAC",
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        nextFolio: getNextStoredFolio(),
+        techs: getTechnicians(),
+        clients: getClientsDirectory()
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `EasyCool_Respaldo_${getTodayISO()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Respaldo JSON descargado", "success");
+}
+
+function importBackupJSON(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (Array.isArray(data.clients)) saveClientsDirectory(data.clients);
+            if (Array.isArray(data.techs) && data.techs.length > 0) {
+                localStorage.setItem(STORAGE_KEYS.TECHS, JSON.stringify(data.techs));
+                populateTechSelect(0);
+            }
+            if (data.nextFolio && !isNaN(parseInt(data.nextFolio, 10))) {
+                localStorage.setItem(STORAGE_KEYS.FOLIO, String(parseInt(data.nextFolio, 10)));
+            }
+            renderClientsList();
+            showToast("Respaldo importado correctamente", "success");
+        } catch (err) {
+            showToast("Archivo JSON inválido", "error");
+        }
+        input.value = "";
+    };
+    reader.readAsText(file);
+}
+
+// ============================================================================
+// CONFIGURACIÓN (CORRELATIVO FOLIO, TÉCNICOS, API KEY LOCAL)
+// ============================================================================
+
+function openSettingsModal() {
+    document.getElementById("cfg-next-folio").value = getNextStoredFolio();
+    document.getElementById("cfg-api-key").value = localStorage.getItem(STORAGE_KEYS.API_KEY) || "";
+    renderTechList();
+    openModal("settings-modal");
+}
+
+function saveFolioConfig() {
+    const val = parseInt(document.getElementById("cfg-next-folio").value, 10);
+    if (isNaN(val) || val < 1) {
+        showToast("Ingresa un número de folio válido", "warning");
+        return;
+    }
+    localStorage.setItem(STORAGE_KEYS.FOLIO, String(val));
+    appState.folio = String(val);
+    appState.folioIncremented = false;
+    document.getElementById("gen-folio").value = appState.folio;
+    saveDraftNow();
+    showToast(`Correlativo actualizado a #${val}`, "success");
+}
+
+function renderTechList() {
+    const list = getTechnicians();
+    const container = document.getElementById("cfg-tech-list");
+    container.innerHTML = list.map((t, idx) => `
+        <div class="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-slate-200 text-xs">
+            <div>
+                <span class="font-bold text-slate-800">${escapeHtml(t.name)}</span>
+                <span class="text-slate-500 ml-2">RUT: ${escapeHtml(t.rut || "—")}</span>
+            </div>
+            ${list.length > 1 ? `<button type="button" onclick="deleteTechnician(${idx})" class="text-red-600 hover:underline font-bold">Eliminar</button>` : `<span class="text-[10px] text-slate-400">Principal</span>`}
+        </div>
+    `).join("");
+}
+
+function addTechnician() {
+    const nameEl = document.getElementById("cfg-new-tech-name");
+    const rutEl = document.getElementById("cfg-new-tech-rut");
+    const name = nameEl.value.trim();
+    const rut = rutEl.value.trim();
+    if (!name) {
+        showToast("Ingresa el nombre del técnico", "warning");
+        return;
+    }
+    const list = getTechnicians();
+    list.push({ name, rut });
+    localStorage.setItem(STORAGE_KEYS.TECHS, JSON.stringify(list));
+    nameEl.value = "";
+    rutEl.value = "";
+    renderTechList();
+    populateTechSelect(list.length - 1);
+    showToast("Técnico agregado", "success");
+}
+
+function deleteTechnician(idx) {
+    const list = getTechnicians();
+    if (list.length <= 1) return;
+    list.splice(idx, 1);
+    localStorage.setItem(STORAGE_KEYS.TECHS, JSON.stringify(list));
+    renderTechList();
+    populateTechSelect(0);
+    showToast("Técnico eliminado", "info");
+}
+
+function saveApiKeyConfig() {
+    const val = document.getElementById("cfg-api-key").value.trim();
+    if (val) {
+        localStorage.setItem(STORAGE_KEYS.API_KEY, val);
+        showToast("Clave API guardada localmente en este dispositivo", "success");
+    } else {
+        localStorage.removeItem(STORAGE_KEYS.API_KEY);
+        showToast("Clave local eliminada (se usará el entorno integrado)", "info");
+    }
+}
+
+// ============================================================================
+// INICIALIZACIÓN DE LA APLICACIÓN
+// ============================================================================
+
+function initApp() {
+    let loaded = false;
+    try {
+        const raw = localStorage.getItem(STORAGE_KEYS.DRAFT);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.equipments) && parsed.equipments.length > 0) {
+                appState = {
+                    folio: parsed.folio || String(getNextStoredFolio()),
+                    folioIncremented: Boolean(parsed.folioIncremented),
+                    fecha: parsed.fecha || getTodayISO(),
+                    tipoServicio: parsed.tipoServicio || "Preventivo Nivel 2 (Estándar ASHRAE 180)",
+                    tecnicoIdx: Number.isInteger(parsed.tecnicoIdx) ? parsed.tecnicoIdx : 0,
+                    cliente: {
+                        nombre: parsed.cliente?.nombre || "",
+                        rut: parsed.cliente?.rut || "",
+                        contacto: parsed.cliente?.contacto || "",
+                        direccion: parsed.cliente?.direccion || ""
+                    },
+                    equipments: parsed.equipments.map(eq => {
+                        const base = createDefaultEquipment(HVAC_FAMILIES[eq.family] ? eq.family : "split");
+                        return {
+                            ...base,
+                            ...eq,
+                            params: { ...base.params, ...(eq.params || {}) },
+                            checklist: { ...base.checklist, ...(eq.checklist || {}) },
+                            photos: { ...base.photos, ...(eq.photos || {}) }
+                        };
+                    }),
+                    signatures: {
+                        tech: parsed.signatures?.tech || "",
+                        client: parsed.signatures?.client || ""
+                    }
+                };
+                loaded = true;
+            }
+        }
+    } catch (_) {
+        loaded = false;
+    }
+
+    if (!loaded) {
+        appState = {
+            folio: String(getNextStoredFolio()),
+            folioIncremented: false,
+            fecha: getTodayISO(),
+            tipoServicio: "Preventivo Nivel 2 (Estándar ASHRAE 180)",
+            tecnicoIdx: 0,
+            cliente: { nombre: "", rut: "", contacto: "", direccion: "" },
+            equipments: [createDefaultEquipment("split")],
+            signatures: { tech: "", client: "" }
+        };
+    }
+
+    applyStateToHeaderInputs();
+    renderAllEquipments();
+}
+
+initApp();
 </script>
 </body>
 </html>
